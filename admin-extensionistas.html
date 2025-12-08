@@ -833,12 +833,10 @@
             try {
                 document.getElementById('loadingOverlay').classList.add('active');
 
-                // URL da API de sincronização (ALTERAR para URL real)
-                const API_URL = 'https://SEU-SERVIDOR.com/api/sync-extensionistas.php';
-                
-                const resultado = await sincronizarComServidor(API_URL);
+                // Usar sincronização do db-extensionistas.js
+                const resultado = await sincronizarTodosComAzure();
 
-                alert(`📊 Sincronização concluída!\n\n✅ Sucesso: ${resultado.sucesso}\n❌ Erros: ${resultado.erro}\n📝 Total processado: ${resultado.total}`);
+                alert(`📊 Sincronização concluída!\n\n✅ Sucesso: ${resultado.sucesso}\n❌ Erros: ${resultado.erro}\n📝 Total processado: ${resultado.sucesso + resultado.erro}`);
 
                 // Recarregar dados
                 await carregarDados();
