@@ -610,6 +610,25 @@
                 return new Promise((resolve, reject) => {
                     request.onsuccess = () => {
                         const todosFormularios = request.result;
+                        
+                        // Parse de campos JSON (quando vem do servidor)
+                        todosFormularios.forEach(form => {
+                            if (form.respostas && typeof form.respostas === 'string') {
+                                try {
+                                    form.respostas = JSON.parse(form.respostas);
+                                } catch (e) {
+                                    console.warn('Erro ao fazer parse de respostas:', form.protocolo, e);
+                                }
+                            }
+                            if (form.fotos && typeof form.fotos === 'string') {
+                                try {
+                                    form.fotos = JSON.parse(form.fotos);
+                                } catch (e) {
+                                    console.warn('Erro ao fazer parse de fotos:', form.protocolo, e);
+                                }
+                            }
+                        });
+                        
                         formulariosGlobal = todosFormularios;
                         
                         console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
@@ -841,17 +860,26 @@
         window.verDetalhes = async function(protocolo) {
             try {
                 // Buscar formulário no array global
-                const form = formulariosGlobal.find(f => f.protocolo === protocolo);
+                let form = formulariosGlobal.find(f => f.protocolo === protocolo);
                 
                 if (!form) {
                     alert('Formulário não encontrado');
                     return;
                 }
                 
+                // Se respostas é string JSON, fazer parse
+                if (form.respostas && typeof form.respostas === 'string') {
+                    try {
+                        form.respostas = JSON.parse(form.respostas);
+                    } catch (e) {
+                        console.warn('Erro ao fazer parse de respostas:', e);
+                    }
+                }
+                
                 const modal = document.getElementById('modalDetalhes');
                 const body = document.getElementById('modalBody');
                 
-                // Extrair dados do formulário
+                // Extrair dados do formulário (compatível com ambos formatos)
                 const municipio = form.respostas?.municipio || form.municipio || 'N/A';
                 const timestampFim = form.timestampFim || form.timestamp_fim;
                 const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
