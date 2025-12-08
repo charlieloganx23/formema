@@ -245,7 +245,7 @@
             padding: 18px 25px;
             border-bottom: 1px solid #e2e8f0;
             display: grid;
-            grid-template-columns: 2fr 1.2fr 0.8fr 1fr auto;
+            grid-template-columns: 2fr 1.2fr 0.8fr 1fr 1.2fr auto;
             gap: 20px;
             align-items: center;
             transition: all 0.2s ease;
@@ -543,6 +543,14 @@
                 <div class="table-header">
                     📋 Formulários Coletados
                 </div>
+                <div style="padding: 15px 25px; background: #f7fafc; display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 1fr 1.2fr auto; gap: 20px; font-weight: 600; color: #4a5568; border-bottom: 2px solid #e2e8f0; font-size: 0.9em;">
+                    <div>Protocolo/Município</div>
+                    <div>Data/Hora</div>
+                    <div>Duração</div>
+                    <div>Status Sinc.</div>
+                    <div>Preenchimento</div>
+                    <div>Ações</div>
+                </div>
                 <div class="table-content" id="tableContent">
                     <p style="padding: 20px; text-align: center; color: #666;">
                         Carregando dados...
@@ -784,6 +792,25 @@
             }
         }
         
+        // Calcular status de completude do formulário
+        function calcularCompletude(form) {
+            const camposObrigatorios = [
+                'municipio', 'nomeCompleto', 'escritorioLocal', 
+                'tempoEmater', 'resultadosRelevantes', 'desafiosEnfrentados'
+            ];
+            
+            let preenchidos = 0;
+            camposObrigatorios.forEach(campo => {
+                const valor = form.respostas?.[campo] || form[campo];
+                if (valor && valor !== '' && valor !== null && valor !== undefined) {
+                    preenchidos++;
+                }
+            });
+            
+            const percentual = Math.round((preenchidos / camposObrigatorios.length) * 100);
+            return { percentual, preenchidos, total: camposObrigatorios.length };
+        }
+        
         // Renderizar formulários na tabela
         function renderizarFormularios(formularios) {
             try {
@@ -825,6 +852,22 @@
                             minute: '2-digit'
                         }) : 'N/A';
                     
+                    // Calcular completude
+                    const completude = calcularCompletude(form);
+                    let statusPreenchimento = '';
+                    let badgeClass = '';
+                    
+                    if (completude.percentual === 100) {
+                        statusPreenchimento = 'Completo ✅';
+                        badgeClass = 'badge-success';
+                    } else if (completude.percentual >= 50) {
+                        statusPreenchimento = `Parcial (${completude.percentual}%)`;
+                        badgeClass = 'badge-warning';
+                    } else {
+                        statusPreenchimento = `Incompleto (${completude.percentual}%)`;
+                        badgeClass = 'badge-warning';
+                    }
+                    
                     row.innerHTML = `
                         <div>
                             <strong>${protocolo || 'N/A'}</strong><br>
@@ -835,6 +878,11 @@
                         <div>
                             <span class="badge ${form.status === 'completo' || form.status === 'concluido' ? 'badge-success' : 'badge-warning'}">
                                 ${form.status || 'N/A'}
+                            </span>
+                        </div>
+                        <div>
+                            <span class="badge ${badgeClass}" title="${completude.preenchidos} de ${completude.total} campos obrigatórios">
+                                ${statusPreenchimento}
                             </span>
                         </div>
                         <div style="display: flex; gap: 8px;">
@@ -1098,6 +1146,41 @@
                     return html;
                 };
                 
+                // Calcular status de completude do formulário
+                const calcularCompletude = (form) => {
+                    // Campos obrigatórios para considerar o formulário completo
+                    const camposObrigatorios = [
+                        'municipio', 'nomeCompleto', 'escritorioLocal', 
+                        'tempoEmater', 'resultadosRelevantes', 'desafiosEnfrentados'
+                    ];
+                    
+                    let preenchidos = 0;
+                    camposObrigatorios.forEach(campo => {
+                        const valor = form.respostas?.[campo] || form[campo];
+                        if (valor && valor !== '' && valor !== null && valor !== undefined) {
+                            preenchidos++;
+                        }
+                    });
+                    
+                    const percentual = Math.round((preenchidos / camposObrigatorios.length) * 100);
+                    return { percentual, preenchidos, total: camposObrigatorios.length };
+                };
+                
+                const completude = calcularCompletude(form);
+                let statusCompletude = '';
+                let corStatus = '';
+                
+                if (completude.percentual === 100) {
+                    statusCompletude = 'Formulário Completo ✅';
+                    corStatus = '#4caf50'; // verde
+                } else if (completude.percentual >= 50) {
+                    statusCompletude = `Formulário Parcial ⚠️ (${completude.percentual}%)`;
+                    corStatus = '#ff9800'; // laranja
+                } else {
+                    statusCompletude = `Formulário Incompleto 📝 (${completude.percentual}%)`;
+                    corStatus = '#f44336'; // vermelho
+                }
+                
                 body.innerHTML = `
                     <h3>Protocolo: ${form.protocolo}</h3>
                     <p><strong>Município:</strong> ${municipio}</p>
@@ -1105,7 +1188,9 @@
                     ${unidade ? `<p><strong>Unidade EMATER:</strong> ${unidade}</p>` : ''}
                     <p><strong>Data/Hora:</strong> ${timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A'}</p>
                     <p><strong>Duração:</strong> ${duracaoMinutos} minutos</p>
-                    <p><strong>Status:</strong> ${form.sincronizado ? 'Sincronizado ✅' : 'Pendente ⏳'}</p>
+                    <p><strong>Status de Sincronização:</strong> ${form.sincronizado ? 'Sincronizado ✅' : 'Pendente ⏳'}</p>
+                    <p><strong>Status de Preenchimento:</strong> <span style="color: ${corStatus}; font-weight: bold;">${statusCompletude}</span></p>
+                    <p style="font-size: 0.9em; color: #666;"><em>Campos preenchidos: ${completude.preenchidos} de ${completude.total} obrigatórios</em></p>
                     ${gpsInfo}
                     ${fotosGaleria}
                     <hr>
