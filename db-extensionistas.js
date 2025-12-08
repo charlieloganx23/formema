@@ -634,3 +634,27 @@ console.log(`
 ║  + SQL Azure Integration               ║
 ╚════════════════════════════════════════╝
 `);
+
+// ==================================================
+// EXPORTAR FUNÇÕES GLOBALMENTE
+// ==================================================
+// Disponibilizar funções para uso em outros arquivos HTML
+
+window.initDB = initDB;
+window.salvarFormulario = salvarFormulario;
+window.buscarTodosFormularios = buscarTodosFormularios;
+window.buscarPorProtocolo = buscarPorProtocolo;
+window.buscarNaoSincronizados = buscarNaoSincronizados;
+window.marcarComoSincronizado = marcarComoSincronizado;
+window.contarFormularios = contarFormularios;
+window.limparTodosDados = limparTodosDados;
+window.exportarParaJSON = exportarParaJSON;
+window.gerarProtocolo = gerarProtocolo;
+window.formatarData = formatarData;
+window.obterEstatisticas = obterEstatisticas;
+window.sincronizarComServidor = sincronizarComServidor;
+window.sincronizarFormularioComAzure = sincronizarFormularioComAzure;
+window.sincronizarTodosComAzure = sincronizarTodosComAzure;
+window.buscarFormulariosDoAzure = buscarFormulariosDoAzure;
+
+console.log('✅ Funções do db-extensionistas.js exportadas globalmente');
