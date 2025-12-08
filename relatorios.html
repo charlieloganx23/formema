@@ -438,9 +438,9 @@
                     </select>
                 </div>
                 <div class="filtro-group">
-                    <label>Sistema Produtivo</label>
-                    <select id="filtro-sistema">
-                        <option value="">Todos</option>
+                    <label>Unidade EMATER</label>
+                    <select id="filtro-unidade">
+                        <option value="">Todas</option>
                     </select>
                 </div>
             </div>
@@ -692,6 +692,7 @@
                 
                 renderizarResumo();
                 renderizarGraficos();
+                popularFiltros();
                 
                 ocultarLoading();
             } catch (error) {
@@ -1786,9 +1787,110 @@
             }
         }
         
+        // Popular filtros com dados reais
+        function popularFiltros() {
+            // Extrair municípios únicos
+            const municipios = new Set();
+            const unidades = new Set();
+            
+            todosFormularios.forEach(f => {
+                const municipio = f.respostas?.municipio;
+                const unidade = f.respostas?.escritorioLocal;
+                
+                if (municipio) municipios.add(municipio);
+                if (unidade) unidades.add(unidade);
+            });
+            
+            // Popular select de municípios
+            const selectMunicipio = document.getElementById('filtro-municipio');
+            if (selectMunicipio) {
+                const opcoesMunicipios = Array.from(municipios).sort();
+                opcoesMunicipios.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m;
+                    option.textContent = m;
+                    selectMunicipio.appendChild(option);
+                });
+            }
+            
+            // Popular select de unidades
+            const selectUnidade = document.getElementById('filtro-unidade');
+            if (selectUnidade) {
+                const opcoesUnidades = Array.from(unidades).sort();
+                opcoesUnidades.forEach(u => {
+                    const option = document.createElement('option');
+                    option.value = u;
+                    option.textContent = u;
+                    selectUnidade.appendChild(option);
+                });
+            }
+            
+            console.log('🔍 Filtros populados:', municipios.size, 'municípios,', unidades.size, 'unidades');
+        }
+        
         // Aplicar filtros
         function aplicarFiltros() {
-            alert('Filtros ainda não implementados. Utilize esta função para filtrar por período, município, etc.');
+            const dataInicio = document.getElementById('filtro-data-inicio').value;
+            const dataFim = document.getElementById('filtro-data-fim').value;
+            const municipio = document.getElementById('filtro-municipio').value;
+            const unidade = document.getElementById('filtro-unidade').value;
+            
+            console.log('🔍 Aplicando filtros:', { dataInicio, dataFim, municipio, unidade });
+            
+            // Aplicar filtros aos formulários
+            let formulariosFiltrados = todosFormularios;
+            
+            // Filtro por município
+            if (municipio) {
+                formulariosFiltrados = formulariosFiltrados.filter(f => 
+                    f.respostas?.municipio === municipio
+                );
+            }
+            
+            // Filtro por unidade
+            if (unidade) {
+                formulariosFiltrados = formulariosFiltrados.filter(f => 
+                    f.respostas?.escritorioLocal === unidade
+                );
+            }
+            
+            // Filtro por período
+            if (dataInicio) {
+                const dataInicioTimestamp = new Date(dataInicio + 'T00:00:00').getTime();
+                formulariosFiltrados = formulariosFiltrados.filter(f => {
+                    const dataForm = new Date(f.dataHora || f.data_hora);
+                    return dataForm.getTime() >= dataInicioTimestamp;
+                });
+            }
+            
+            if (dataFim) {
+                const dataFimTimestamp = new Date(dataFim + 'T23:59:59').getTime();
+                formulariosFiltrados = formulariosFiltrados.filter(f => {
+                    const dataForm = new Date(f.dataHora || f.data_hora);
+                    return dataForm.getTime() <= dataFimTimestamp;
+                });
+            }
+            
+            console.log('📊 Formulários após filtros:', formulariosFiltrados.length, 'de', todosFormularios.length);
+            
+            // Atualizar visualização com dados filtrados
+            const todosFormulariosOriginal = todosFormularios;
+            todosFormularios = formulariosFiltrados;
+            
+            // Limpar gráficos existentes
+            Object.values(charts).forEach(chart => {
+                if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                }
+            });
+            charts = {};
+            
+            // Re-renderizar com dados filtrados
+            renderizarResumo();
+            renderizarGraficos();
+            
+            // Restaurar dados originais
+            todosFormularios = todosFormulariosOriginal;
         }
         
         // Limpar filtros
@@ -1796,7 +1898,7 @@
             document.getElementById('filtro-data-inicio').value = '';
             document.getElementById('filtro-data-fim').value = '';
             document.getElementById('filtro-municipio').value = '';
-            document.getElementById('filtro-sistema').value = '';
+            document.getElementById('filtro-unidade').value = '';
             carregarDados();
         }
         
