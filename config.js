@@ -1,13 +1,13 @@
-// Configuração da API Azure
+// Configuração da API Netlify Functions
 const CONFIG = {
-    // URL da Azure Function (atualize após o deploy)
-    API_URL: 'https://YOUR-FUNCTION-APP.azurewebsites.net/api',
+    // URL das Netlify Functions
+    API_URL: '/.netlify/functions',
     
     // Endpoints
     ENDPOINTS: {
-        SAVE: '/formularios',      // POST
-        GET_ALL: '/formularios',   // GET
-        GET_ONE: '/formularios'    // GET ?protocolo=XXX
+        SAVE: '/salvar-formulario',      // POST
+        GET_ALL: '/buscar-formularios',   // GET
+        GET_ONE: '/buscar-formularios'    // GET ?protocolo=XXX
     },
     
     // Modo de operação
