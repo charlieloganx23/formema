@@ -580,6 +580,52 @@
                     <canvas id="chartTempoAtuacao"></canvas>
                 </div>
             </div>
+            
+            <!-- PRIORIDADE MÉDIA -->
+            <!-- Gráfico: Estratégias Mais Adotadas -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">🎯 Estratégias de Extensão Mais Adotadas</div>
+                        <div class="chart-subtitle">Top 10 estratégias utilizadas pelas unidades</div>
+                    </div>
+                    <button class="chart-export" onclick="exportarGrafico('chartEstrategias')">📥 Exportar</button>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="chartEstrategias"></canvas>
+                </div>
+            </div>
+            
+            <!-- Gráficos em Grid -->
+            <div class="charts-grid">
+                <!-- Gráfico: Rede de Parcerias -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">🤝 Parcerias e Articulações</div>
+                            <div class="chart-subtitle">Frequência de parcerias por tipo</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartParcerias')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartParcerias"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Gráfico: Orientação de Mercado -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">📊 Orientação por Demanda de Mercado</div>
+                            <div class="chart-subtitle">Frequência e capacitação em mercado</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartComercializacao')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartComercializacao"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
         </div>
     </div>
@@ -690,6 +736,10 @@
             renderizarGraficoDesafios();
             renderizarGraficoUnidades();
             renderizarGraficoTempoAtuacao();
+            // Prioridade Média
+            renderizarGraficoEstrategias();
+            renderizarGraficoParcerias();
+            renderizarGraficoComercializacao();
         }
         
         // Gráfico 1: Radar de Resultados e Impactos
@@ -914,6 +964,185 @@
                 }
             });
         }
+        
+        // ============================================
+        // GRÁFICOS DE PRIORIDADE MÉDIA
+        // ============================================
+        
+        // Gráfico 5: Estratégias de Extensão Mais Adotadas
+        function renderizarGraficoEstrategias() {
+            const estrategiasLabels = {
+                'realocacao_tecnicos': 'Realocação de técnicos',
+                'parcerias': 'Parcerias com prefeituras/ONGs',
+                'oficinas_capacitacoes': 'Oficinas e capacitações',
+                'ferramentas_digitais': 'Ferramentas digitais',
+                'recursos_convenios': 'Recursos via convênios'
+            };
+            
+            const estrategias = {};
+            Object.keys(estrategiasLabels).forEach(key => estrategias[key] = 0);
+            
+            todosFormularios.forEach(f => {
+                const estrategiasArray = f.respostas?.estrategias;
+                if (Array.isArray(estrategiasArray)) {
+                    estrategiasArray.forEach(est => {
+                        if (estrategias.hasOwnProperty(est)) {
+                            estrategias[est]++;
+                        }
+                    });
+                }
+            });
+            
+            // Ordenar por frequência
+            const sorted = Object.entries(estrategias)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const ctx = document.getElementById('chartEstrategias');
+            if (!ctx) return;
+            
+            charts.estrategias = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(([key]) => estrategiasLabels[key]),
+                    datasets: [{
+                        label: 'Frequência',
+                        data: sorted.map(([, count]) => count),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 6: Parcerias e Articulações
+        function renderizarGraficoParcerias() {
+            const parceriasLabels = {
+                'idaron': 'Idaron',
+                'embrapa': 'Embrapa',
+                'prefeituras': 'Prefeituras',
+                'sedam': 'Sedam',
+                'secretarias_municipais': 'Secret. Municipais',
+                'cooperativas_associacoes': 'Cooperativas/Associações',
+                'movimentos_sociais': 'Movimentos Sociais',
+                'instituicoes_financeiras': 'Inst. Financeiras',
+                'sistema_s': 'Sistema S',
+                'sindicatos': 'Sindicatos'
+            };
+            
+            const parcerias = {};
+            Object.keys(parceriasLabels).forEach(key => parcerias[key] = 0);
+            
+            todosFormularios.forEach(f => {
+                const parceriasArray = f.respostas?.parceriasAtivas;
+                if (Array.isArray(parceriasArray)) {
+                    parceriasArray.forEach(p => {
+                        if (parcerias.hasOwnProperty(p)) {
+                            parcerias[p]++;
+                        }
+                    });
+                }
+            });
+            
+            const ctx = document.getElementById('chartParcerias');
+            if (!ctx) return;
+            
+            charts.parcerias = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(parcerias).map(key => parceriasLabels[key]),
+                    datasets: [{
+                        label: 'Frequência de Parcerias',
+                        data: Object.values(parcerias),
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#764ba2',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 7: Orientação de Mercado e Capacitação
+        function renderizarGraficoComercializacao() {
+            // Frequência de orientação por demanda de mercado
+            const freqDemanda = {
+                'nunca': 'Nunca',
+                'raramente': 'Raramente',
+                'as_vezes': 'Às vezes',
+                'frequentemente': 'Frequentemente',
+                'sempre': 'Sempre'
+            };
+            
+            const contagem = {};
+            Object.keys(freqDemanda).forEach(key => contagem[key] = 0);
+            
+            todosFormularios.forEach(f => {
+                const freq = f.respostas?.freqDemandaMercado;
+                if (freq && contagem.hasOwnProperty(freq)) {
+                    contagem[freq]++;
+                }
+            });
+            
+            // Capacitação em mercado
+            const comCapacitacao = todosFormularios.filter(f => f.respostas?.capacitacaoMercado === 'sim').length;
+            const semCapacitacao = todosFormularios.filter(f => f.respostas?.capacitacaoMercado === 'nao').length;
+            
+            const ctx = document.getElementById('chartComercializacao');
+            if (!ctx) return;
+            
+            charts.comercializacao = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(contagem).map(key => freqDemanda[key]),
+                    datasets: [{
+                        label: 'Frequência de Orientação por Mercado',
+                        data: Object.values(contagem),
+                        backgroundColor: [
+                            '#f44336', '#ff9800', '#ffc107', '#4caf50', '#2e7d32'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: `Capacitados: ${comCapacitacao} | Não: ${semCapacitacao}`,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ============================================
+        // FIM GRÁFICOS DE PRIORIDADE MÉDIA
+        // ============================================
         
         // Gráfico 3: Práticas Sustentáveis
         function renderizarGraficoPraticas() {
