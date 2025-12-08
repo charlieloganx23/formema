@@ -463,6 +463,200 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* Modal de Loading para Sincronização */
+        .sync-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sync-modal-overlay.active {
+            display: flex;
+        }
+
+        .sync-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: slideUp 0.4s ease;
+        }
+
+        .sync-spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #667eea;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            animation: spin 1s linear infinite;
+        }
+
+        .sync-modal h2 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .sync-modal p {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .sync-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .sync-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .sync-status {
+            margin-top: 15px;
+            color: #4a5568;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 320px;
+            animation: slideInRight 0.4s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .toast.success {
+            border-left-color: #48bb78;
+        }
+
+        .toast.error {
+            border-left-color: #f56565;
+        }
+
+        .toast.info {
+            border-left-color: #4299e1;
+        }
+
+        .toast.warning {
+            border-left-color: #ed8936;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            color: #4a5568;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
     </style>
 </head>
 <body>
@@ -570,6 +764,22 @@
             <div id="modalBody">
                 <!-- Conteúdo dinâmico -->
             </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Modal de Sincronização -->
+    <div id="syncModal" class="sync-modal-overlay">
+        <div class="sync-modal">
+            <div class="sync-spinner"></div>
+            <h2 id="syncModalTitle">Sincronizando...</h2>
+            <p id="syncModalMessage">Por favor, aguarde enquanto processamos os dados.</p>
+            <div class="sync-progress-bar">
+                <div id="syncProgressFill" class="sync-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div id="syncStatus" class="sync-status"></div>
         </div>
     </div>
     
@@ -1231,12 +1441,91 @@
             }
         };
         
+        // ==================== SISTEMA DE MODAL E TOASTS ====================
+        
+        // Mostrar modal de sincronização
+        function showSyncModal(title, message, status = '') {
+            const modal = document.getElementById('syncModal');
+            const modalTitle = document.getElementById('syncModalTitle');
+            const modalMessage = document.getElementById('syncModalMessage');
+            const syncStatus = document.getElementById('syncStatus');
+            const progressFill = document.getElementById('syncProgressFill');
+            
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            syncStatus.textContent = status;
+            progressFill.style.width = '0%';
+            modal.classList.add('active');
+        }
+
+        // Atualizar progresso do modal
+        function updateSyncModal(status, progress) {
+            const syncStatus = document.getElementById('syncStatus');
+            const progressFill = document.getElementById('syncProgressFill');
+            
+            syncStatus.textContent = status;
+            progressFill.style.width = progress + '%';
+        }
+
+        // Fechar modal de sincronização
+        function hideSyncModal() {
+            const modal = document.getElementById('syncModal');
+            modal.classList.remove('active');
+        }
+
+        // Mostrar toast notification
+        function showToast(type, title, message, duration = 4000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+        }
+
         // Sincronizar todos - Recarregar do IndexedDB
         window.sincronizarTodos = async function() {
-            if (confirm('Deseja recarregar os dados do IndexedDB?')) {
+            try {
+                showSyncModal('Sincronizando Dados', 'Atualizando formulários do IndexedDB...', 'Iniciando sincronização...');
+                updateSyncModal('Carregando dados locais...', 30);
+                
                 await carregarDadosServidor();
+                updateSyncModal('Verificando formulários pendentes...', 60);
+                
                 await carregarFormulariosPendentes();
-                alert('Dados atualizados!');
+                updateSyncModal('Sincronização concluída!', 100);
+                
+                setTimeout(() => {
+                    hideSyncModal();
+                    showToast('success', 'Sincronização Completa', 'Todos os dados foram atualizados com sucesso!');
+                }, 500);
+            } catch (error) {
+                console.error('❌ Erro na sincronização:', error);
+                hideSyncModal();
+                showToast('error', 'Erro na Sincronização', 'Não foi possível sincronizar os dados. Tente novamente.');
             }
         };
         
@@ -1566,15 +1855,26 @@
             }
             
             try {
+                showSyncModal('Sincronizando Pendentes', 'Enviando formulários para o servidor...', 'Preparando envio...');
+                updateSyncModal('Processando formulários...', 50);
+                
                 await sincronizarTodos();
+                
+                updateSyncModal('Concluído!', 100);
+                
                 if (btn) {
                     btn.innerHTML = '✅ Sincronizado!';
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
                 }
+                
+                setTimeout(() => {
+                    hideSyncModal();
+                    showToast('success', 'Sincronização Manual Concluída', 'Formulários pendentes foram enviados com sucesso!');
+                    setTimeout(() => location.reload(), 1500);
+                }, 500);
             } catch (error) {
                 console.error('❌ Erro na sincronização manual:', error);
+                hideSyncModal();
+                showToast('error', 'Erro na Sincronização', 'Não foi possível sincronizar. Verifique sua conexão e tente novamente.');
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = '❌ Erro - Tentar Novamente';
