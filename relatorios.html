@@ -846,7 +846,7 @@
                 .slice(0, 10);
             
             charts.praticas = new Chart(ctx, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: {
                     labels: topPraticas.map(p => p[0]),
                     datasets: [{
@@ -856,6 +856,7 @@
                     }]
                 },
                 options: {
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y',
