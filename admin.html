@@ -7,7 +7,6 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Painel Administrativo - EMATECH v2.0</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
         * {
             margin: 0;
@@ -840,54 +839,59 @@
                     alert('Formulário não encontrado');
                     return;
                 }
+                
                 const modal = document.getElementById('modalDetalhes');
                 const body = document.getElementById('modalBody');
+                
+                // Extrair dados do formulário
+                const municipio = form.respostas?.municipio || form.municipio || 'N/A';
+                const timestampFim = form.timestampFim || form.timestamp_fim;
+                const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
                 
                 // Preparar informações de GPS (suporta tanto objeto quanto campos diretos)
                 const geo = form.geolocalizacao || form;
                 let gpsInfo = '<p><strong>📍 Geolocalização:</strong> ';
                 if (geo && geo.latitude) {
-                        const lat = geo.latitude.toFixed(6);
-                        const lng = geo.longitude.toFixed(6);
-                        const precisao = Math.round(geo.precisao || 0);
-                        
-                        // Formatar precisão
-                        let precisaoTexto = '';
-                        let qualidadeTexto = '';
-                        let corQualidade = '#666';
-                        
-                        if (precisao >= 1000) {
-                            precisaoTexto = `${(precisao / 1000).toFixed(1)}km`;
-                        } else {
-                            precisaoTexto = `${precisao}m`;
-                        }
-                        
-                        if (precisao < 20) {
-                            qualidadeTexto = 'Excelente';
-                            corQualidade = '#2e7d32';
-                        } else if (precisao < 50) {
-                            qualidadeTexto = 'Boa';
-                            corQualidade = '#388e3c';
-                        } else if (precisao < 100) {
-                            qualidadeTexto = 'Moderada';
-                            corQualidade = '#f57c00';
-                        } else if (precisao < 1000) {
-                            qualidadeTexto = 'Baixa';
-                            corQualidade = '#e64a19';
-                        } else {
-                            qualidadeTexto = 'Muito Baixa';
-                            corQualidade = '#d32f2f';
-                        }
-                        
-                        gpsInfo += `<br>
-                            • Latitude: ${lat}<br>
-                            • Longitude: ${lng}<br>
-                            • Precisão: ±${precisaoTexto} <span style="color: ${corQualidade}; font-weight: 600;">(${qualidadeTexto})</span><br>
-                            • <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="color: #1976d2;">🗺️ Ver no Google Maps</a>
-                        `;
-                    } else if (geo.erro) {
-                        gpsInfo += `<span style="color: #d32f2f;">${geo.erro}</span>`;
+                    const lat = geo.latitude.toFixed(6);
+                    const lng = geo.longitude.toFixed(6);
+                    const precisao = Math.round(geo.precisao || 0);
+                    
+                    // Formatar precisão
+                    let precisaoTexto = '';
+                    let qualidadeTexto = '';
+                    let corQualidade = '#666';
+                    
+                    if (precisao >= 1000) {
+                        precisaoTexto = `${(precisao / 1000).toFixed(1)}km`;
+                    } else {
+                        precisaoTexto = `${precisao}m`;
                     }
+                    
+                    if (precisao < 20) {
+                        qualidadeTexto = 'Excelente';
+                        corQualidade = '#2e7d32';
+                    } else if (precisao < 50) {
+                        qualidadeTexto = 'Boa';
+                        corQualidade = '#388e3c';
+                    } else if (precisao < 100) {
+                        qualidadeTexto = 'Moderada';
+                        corQualidade = '#f57c00';
+                    } else if (precisao < 1000) {
+                        qualidadeTexto = 'Baixa';
+                        corQualidade = '#e64a19';
+                    } else {
+                        qualidadeTexto = 'Muito Baixa';
+                        corQualidade = '#d32f2f';
+                    }
+                    
+                    gpsInfo += `<br>
+                        • Latitude: ${lat}<br>
+                        • Longitude: ${lng}<br>
+                        • Precisão: ±${precisaoTexto} <span style="color: ${corQualidade}; font-weight: 600;">(${qualidadeTexto})</span><br>
+                        • <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="color: #1976d2;">🗺️ Ver no Google Maps</a>
+                    `;
+                } else if (geo && geo.erro) {
+                    gpsInfo += `<span style="color: #d32f2f;">${geo.erro}</span>`;
                 } else {
                     gpsInfo += '<span style="color: #666;">Não capturado</span>';
                 }
@@ -936,7 +940,7 @@
                 console.error('Erro ao carregar detalhes:', error);
                 alert('Erro ao carregar detalhes do formulário.');
             }
-        }
+        };
         
         // Abrir foto em modal
         window.abrirFotoModal = async function(protocolo, fotoIndex) {
