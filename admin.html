@@ -812,8 +812,35 @@
         let ultimoCountFormularios = 0;
         let ultimoCountSincronizados = 0;
         
+        // Aguardar carregamento completo de todos os scripts
+        async function aguardarScripts() {
+            let tentativas = 0;
+            while (!window.buscarTodosFormularios && tentativas < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                tentativas++;
+            }
+            
+            if (!window.buscarTodosFormularios) {
+                console.error('❌ ERRO CRÍTICO: db-extensionistas.js não carregou!');
+                document.getElementById('tableContent').innerHTML = `
+                    <p style="padding: 40px; text-align: center; color: #d32f2f; font-size: 1.2em;">
+                        ⚠️ Erro ao carregar sistema de banco de dados.<br>
+                        Por favor, recarregue a página (F5).
+                    </p>
+                `;
+                return false;
+            }
+            
+            console.log('✅ Scripts carregados com sucesso');
+            return true;
+        }
+        
         // Inicializar painel quando DOM estiver pronto
         document.addEventListener('DOMContentLoaded', async function() {
+            // Aguardar scripts carregarem
+            const scriptsOk = await aguardarScripts();
+            if (!scriptsOk) return;
+            
             await carregarDadosServidor();
             await carregarFormulariosPendentes();
             
