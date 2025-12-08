@@ -827,40 +827,26 @@
             
             setInterval(async () => {
                 try {
-                    // Verificar se houve mudanças no IndexedDB
-                    const db = await initDB();
-                    const transaction = db.transaction(['formularios'], 'readonly');
-                    const store = transaction.objectStore('formularios');
+                    // Usar buscarTodosFormularios() do db.js
+                    const formularios = await buscarTodosFormularios();
+                    const totalAtual = formularios.length;
+                    const sincronizados = formularios.filter(f => f.sincronizado).length;
                     
-                    const countRequest = store.count();
-                    
-                    countRequest.onsuccess = async () => {
-                        const totalAtual = countRequest.result;
-                        
-                        // Se o total mudou, recarregar
-                        if (totalAtual !== ultimoCountFormularios) {
-                            console.log(`📊 Detectada mudança: ${ultimoCountFormularios} → ${totalAtual} formulários`);
-                            ultimoCountFormularios = totalAtual;
-                            await carregarDadosServidor();
-                            await carregarFormulariosPendentes();
-                            showToast('info', 'Dados Atualizados', 'Painel administrativo atualizado automaticamente.', 3000);
-                        } else {
-                            // Verificar se houve mudança nos sincronizados
-                            const getAllRequest = store.getAll();
-                            getAllRequest.onsuccess = async () => {
-                                const formularios = getAllRequest.result;
-                                const sincronizados = formularios.filter(f => f.sincronizado).length;
-                                
-                                if (sincronizados !== ultimoCountSincronizados) {
-                                    console.log(`✅ Mudança em sincronizados: ${ultimoCountSincronizados} → ${sincronizados}`);
-                                    ultimoCountSincronizados = sincronizados;
-                                    await carregarDadosServidor();
-                                    await carregarFormulariosPendentes();
-                                    showToast('success', 'Sincronização Detectada', 'Formulários sincronizados atualizados!', 3000);
-                                }
-                            };
-                        }
-                    };
+                    // Se o total mudou, recarregar
+                    if (totalAtual !== ultimoCountFormularios) {
+                        console.log(`📊 Detectada mudança: ${ultimoCountFormularios} → ${totalAtual} formulários`);
+                        ultimoCountFormularios = totalAtual;
+                        await carregarDadosServidor();
+                        await carregarFormulariosPendentes();
+                        showToast('info', 'Dados Atualizados', 'Painel administrativo atualizado automaticamente.', 3000);
+                    } else if (sincronizados !== ultimoCountSincronizados) {
+                        // Verificar se houve mudança nos sincronizados
+                        console.log(`✅ Mudança em sincronizados: ${ultimoCountSincronizados} → ${sincronizados}`);
+                        ultimoCountSincronizados = sincronizados;
+                        await carregarDadosServidor();
+                        await carregarFormulariosPendentes();
+                        showToast('success', 'Sincronização Detectada', 'Formulários sincronizados atualizados!', 3000);
+                    }
                 } catch (error) {
                     console.error('⚠️ Erro no auto-refresh:', error);
                 }
@@ -872,95 +858,75 @@
             try {
                 console.log('🔄 Carregando estatísticas do IndexedDB...');
                 
-                // Buscar todos os formulários do IndexedDB
-                const db = await initDB();
-                const transaction = db.transaction(['formularios'], 'readonly');
-                const store = transaction.objectStore('formularios');
-                const request = store.getAll();
+                // Buscar todos os formulários do IndexedDB usando função do db.js
+                const todosFormularios = await buscarTodosFormularios();
                 
-                return new Promise((resolve, reject) => {
-                    request.onsuccess = () => {
-                        const todosFormularios = request.result;
-                        
-                        // Parse de campos JSON (quando vem do servidor)
-                        todosFormularios.forEach(form => {
-                            if (form.respostas && typeof form.respostas === 'string') {
-                                try {
-                                    form.respostas = JSON.parse(form.respostas);
-                                } catch (e) {
-                                    console.warn('Erro ao fazer parse de respostas:', form.protocolo, e);
-                                }
-                            }
-                            if (form.fotos && typeof form.fotos === 'string') {
-                                try {
-                                    form.fotos = JSON.parse(form.fotos);
-                                } catch (e) {
-                                    console.warn('Erro ao fazer parse de fotos:', form.protocolo, e);
-                                }
-                            }
-                        });
-                        
-                        formulariosGlobal = todosFormularios;
-                        
-                        // Atualizar contadores de controle
-                        ultimoCountFormularios = todosFormularios.length;
-                        ultimoCountSincronizados = todosFormularios.filter(f => f.sincronizado).length;
-                        
-                        console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
-                        console.log(`✅ ${ultimoCountSincronizados} sincronizados, ${todosFormularios.length - ultimoCountSincronizados} pendentes`);
-                        
-                        // Calcular KPIs
-                        const totalFormularios = todosFormularios.length;
-                        const municipiosUnicos = new Set(todosFormularios.map(f => f.respostas?.municipio).filter(Boolean));
-                        const municipiosVisitados = municipiosUnicos.size;
-                        const coberturaPercentual = Math.round((municipiosVisitados / 52) * 100);
-                        
-                        // Formulários dos últimos 7 dias
-                        const seteDiasAtras = new Date();
-                        seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
-                        const ultimos7dias = todosFormularios.filter(f => {
-                            const dataForm = new Date(f.timestampFim || f.timestamp_fim);
-                            return dataForm >= seteDiasAtras;
-                        }).length;
-                        
-                        // Tempo médio
-                        const formsComDuracao = todosFormularios.filter(f => f.duracaoMinutos || f.duracao_minutos);
-                        const tempoMedio = formsComDuracao.length > 0
-                            ? Math.round(formsComDuracao.reduce((sum, f) => sum + (f.duracaoMinutos || f.duracao_minutos || 0), 0) / formsComDuracao.length)
-                            : 0;
-                        
-                        // Atualizar KPIs
-                        document.getElementById('stat-total').textContent = totalFormularios;
-                        document.getElementById('stat-municipios').textContent = municipiosVisitados;
-                        document.getElementById('stat-cobertura').textContent = coberturaPercentual + '%';
-                        document.getElementById('stat-7dias').textContent = ultimos7dias;
-                        document.getElementById('stat-tempo').textContent = tempoMedio;
-                        
-                        // Renderizar últimos 20 formulários
-                        const ultimosFormularios = todosFormularios
-                            .sort((a, b) => {
-                                const dataA = new Date(a.timestampFim || a.timestamp_fim || 0);
-                                const dataB = new Date(b.timestampFim || b.timestamp_fim || 0);
-                                return dataB - dataA;
-                            })
-                            .slice(0, 20);
-                        
-                        renderizarFormularios(ultimosFormularios);
-                        
-                        console.log('✅ Painel atualizado com sucesso!');
-                        resolve();
-                    };
-                    
-                    request.onerror = () => {
-                        console.error('❌ Erro ao buscar formulários do IndexedDB');
-                        document.getElementById('tableContent').innerHTML = `
-                            <p style="padding: 20px; text-align: center; color: #d32f2f;">
-                                ⚠️ Erro ao carregar dados do IndexedDB
-                            </p>
-                        `;
-                        reject(request.error);
-                    };
+                // Parse de campos JSON (quando vem do servidor)
+                todosFormularios.forEach(form => {
+                    if (form.respostas && typeof form.respostas === 'string') {
+                        try {
+                            form.respostas = JSON.parse(form.respostas);
+                        } catch (e) {
+                            console.warn('Erro ao fazer parse de respostas:', form.protocolo, e);
+                        }
+                    }
+                    if (form.fotos && typeof form.fotos === 'string') {
+                        try {
+                            form.fotos = JSON.parse(form.fotos);
+                        } catch (e) {
+                            console.warn('Erro ao fazer parse de fotos:', form.protocolo, e);
+                        }
+                    }
                 });
+                
+                formulariosGlobal = todosFormularios;
+                
+                // Atualizar contadores de controle
+                ultimoCountFormularios = todosFormularios.length;
+                ultimoCountSincronizados = todosFormularios.filter(f => f.sincronizado).length;
+                        
+                console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
+                console.log(`✅ ${ultimoCountSincronizados} sincronizados, ${todosFormularios.length - ultimoCountSincronizados} pendentes`);
+                
+                // Calcular KPIs
+                const totalFormularios = todosFormularios.length;
+                const municipiosUnicos = new Set(todosFormularios.map(f => f.respostas?.municipio).filter(Boolean));
+                const municipiosVisitados = municipiosUnicos.size;
+                const coberturaPercentual = Math.round((municipiosVisitados / 52) * 100);
+                
+                // Formulários dos últimos 7 dias
+                const seteDiasAtras = new Date();
+                seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+                const ultimos7dias = todosFormularios.filter(f => {
+                    const dataForm = new Date(f.timestampFim || f.timestamp_fim);
+                    return dataForm >= seteDiasAtras;
+                }).length;
+                
+                // Tempo médio
+                const formsComDuracao = todosFormularios.filter(f => f.duracaoMinutos || f.duracao_minutos);
+                const tempoMedio = formsComDuracao.length > 0
+                    ? Math.round(formsComDuracao.reduce((sum, f) => sum + (f.duracaoMinutos || f.duracao_minutos || 0), 0) / formsComDuracao.length)
+                    : 0;
+                
+                // Atualizar KPIs
+                document.getElementById('stat-total').textContent = totalFormularios;
+                document.getElementById('stat-municipios').textContent = municipiosVisitados;
+                document.getElementById('stat-cobertura').textContent = coberturaPercentual + '%';
+                document.getElementById('stat-7dias').textContent = ultimos7dias;
+                document.getElementById('stat-tempo').textContent = tempoMedio;
+                
+                // Renderizar últimos 20 formulários
+                const ultimosFormularios = todosFormularios
+                    .sort((a, b) => {
+                        const dataA = new Date(a.timestampFim || a.timestamp_fim || 0);
+                        const dataB = new Date(b.timestampFim || b.timestamp_fim || 0);
+                        return dataB - dataA;
+                    })
+                    .slice(0, 20);
+                
+                renderizarFormularios(ultimosFormularios);
+                
+                console.log('✅ Painel atualizado com sucesso!');
             } catch (error) {
                 console.error('❌ Erro ao carregar dados:', error);
                 document.getElementById('tableContent').innerHTML = `
@@ -988,73 +954,66 @@
             try {
                 console.log('🔄 Verificando formulários pendentes no IndexedDB...');
                 
-                // Usar initDB do db.js
-                const db = await initDB();
-                const transaction = db.transaction(['formularios'], 'readonly');
-                const store = transaction.objectStore('formularios');
-                const request = store.getAll();
+                // Usar função do db.js
+                const pendentes = await buscarNaoSincronizados();
                 
-                return new Promise((resolve, reject) => {
-                    request.onsuccess = () => {
-                        const todosForms = request.result;
-                        
-                        // Filtrar apenas os não sincronizados
-                        const pendentes = todosForms.filter(f => !f.sincronizado);
-                        
-                        if (pendentes.length > 0) {
-                            console.log(`⚠️ ${pendentes.length} formulário(s) pendente(s) de sincronização`);
-                            
-                            // Atualizar contador na estatística
-                            const statPendentes = document.createElement('div');
-                            statPendentes.className = 'stat-card';
-                            statPendentes.style.background = 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)';
-                            statPendentes.innerHTML = `
-                                <div class="stat-label" style="color: white;">⚠️ Pendentes</div>
-                                <div class="stat-value" style="color: white;">${pendentes.length}</div>
-                                <small style="color: rgba(255,255,255,0.9); font-size: 0.8em;">aguardando sincronização</small>
-                            `;
-                            document.getElementById('statsGrid').appendChild(statPendentes);
-                            
-                            // Adicionar seção de pendentes antes da tabela de formulários
-                            const container = document.getElementById('tableContent');
-                            const pendentesHtml = `
-                                <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                                    <h3 style="margin: 0 0 10px 0; color: #856404;">
-                                        ⚠️ Formulários Pendentes de Sincronização (${pendentes.length})
-                                    </h3>
-                                    <p style="margin: 0 0 15px 0; color: #856404; font-size: 14px;">
-                                        Estes formulários estão salvos localmente mas ainda não foram enviados ao servidor.
-                                    </p>
-                                    ${pendentes.map(form => `
-                                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #f39c12;">
-                                            <strong style="color: #856404;">${form.protocolo}</strong>
-                                            <span style="margin-left: 10px; color: #666; font-size: 13px;">
-                                                ${form.respostas?.municipio || 'N/A'} - 
-                                                ${form.timestampFim ? new Date(form.timestampFim).toLocaleDateString('pt-BR') : 'N/A'}
-                                            </span>
-                                            <span style="float: right; background: #f39c12; color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
-                                                PENDENTE
-                                            </span>
-                                        </div>
-                                    `).join('')}
-                                    <button id="btn-sync-manual" onclick="sincronizarManual()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 10px;">
-                                        🔄 Sincronizar Todos Agora
-                                    </button>
-                                </div>
-                            `;
-                            container.insertAdjacentHTML('afterbegin', pendentesHtml);
-                        } else {
-                            console.log('✅ Nenhum formulário pendente');
-                        }
-                        
-                        resolve(pendentes);
-                    };
+                if (pendentes.length > 0) {
+                    console.log(`⚠️ ${pendentes.length} formulário(s) pendente(s) de sincronização`);
                     
-                    request.onerror = () => {
-                        console.error('❌ Erro ao buscar formulários pendentes');
-                        reject(request.error);
-                    };
-                });
+                    // Exibir notificação de pendentes
+                    const container = document.getElementById('statsGrid');
+                    if (container && !document.getElementById('alert-pendentes')) {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.id = 'alert-pendentes';
+                        alertDiv.style.cssText = `
+                            grid-column: 1 / -1;
+                            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+                            color: white;
+                            padding: 20px;
+                            border-radius: 12px;
+                            display: flex;
+                            align-items: center;
+                            gap: 15px;
+                            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+                        `;
+                        
+                        alertDiv.innerHTML = `
+                            <div style="font-size: 2.5rem;">⚠️</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 5px;">
+                                    ${pendentes.length} Formulário(s) Pendente(s)
+                                </div>
+                                <div style="font-size: 0.95rem; opacity: 0.95;">
+                                    Clique no botão abaixo para sincronizar com o servidor
+                                </div>
+                            </div>
+                            <button id="btn-sync-manual" onclick="sincronizarManual()" style="
+                                background: white;
+                                color: #f57c00;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: 700;
+                                font-size: 1rem;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                                transition: transform 0.2s;
+                            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                🔄 Sincronizar Agora
+                            </button>
+                        `;
+                        
+                        container.insertBefore(alertDiv, container.firstChild);
+                    }
+                } else {
+                    console.log('✅ Todos os formulários estão sincronizados');
+                    
+                    // Remover alerta se existir
+                    const alert = document.getElementById('alert-pendentes');
+                    if (alert) {
+                        alert.remove();
+                    }
+                }
             } catch (error) {
                 console.error('❌ Erro ao verificar pendentes:', error);
             }
