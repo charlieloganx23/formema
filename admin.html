@@ -808,11 +808,64 @@
             window.location.href = url.toString();
         };
         
+        // Variável para controlar último count
+        let ultimoCountFormularios = 0;
+        let ultimoCountSincronizados = 0;
+        
         // Inicializar painel quando DOM estiver pronto
         document.addEventListener('DOMContentLoaded', async function() {
             await carregarDadosServidor();
             await carregarFormulariosPendentes();
+            
+            // Iniciar auto-refresh a cada 3 segundos
+            iniciarAutoRefresh();
         });
+        
+        // Sistema de auto-refresh para detectar mudanças
+        function iniciarAutoRefresh() {
+            console.log('🔄 Auto-refresh ativado (verifica a cada 3s)');
+            
+            setInterval(async () => {
+                try {
+                    // Verificar se houve mudanças no IndexedDB
+                    const db = await initDB();
+                    const transaction = db.transaction(['formularios'], 'readonly');
+                    const store = transaction.objectStore('formularios');
+                    
+                    const countRequest = store.count();
+                    
+                    countRequest.onsuccess = async () => {
+                        const totalAtual = countRequest.result;
+                        
+                        // Se o total mudou, recarregar
+                        if (totalAtual !== ultimoCountFormularios) {
+                            console.log(`📊 Detectada mudança: ${ultimoCountFormularios} → ${totalAtual} formulários`);
+                            ultimoCountFormularios = totalAtual;
+                            await carregarDadosServidor();
+                            await carregarFormulariosPendentes();
+                            showToast('info', 'Dados Atualizados', 'Painel administrativo atualizado automaticamente.', 3000);
+                        } else {
+                            // Verificar se houve mudança nos sincronizados
+                            const getAllRequest = store.getAll();
+                            getAllRequest.onsuccess = async () => {
+                                const formularios = getAllRequest.result;
+                                const sincronizados = formularios.filter(f => f.sincronizado).length;
+                                
+                                if (sincronizados !== ultimoCountSincronizados) {
+                                    console.log(`✅ Mudança em sincronizados: ${ultimoCountSincronizados} → ${sincronizados}`);
+                                    ultimoCountSincronizados = sincronizados;
+                                    await carregarDadosServidor();
+                                    await carregarFormulariosPendentes();
+                                    showToast('success', 'Sincronização Detectada', 'Formulários sincronizados atualizados!', 3000);
+                                }
+                            };
+                        }
+                    };
+                } catch (error) {
+                    console.error('⚠️ Erro no auto-refresh:', error);
+                }
+            }, 3000); // Verifica a cada 3 segundos
+        }
         
         // Carregar dados do IndexedDB local
         async function carregarDadosServidor() {
@@ -849,7 +902,12 @@
                         
                         formulariosGlobal = todosFormularios;
                         
+                        // Atualizar contadores de controle
+                        ultimoCountFormularios = todosFormularios.length;
+                        ultimoCountSincronizados = todosFormularios.filter(f => f.sincronizado).length;
+                        
                         console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
+                        console.log(`✅ ${ultimoCountSincronizados} sincronizados, ${todosFormularios.length - ultimoCountSincronizados} pendentes`);
                         
                         // Calcular KPIs
                         const totalFormularios = todosFormularios.length;
