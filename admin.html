@@ -792,25 +792,6 @@
             }
         }
         
-        // Calcular status de completude do formulário
-        function calcularCompletude(form) {
-            const camposObrigatorios = [
-                'municipio', 'nomeCompleto', 'escritorioLocal', 
-                'tempoEmater', 'resultadosRelevantes', 'desafiosEnfrentados'
-            ];
-            
-            let preenchidos = 0;
-            camposObrigatorios.forEach(campo => {
-                const valor = form.respostas?.[campo] || form[campo];
-                if (valor && valor !== '' && valor !== null && valor !== undefined) {
-                    preenchidos++;
-                }
-            });
-            
-            const percentual = Math.round((preenchidos / camposObrigatorios.length) * 100);
-            return { percentual, preenchidos, total: camposObrigatorios.length };
-        }
-        
         // Renderizar formulários na tabela
         function renderizarFormularios(formularios) {
             try {
@@ -852,21 +833,9 @@
                             minute: '2-digit'
                         }) : 'N/A';
                     
-                    // Calcular completude
-                    const completude = calcularCompletude(form);
-                    let statusPreenchimento = '';
-                    let badgeClass = '';
-                    
-                    if (completude.percentual === 100) {
-                        statusPreenchimento = 'Completo ✅';
-                        badgeClass = 'badge-success';
-                    } else if (completude.percentual >= 50) {
-                        statusPreenchimento = `Parcial (${completude.percentual}%)`;
-                        badgeClass = 'badge-warning';
-                    } else {
-                        statusPreenchimento = `Incompleto (${completude.percentual}%)`;
-                        badgeClass = 'badge-warning';
-                    }
+                    // Status baseado apenas na sincronização
+                    const statusCompleto = form.sincronizado ? 'Completo' : 'Pendente';
+                    const badgeClass = form.sincronizado ? 'badge-success' : 'badge-warning';
                     
                     row.innerHTML = `
                         <div>
@@ -881,8 +850,8 @@
                             </span>
                         </div>
                         <div>
-                            <span class="badge ${badgeClass}" title="${completude.preenchidos} de ${completude.total} campos obrigatórios">
-                                ${statusPreenchimento}
+                            <span class="badge ${badgeClass}">
+                                ${statusCompleto}
                             </span>
                         </div>
                         <div style="display: flex; gap: 8px;">
@@ -1146,41 +1115,6 @@
                     return html;
                 };
                 
-                // Calcular status de completude do formulário
-                const calcularCompletude = (form) => {
-                    // Campos obrigatórios para considerar o formulário completo
-                    const camposObrigatorios = [
-                        'municipio', 'nomeCompleto', 'escritorioLocal', 
-                        'tempoEmater', 'resultadosRelevantes', 'desafiosEnfrentados'
-                    ];
-                    
-                    let preenchidos = 0;
-                    camposObrigatorios.forEach(campo => {
-                        const valor = form.respostas?.[campo] || form[campo];
-                        if (valor && valor !== '' && valor !== null && valor !== undefined) {
-                            preenchidos++;
-                        }
-                    });
-                    
-                    const percentual = Math.round((preenchidos / camposObrigatorios.length) * 100);
-                    return { percentual, preenchidos, total: camposObrigatorios.length };
-                };
-                
-                const completude = calcularCompletude(form);
-                let statusCompletude = '';
-                let corStatus = '';
-                
-                if (completude.percentual === 100) {
-                    statusCompletude = 'Formulário Completo ✅';
-                    corStatus = '#4caf50'; // verde
-                } else if (completude.percentual >= 50) {
-                    statusCompletude = `Formulário Parcial ⚠️ (${completude.percentual}%)`;
-                    corStatus = '#ff9800'; // laranja
-                } else {
-                    statusCompletude = `Formulário Incompleto 📝 (${completude.percentual}%)`;
-                    corStatus = '#f44336'; // vermelho
-                }
-                
                 body.innerHTML = `
                     <h3>Protocolo: ${form.protocolo}</h3>
                     <p><strong>Município:</strong> ${municipio}</p>
@@ -1188,9 +1122,7 @@
                     ${unidade ? `<p><strong>Unidade EMATER:</strong> ${unidade}</p>` : ''}
                     <p><strong>Data/Hora:</strong> ${timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A'}</p>
                     <p><strong>Duração:</strong> ${duracaoMinutos} minutos</p>
-                    <p><strong>Status de Sincronização:</strong> ${form.sincronizado ? 'Sincronizado ✅' : 'Pendente ⏳'}</p>
-                    <p><strong>Status de Preenchimento:</strong> <span style="color: ${corStatus}; font-weight: bold;">${statusCompletude}</span></p>
-                    <p style="font-size: 0.9em; color: #666;"><em>Campos preenchidos: ${completude.preenchidos} de ${completude.total} obrigatórios</em></p>
+                    <p><strong>Status:</strong> ${form.sincronizado ? 'Completo ✅' : 'Pendente ⏳'}</p>
                     ${gpsInfo}
                     ${fotosGaleria}
                     <hr>
