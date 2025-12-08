@@ -1361,6 +1361,31 @@
             window.location.href = 'relatorios.html';
         }
         
+        // Sincronizar manualmente formulários pendentes
+        async function sincronizarManual() {
+            const btn = document.getElementById('btn-sync-manual');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Sincronizando...';
+            }
+            
+            try {
+                await sincronizarTodos();
+                if (btn) {
+                    btn.innerHTML = '✅ Sincronizado!';
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('❌ Erro na sincronização manual:', error);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '❌ Erro - Tentar Novamente';
+                }
+            }
+        }
+        
         // Fechar modal ao clicar fora
         window.onclick = function(event) {
             const modal = document.getElementById('modalDetalhes');

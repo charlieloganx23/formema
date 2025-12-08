@@ -1157,6 +1157,21 @@
         function voltarAdmin() {
             window.location.href = 'admin.html';
         }
+        
+        // Exportar gráfico como imagem
+        function exportarGrafico(chartId) {
+            const chart = Chart.getChart(chartId);
+            if (chart) {
+                const link = document.createElement('a');
+                link.download = `${chartId}-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = chart.toBase64Image();
+                link.click();
+                console.log(`✅ Gráfico ${chartId} exportado com sucesso`);
+            } else {
+                console.error(`❌ Gráfico ${chartId} não encontrado`);
+                alert('Erro ao exportar gráfico. Tente novamente.');
+            }
+        }
     </script>
 </body>
 </html>
