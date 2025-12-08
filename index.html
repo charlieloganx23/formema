@@ -2291,40 +2291,24 @@
                 );
 
                 try {
-                    // Etapa 1: Salvar localmente e sincronizar
-                    updateSyncModal('Salvando dados localmente...', 30);
-                    await new Promise(resolve => setTimeout(resolve, 300));
+                    // Salvar localmente
+                    updateSyncModal('Salvando dados localmente...', 50);
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    updateSyncModal('Enviando para o servidor...', 60);
                     const resultado = await salvarFormulario(data);
                     
                     if (resultado.success) {
-                        // Verificar se foi sincronizado
-                        if (resultado.sincronizado) {
-                            updateSyncModal('Sincronizado com sucesso! ✅', 100);
-                            await new Promise(resolve => setTimeout(resolve, 800));
-                            
-                            hideSyncModal();
-                            
-                            showToast(
-                                'success',
-                                'Formulário Sincronizado!',
-                                `Protocolo: ${resultado.protocolo}. Seus dados foram salvos e sincronizados com o servidor.`,
-                                6000
-                            );
-                        } else {
-                            updateSyncModal('Salvo localmente ⚠️', 100);
-                            await new Promise(resolve => setTimeout(resolve, 800));
-                            
-                            hideSyncModal();
-                            
-                            showToast(
-                                'warning',
-                                'Formulário Salvo Localmente',
-                                `Protocolo: ${resultado.protocolo}. Dados salvos localmente. Sincronização pendente - será tentada automaticamente.`,
-                                6000
-                            );
-                        }
+                        updateSyncModal('Dados salvos com sucesso! ✅', 100);
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                        
+                        hideSyncModal();
+                        
+                        showToast(
+                            'success',
+                            'Formulário Salvo!',
+                            `Protocolo: ${resultado.protocolo}. Seus dados foram salvos localmente com sucesso.`,
+                            5000
+                        );
                         
                         // Resetar formulário
                         form.reset();
@@ -2335,13 +2319,13 @@
                         debugSection.classList.add("hidden");
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         
-                        // Perguntar sobre ir para admin
+                        // Informar sobre sincronização manual
                         setTimeout(() => {
                             showToast(
                                 'info',
-                                'Painel Administrativo',
-                                'Deseja visualizar seus formulários no Painel Administrativo?',
-                                8000
+                                'Sincronização',
+                                'Acesse o Painel Administrativo para sincronizar seus formulários com o servidor.',
+                                6000
                             );
                         }, 2000);
                     }

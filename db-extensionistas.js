@@ -79,72 +79,17 @@ async function salvarFormulario(dados) {
 
         const request = objectStore.add(formulario);
 
-        request.onsuccess = async () => {
+        request.onsuccess = () => {
             console.log('✅ Formulário salvo no IndexedDB:', protocolo);
-            console.log('🔍 [DEBUG] Iniciando verificação de sincronização...');
-            console.log('🔍 [DEBUG] navigator.onLine:', navigator.onLine);
-            console.log('🔍 [DEBUG] CONFIG existe?', typeof CONFIG !== 'undefined');
+            console.log('💾 Salvo LOCALMENTE - Use o painel admin para sincronizar');
             
-            // Tentar sincronizar imediatamente com o servidor
-            try {
-                if (navigator.onLine) {
-                    console.log('🌐 [SAVE] Online detectado, iniciando sincronização automática...');
-                    
-                    // Verificar CONFIG
-                    if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-                        console.error('❌ [SAVE] CONFIG não encontrado! Sincronização cancelada.');
-                        resolve({ 
-                            success: true, 
-                            protocolo: protocolo, 
-                            id: request.result,
-                            sincronizado: false 
-                        });
-                        return;
-                    }
-                    
-                    console.log('🔍 [DEBUG] Chamando sincronizarFormularioComAzure...');
-                    const resultadoSync = await sincronizarFormularioComAzure(formulario);
-                    
-                    console.log('📊 [SAVE] Resultado da sincronização:', resultadoSync);
-                    
-                    if (resultadoSync.success) {
-                        console.log('✅ [SAVE] Formulário sincronizado automaticamente!');
-                        resolve({ 
-                            success: true, 
-                            protocolo: protocolo, 
-                            id: request.result,
-                            sincronizado: true 
-                        });
-                    } else {
-                        console.warn('⚠️ [SAVE] Sincronização falhou:', resultadoSync.error);
-                        console.log('💾 [SAVE] Salvo localmente, sincronização pendente');
-                        resolve({ 
-                            success: true, 
-                            protocolo: protocolo, 
-                            id: request.result,
-                            sincronizado: false 
-                        });
-                    }
-                } else {
-                    console.log('📴 [SAVE] Offline - formulário será sincronizado quando houver conexão');
-                    resolve({ 
-                        success: true, 
-                        protocolo: protocolo, 
-                        id: request.result,
-                        sincronizado: false 
-                    });
-                }
-            } catch (error) {
-                console.error('❌ [SAVE] Erro na sincronização automática:', error);
-                console.error('❌ [SAVE] Stack:', error.stack);
-                // Mesmo com erro na sync, o salvamento local foi bem-sucedido
-                resolve({ 
-                    success: true, 
-                    protocolo: protocolo, 
-                    id: request.result,
-                    sincronizado: false 
-                });
-            }
+            // Retornar sucesso - sincronização será manual
+            resolve({ 
+                success: true, 
+                protocolo: protocolo, 
+                id: request.result,
+                sincronizado: false 
+            });
         };
 
         request.onerror = () => {
