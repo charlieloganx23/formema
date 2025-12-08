@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Cobertura - Extensionistas EMATER-RO</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            overflow: hidden;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: white;
+            overflow-y: auto;
+            border-right: 2px solid #e0e0e0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar section {
+            padding: 20px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .sidebar h3 {
+            color: #2d3748;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Estatísticas */
+        .stats {
+            background: linear-gradient(135deg, #f7f9fc 0%, #eef2f7 100%);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            color: #4a5568;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .stat-value.green { color: #27ae60; }
+        .stat-value.orange { color: #f39c12; }
+        .stat-value.red { color: #e74c3c; }
+
+        /* Filtros */
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Busca */
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Lista de Municípios */
+        .municipio-item {
+            padding: 12px 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .municipio-item:hover {
+            background: #f7f9fc;
+            border-left-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .municipio-nome {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .municipio-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .municipio-count.visited {
+            background: #27ae60;
+        }
+
+        /* Mapa */
+        #map {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Botão Reset */
+        .reset-zoom-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .reset-zoom-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .reset-zoom-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Ações Rápidas */
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: #e8eaf6;
+            color: #667eea;
+        }
+
+        .action-btn.secondary:hover {
+            background: #d1d5f7;
+        }
+
+        /* Marcadores Customizados */
+        .custom-marker {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .custom-marker:hover {
+            transform: scale(1.3);
+            z-index: 1000 !important;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .marker-highlight {
+            animation: pulse 1.5s infinite;
+            border-color: #f39c12;
+            border-width: 4px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        /* Popups Customizados */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: 280px !important;
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            margin: -10px -10px 15px -10px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .popup-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        .popup-body {
+            padding: 0 10px 10px 10px;
+        }
+
+        .popup-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .popup-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .popup-label {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .popup-value {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .popup-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .popup-badge.visited {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .popup-badge.pending {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        /* Legenda */
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.9rem;
+        }
+
+        .legend h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 0;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #555;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Estilo para tooltips dos municípios */
+        .municipio-tooltip {
+            background: rgba(0, 0, 0, 0.8) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 4px !important;
+            padding: 8px 12px !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        }
+
+        .municipio-tooltip::before {
+            border-top-color: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: -320px;
+                width: 300px;
+                height: 100%;
+                z-index: 2000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .reset-zoom-btn {
+                top: 10px;
+                right: 10px;
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🗺️ Mapa de Cobertura - Extensionistas EMATER-RO</h1>
+            <p>Visualização geográfica da atuação dos extensionistas em Rondônia</p>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="content">
+            
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                
+                <!-- Estatísticas -->
+                <section class="stats">
+                    <h3>📊 Estatísticas Gerais</h3>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">Total de Formulários:</span>
+                        <span class="stat-value green" id="stat-total">0</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">Municípios Visitados:</span>
+                        <span class="stat-value" id="stat-municipios-visitados">0</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">Total de Municípios RO:</span>
+                        <span class="stat-value" id="stat-total-municipios">52</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">Cobertura:</span>
+                        <span class="stat-value orange" id="stat-cobertura">0%</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-label">Extensionistas Ativos:</span>
+                        <span class="stat-value" id="stat-extensionistas">0</span>
+                    </div>
+                </section>
+
+                <!-- Filtros -->
+                <section>
+                    <h3>🔍 Filtros</h3>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-periodo="todos">
+                            Todos
+                        </button>
+                        <button class="filter-btn" data-periodo="30">
+                            Últimos 30 dias
+                        </button>
+                        <button class="filter-btn" data-periodo="7">
+                            Últimos 7 dias
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Busca -->
+                <section>
+                    <h3>🔎 Buscar Município</h3>
+                    <input type="text" 
+                           id="searchInput" 
+                           class="search-input"
+                           placeholder="Digite o nome do município...">
+                </section>
+
+                <!-- Lista de Municípios -->
+                <section>
+                    <h3>📍 Municípios com Respostas</h3>
+                    <div id="municipiosList">
+                        <p style="color: #718096; font-style: italic;">Carregando dados...</p>
+                    </div>
+                </section>
+
+                <!-- Ações Rápidas -->
+                <section>
+                    <h3>⚡ Ações Rápidas</h3>
+                    <div class="quick-actions">
+                        <button class="action-btn primary" onclick="voltarAdmin()">
+                            ← Voltar ao Painel
+                        </button>
+                        <button class="action-btn secondary" onclick="verRelatorios()">
+                            📈 Ver Relatórios
+                        </button>
+                        <button class="action-btn secondary" onclick="atualizarDados()">
+                            🔄 Atualizar Dados
+                        </button>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Mapa -->
+            <div id="map">
+                <button class="reset-zoom-btn" onclick="resetZoom()">
+                    <span class="reset-zoom-icon">🔄</span>
+                    <span>Resetar Zoom</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- IndexedDB -->
+    <script src="db-extensionistas.js"></script>
+
+    <script>
+        // ==========================================
+        // VARIÁVEIS GLOBAIS
+        // ==========================================
+        
+        let map;
+        let markers = [];
+        let layerMunicipios;
+        let geoJsonLayer; // Camada de polígonos dos municípios
+        let formulariosPorMunicipio = {};
+        let todosFormularios = [];
+        let municipiosRondonia = [];
+        
+        const defaultView = {
+            center: [-10.9, -62.8],  // Centro de Rondônia
+            zoom: 7
+        };
+
+        // Coordenadas dos municípios de Rondônia
+        const coordenadasMunicipios = {
+            'Porto Velho': [-8.7619, -63.9039],
+            'Ji-Paraná': [-10.8777, -61.9509],
+            'Ariquemes': [-9.9144, -63.0408],
+            'Cacoal': [-11.4386, -61.4472],
+            'Vilhena': [-12.7404, -60.1458],
+            'Jaru': [-10.4389, -62.4664],
+            'Rolim de Moura': [-11.7273, -61.7784],
+            'Guajará-Mirim': [-10.7833, -65.3333],
+            'Pimenta Bueno': [-11.6719, -61.1933],
+            'Ouro Preto do Oeste': [-10.7489, -62.2158],
+            'Machadinho d\'Oeste': [-9.4644, -61.9897],
+            'Espigão d\'Oeste': [-11.5258, -61.0042],
+            'Buritis': [-10.2042, -63.8289],
+            'Colorado do Oeste': [-13.1169, -60.5450],
+            'Costa Marques': [-12.4397, -64.2392],
+            'Alta Floresta d\'Oeste': [-11.9319, -61.9981],
+            'Cerejeiras': [-13.1881, -60.8156],
+            'Nova Brasilândia d\'Oeste': [-11.7167, -62.3333],
+            'Presidente Médici': [-11.1683, -61.9011],
+            'São Miguel do Guaporé': [-11.7022, -62.7111],
+            'Nova Mamoré': [-10.4083, -65.3333],
+            'Alvorada d\'Oeste': [-11.3167, -62.2833],
+            'Candeias do Jamari': [-8.7881, -63.7019],
+            'Itapuã do Oeste': [-9.1833, -63.2333],
+            'São Francisco do Guaporé': [-12.0667, -63.5667],
+            'Cujubim': [-9.3667, -62.5833],
+            'Governador Jorge Teixeira': [-10.5167, -62.3333],
+            'Mirante da Serra': [-11.0167, -62.6667],
+            'Monte Negro': [-10.2500, -63.3000],
+            'Nova União': [-10.9000, -62.5500],
+            'Teixeirópolis': [-10.9000, -62.2667],
+            'Theobroma': [-10.2500, -62.3667],
+            'Urupá': [-11.1167, -62.3500],
+            'Vale do Anari': [-9.8500, -62.0000],
+            'Vale do Paraíso': [-11.5500, -62.1167],
+            'Parecis': [-12.4167, -61.5833],
+            'Pimenteiras do Oeste': [-13.4667, -61.0167],
+            'Primavera de Rondônia': [-11.8167, -61.3167],
+            'São Felipe d\'Oeste': [-11.5667, -61.5167],
+            'Castanheiras': [-11.4167, -61.9500],
+            'Novo Horizonte do Oeste': [-11.6833, -61.9833],
+            'Seringueiras': [-11.8167, -63.0167],
+            'Campo Novo de Rondônia': [-10.5667, -63.6167],
+            'Cacaulândia': [-10.3333, -62.9000],
+            'Alto Alegre dos Parecis': [-12.1333, -61.8500],
+            'Alto Paraíso': [-9.7500, -63.3167],
+            'Chupinguaia': [-12.5667, -60.9000],
+            'Corumbiara': [-13.0167, -60.9167],
+            'Ministro Andreazza': [-11.1667, -61.4833],
+            'Santa Luzia d\'Oeste': [-11.9000, -61.7667],
+            'Rio Crespo': [-9.7000, -62.8667],
+            'Cabixi': [-13.5000, -60.5500]
+        };
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('loadingOverlay').classList.add('active');
+            
+            try {
+                // Inicializar IndexedDB
+                await initDB();
+                
+                // Inicializar mapa
+                inicializarMapa();
+                
+                // Carregar dados
+                await carregarDados();
+                
+                // Adicionar marcadores
+                adicionarMarcadores();
+                
+                // Configurar event listeners
+                configurarEventListeners();
+                
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                alert('Erro ao carregar o mapa. Verifique o console.');
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('active');
+            }
+        });
+
+        // ==========================================
+        // FUNÇÕES DO MAPA
+        // ==========================================
+
+        function inicializarMapa() {
+            // Criar mapa
+            map = L.map('map', {
+                center: defaultView.center,
+                zoom: defaultView.zoom,
+                minZoom: 6,
+                maxZoom: 15
+            });
+
+            // Adicionar tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Carregar e adicionar polígonos dos municípios
+            carregarPoligonosMunicipios();
+
+            // Adicionar legenda
+            adicionarLegenda();
+        }
+
+        async function carregarPoligonosMunicipios() {
+            try {
+                // Carregar o arquivo GeoJSON
+                const response = await fetch('geojs-11-mun.json');
+                const geoJsonData = await response.json();
+
+                // Criar camada GeoJSON com estilo
+                geoJsonLayer = L.geoJSON(geoJsonData, {
+                    style: function(feature) {
+                        return {
+                            fillColor: '#e0e0e0',
+                            weight: 2,
+                            opacity: 1,
+                            color: '#999',
+                            fillOpacity: 0.3
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        // Tooltip com nome do município
+                        if (feature.properties && feature.properties.name) {
+                            layer.bindTooltip(feature.properties.name, {
+                                permanent: false,
+                                direction: 'center',
+                                className: 'municipio-tooltip'
+                            });
+                        }
+
+                        // Eventos de hover
+                        layer.on({
+                            mouseover: function(e) {
+                                const layer = e.target;
+                                layer.setStyle({
+                                    weight: 3,
+                                    color: '#667eea',
+                                    fillOpacity: 0.5
+                                });
+                            },
+                            mouseout: function(e) {
+                                geoJsonLayer.resetStyle(e.target);
+                                // Reaplica cor especial se município tem formulários
+                                const municipioNome = e.target.feature.properties.name;
+                                if (formulariosPorMunicipio[municipioNome]) {
+                                    e.target.setStyle(getPolygonStyle(municipioNome));
+                                }
+                            },
+                            click: function(e) {
+                                const municipioNome = e.target.feature.properties.name;
+                                if (formulariosPorMunicipio[municipioNome]) {
+                                    focalizarMunicipio(municipioNome);
+                                }
+                            }
+                        });
+                    }
+                }).addTo(map);
+
+                console.log('Polígonos dos municípios carregados com sucesso!');
+            } catch (error) {
+                console.error('Erro ao carregar polígonos:', error);
+            }
+        }
+
+        // Função para obter estilo do polígono baseado em dados
+        function getPolygonStyle(municipio) {
+            const count = formulariosPorMunicipio[municipio]?.length || 0;
+            
+            if (count === 0) {
+                return {
+                    fillColor: '#e0e0e0',
+                    weight: 2,
+                    opacity: 1,
+                    color: '#999',
+                    fillOpacity: 0.3
+                };
+            } else if (count <= 2) {
+                return {
+                    fillColor: '#667eea',
+                    weight: 2,
+                    opacity: 1,
+                    color: '#4c51bf',
+                    fillOpacity: 0.5
+                };
+            } else if (count <= 5) {
+                return {
+                    fillColor: '#f39c12',
+                    weight: 2,
+                    opacity: 1,
+                    color: '#d68910',
+                    fillOpacity: 0.5
+                };
+            } else {
+                return {
+                    fillColor: '#27ae60',
+                    weight: 2,
+                    opacity: 1,
+                    color: '#1e8449',
+                    fillOpacity: 0.5
+                };
+            }
+        }
+
+        // Função para atualizar cores dos polígonos após carregar dados
+        function atualizarCoresPoligonos() {
+            if (!geoJsonLayer) return;
+
+            geoJsonLayer.eachLayer(function(layer) {
+                const municipioNome = layer.feature.properties.name;
+                const estilo = getPolygonStyle(municipioNome);
+                layer.setStyle(estilo);
+            });
+        }
+
+        async function carregarDados() {
+            try {
+                // Buscar todos os formulários do IndexedDB
+                todosFormularios = await buscarTodosFormularios();
+                
+                // Agrupar por município
+                formulariosPorMunicipio = {};
+                todosFormularios.forEach(form => {
+                    if (form.municipio) {
+                        if (!formulariosPorMunicipio[form.municipio]) {
+                            formulariosPorMunicipio[form.municipio] = [];
+                        }
+                        formulariosPorMunicipio[form.municipio].push(form);
+                    }
+                });
+
+                // Obter lista de municípios únicos
+                municipiosRondonia = Object.keys(coordenadasMunicipios).sort();
+                
+                // Atualizar cores dos polígonos com base nos dados
+                atualizarCoresPoligonos();
+                
+                // Atualizar estatísticas
+                atualizarEstatisticas();
+                
+                // Renderizar lista de municípios
+                renderizarListaMunicipios();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+            }
+        }
+
+        function adicionarMarcadores() {
+            // Limpar marcadores existentes
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            // Adicionar marcador para cada município com formulários
+            Object.entries(formulariosPorMunicipio).forEach(([municipio, formularios]) => {
+                const coords = coordenadasMunicipios[municipio];
+                
+                if (coords) {
+                    const count = formularios.length;
+                    
+                    // Criar ícone customizado
+                    const icon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="
+                            background: white;
+                            border: 3px solid ${count > 5 ? '#27ae60' : count > 2 ? '#f39c12' : '#667eea'};
+                            border-radius: 50%;
+                            width: ${30 + Math.min(count * 2, 30)}px;
+                            height: ${30 + Math.min(count * 2, 30)}px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: ${14 + Math.min(count, 8)}px;
+                            font-weight: bold;
+                            color: ${count > 5 ? '#27ae60' : count > 2 ? '#f39c12' : '#667eea'};
+                            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+                        ">${count}</div>`,
+                        iconSize: [30 + Math.min(count * 2, 30), 30 + Math.min(count * 2, 30)],
+                        iconAnchor: [(30 + Math.min(count * 2, 30)) / 2, (30 + Math.min(count * 2, 30)) / 2]
+                    });
+
+                    // Criar marcador
+                    const marker = L.marker(coords, { icon: icon }).addTo(map);
+
+                    // Popup
+                    const popupContent = criarPopupMunicipio(municipio, formularios);
+                    marker.bindPopup(popupContent);
+
+                    // Eventos
+                    marker.on('click', () => {
+                        destacarMarcador(marker);
+                    });
+
+                    markers.push(marker);
+                }
+            });
+        }
+
+        function criarPopupMunicipio(municipio, formularios) {
+            const count = formularios.length;
+            
+            // Calcular estatísticas básicas
+            const temposAtuacao = {};
+            const formacoes = {};
+            
+            formularios.forEach(f => {
+                if (f.q1) temposAtuacao[f.q1] = (temposAtuacao[f.q1] || 0) + 1;
+                if (f.q2) formacoes[f.q2] = (formacoes[f.q2] || 0) + 1;
+            });
+
+            return `
+                <div class="popup-header">
+                    <div class="popup-title">📍 ${municipio}</div>
+                    <div class="popup-subtitle">${count} formulário(s) coletado(s)</div>
+                </div>
+                <div class="popup-body">
+                    <div class="popup-info-row">
+                        <span class="popup-label">Total de Respostas:</span>
+                        <span class="popup-value">${count}</span>
+                    </div>
+                    <div class="popup-info-row">
+                        <span class="popup-label">Status:</span>
+                        <span class="popup-badge visited">✓ Visitado</span>
+                    </div>
+                    ${Object.keys(temposAtuacao).length > 0 ? `
+                    <div class="popup-info-row">
+                        <span class="popup-label">Tempo Atuação Predominante:</span>
+                        <span class="popup-value">${Object.entries(temposAtuacao).sort((a, b) => b[1] - a[1])[0][0]}</span>
+                    </div>
+                    ` : ''}
+                    ${Object.keys(formacoes).length > 0 ? `
+                    <div class="popup-info-row">
+                        <span class="popup-label">Formação Predominante:</span>
+                        <span class="popup-value">${Object.entries(formacoes).sort((a, b) => b[1] - a[1])[0][0]}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function adicionarLegenda() {
+            const legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function(map) {
+                const div = L.DomUtil.create('div', 'legend');
+                
+                div.innerHTML = `
+                    <h4>📊 Legenda</h4>
+                    <div style="margin-bottom: 12px;">
+                        <strong style="font-size: 0.9rem; color: #4a5568;">Marcadores:</strong>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #667eea; border-color: #667eea;"></div>
+                        <span>1-2 formulários</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12; border-color: #f39c12;"></div>
+                        <span>3-5 formulários</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #27ae60; border-color: #27ae60;"></div>
+                        <span>6+ formulários</span>
+                    </div>
+                    <div style="margin: 12px 0; padding-top: 12px; border-top: 1px solid #e8e8e8;">
+                        <strong style="font-size: 0.9rem; color: #4a5568;">Polígonos:</strong>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(224, 224, 224, 0.3); border-color: #999;"></div>
+                        <span>Sem formulários</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(102, 126, 234, 0.5); border-color: #4c51bf;"></div>
+                        <span>Com formulários</span>
+                    </div>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e8e8e8;">
+                        <span style="font-size: 0.85rem; color: #718096;">Passe o mouse sobre os municípios para ver detalhes</span>
+                    </div>
+                `;
+                
+                return div;
+            };
+
+            legend.addTo(map);
+        }
+
+        function resetZoom() {
+            map.setView(defaultView.center, defaultView.zoom, {
+                animate: true,
+                duration: 0.5
+            });
+
+            // Remover destaques
+            markers.forEach(marker => {
+                const element = marker.getElement();
+                if (element) {
+                    element.classList.remove('marker-highlight');
+                }
+            });
+        }
+
+        function destacarMarcador(marker) {
+            // Remover destaque de outros
+            markers.forEach(m => {
+                const el = m.getElement();
+                if (el) el.classList.remove('marker-highlight');
+            });
+
+            // Adicionar destaque
+            const element = marker.getElement();
+            if (element) {
+                element.classList.add('marker-highlight');
+            }
+        }
+
+        function focalizarMunicipio(municipio) {
+            const coords = coordenadasMunicipios[municipio];
+            if (coords) {
+                map.setView(coords, 11, {
+                    animate: true,
+                    duration: 0.8
+                });
+
+                // Encontrar e destacar marcador
+                const marker = markers.find(m => {
+                    const popup = m.getPopup();
+                    return popup && popup.getContent().includes(municipio);
+                });
+
+                if (marker) {
+                    setTimeout(() => {
+                        marker.openPopup();
+                        destacarMarcador(marker);
+                    }, 500);
+                }
+            }
+        }
+
+        // ==========================================
+        // FUNÇÕES DE ESTATÍSTICAS
+        // ==========================================
+
+        function atualizarEstatisticas() {
+            const totalFormularios = todosFormularios.length;
+            const municipiosVisitados = Object.keys(formulariosPorMunicipio).length;
+            const totalMunicipiosRO = 52;
+            const cobertura = ((municipiosVisitados / totalMunicipiosRO) * 100).toFixed(1);
+            
+            // Contar extensionistas únicos (assumindo que cada formulário é de um extensionista diferente ou usar campo específico)
+            const extensionistasAtivos = new Set(todosFormularios.map(f => f.protocolo)).size;
+
+            document.getElementById('stat-total').textContent = totalFormularios;
+            document.getElementById('stat-municipios-visitados').textContent = municipiosVisitados;
+            document.getElementById('stat-total-municipios').textContent = totalMunicipiosRO;
+            document.getElementById('stat-cobertura').textContent = `${cobertura}%`;
+            document.getElementById('stat-extensionistas').textContent = extensionistasAtivos;
+        }
+
+        function renderizarListaMunicipios() {
+            const container = document.getElementById('municipiosList');
+            
+            if (Object.keys(formulariosPorMunicipio).length === 0) {
+                container.innerHTML = '<p style="color: #718096; font-style: italic;">Nenhum formulário coletado ainda.</p>';
+                return;
+            }
+
+            const municipiosOrdenados = Object.entries(formulariosPorMunicipio)
+                .sort((a, b) => b[1].length - a[1].length);
+
+            container.innerHTML = municipiosOrdenados.map(([municipio, formularios]) => `
+                <div class="municipio-item" onclick="focalizarMunicipio('${municipio}')">
+                    <span class="municipio-nome">${municipio}</span>
+                    <span class="municipio-count visited">${formularios.length}</span>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
+
+        function configurarEventListeners() {
+            // Busca
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const termo = e.target.value.toLowerCase();
+                
+                const items = document.querySelectorAll('.municipio-item');
+                items.forEach(item => {
+                    const nome = item.querySelector('.municipio-nome').textContent.toLowerCase();
+                    item.style.display = nome.includes(termo) ? 'flex' : 'none';
+                });
+            });
+
+            // Filtros de período
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const periodo = btn.dataset.periodo;
+                    filtrarPorPeriodo(periodo);
+                });
+            });
+        }
+
+        function filtrarPorPeriodo(periodo) {
+            if (periodo === 'todos') {
+                // Mostrar todos
+                formulariosPorMunicipio = {};
+                todosFormularios.forEach(form => {
+                    if (form.municipio) {
+                        if (!formulariosPorMunicipio[form.municipio]) {
+                            formulariosPorMunicipio[form.municipio] = [];
+                        }
+                        formulariosPorMunicipio[form.municipio].push(form);
+                    }
+                });
+            } else {
+                // Filtrar por dias
+                const diasAtras = parseInt(periodo);
+                const dataLimite = new Date();
+                dataLimite.setDate(dataLimite.getDate() - diasAtras);
+
+                formulariosPorMunicipio = {};
+                todosFormularios.forEach(form => {
+                    const dataForm = new Date(form.timestamp_fim);
+                    if (dataForm >= dataLimite && form.municipio) {
+                        if (!formulariosPorMunicipio[form.municipio]) {
+                            formulariosPorMunicipio[form.municipio] = [];
+                        }
+                        formulariosPorMunicipio[form.municipio].push(form);
+                    }
+                });
+            }
+
+            // Atualizar mapa e estatísticas
+            adicionarMarcadores();
+            atualizarEstatisticas();
+            renderizarListaMunicipios();
+        }
+
+        // ==========================================
+        // FUNÇÕES DE NAVEGAÇÃO
+        // ==========================================
+
+        function voltarAdmin() {
+            window.location.href = 'admin-extensionistas.html';
+        }
+
+        function verRelatorios() {
+            window.location.href = 'relatorios-extensionistas.html';
+        }
+
+        async function atualizarDados() {
+            document.getElementById('loadingOverlay').classList.add('active');
+            try {
+                await carregarDados();
+                adicionarMarcadores();
+                alert('✅ Dados atualizados com sucesso!');
+            } catch (error) {
+                console.error('Erro ao atualizar:', error);
+                alert('❌ Erro ao atualizar dados.');
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

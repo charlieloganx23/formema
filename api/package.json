@@ -1,0 +1,15 @@
+{
+  "name": "formema-api",
+  "version": "1.0.0",
+  "description": "API para salvar respostas do formulário Emater-RO",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mssql": "^10.0.1"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4.0.5455"
+  }
+}

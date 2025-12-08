@@ -1,0 +1,1098 @@
+================================================================================
+   GUIA: TERRITÓRIOS EMATER-RO
+   52 Municípios e 83 Unidades com Dropdown Dinâmico
+================================================================================
+
+📋 ÍNDICE:
+1. Visão Geral dos Territórios
+2. Estrutura de Dados (52 Municípios + 83 Unidades)
+3. Tipos de Unidades EMATER
+4. Implementação HTML (Dropdown Município → Unidades)
+5. JavaScript (Lógica de Filtragem)
+6. CSS (Estilos para Dropdowns)
+7. API Backend (PHP)
+8. Estratégia Offline (83 Unidades Embarcadas)
+9. Dados Completos para Cópia
+10. Exemplo Prático Completo
+
+================================================================================
+1. VISÃO GERAL DOS TERRITÓRIOS EMATER-RO
+================================================================================
+
+ORGANIZAÇÃO TERRITORIAL:
+- Estado: Rondônia
+- Total de Municípios: 52
+- Total de Unidades EMATER: 83
+
+HIERARQUIA:
+1. Centro Gerencial (1 unidade)
+   └─ Coordena toda a rede estadual
+   
+2. ESREG - Escritórios Regionais (7 unidades)
+   ├─ Porto Velho
+   ├─ Ariquemes
+   ├─ Ji-Paraná
+   ├─ São Francisco do Guaporé
+   ├─ Rolim de Moura
+   ├─ Pimenta Bueno
+   └─ Colorado do Oeste
+   
+3. ESLOC - Escritórios Locais (73 unidades)
+   └─ Distribuídos pelos 52 municípios
+   
+4. Centros de Treinamento (2 unidades)
+   ├─ Centrer (Ouro Preto do Oeste)
+   └─ Subunidade 5º BEC (Machadinho D'Oeste)
+
+DISTRIBUIÇÃO POR MUNICÍPIO:
+- Municípios com 1 unidade: 38 municípios
+- Municípios com 2 unidades: 10 municípios
+- Municípios com 3+ unidades: 4 municípios
+  * Porto Velho: 10 unidades (maior concentração)
+  * Ji-Paraná: 4 unidades
+  * Ouro Preto do Oeste: 2 unidades
+  * Outros com 2: Ariquemes, Nova Mamoré, Candeias do Jamari, etc.
+
+================================================================================
+2. ESTRUTURA DE DADOS (52 MUNICÍPIOS + 83 UNIDADES)
+================================================================================
+
+FORMATO JSON/ARRAY:
+Cada unidade possui 3 atributos:
+- nome: Nome da unidade EMATER
+- municipio: Município onde está localizada
+- tipo: Categoria (Centro Gerencial, ESREG, ESLOC, Centro de Treinamento)
+
+EXEMPLO:
+{
+    "nome": "Esreg de Porto Velho",
+    "municipio": "Porto Velho",
+    "tipo": "ESREG"
+}
+
+RELAÇÃO MUNICÍPIO → UNIDADES:
+Um município pode ter várias unidades.
+Exemplo Porto Velho (10 unidades):
+1. Centro Gerencial (único no estado)
+2. Esreg de Porto Velho (regional)
+3. Porto Velho (local)
+4. Porto Verde
+5. Jaci-Paraná
+6. Vista Alegre do Abunã
+7. Rio Pardo
+8. União Bandeirantes
+9. Extrema
+10. Nova Califórnia
+11. Calama
+
+================================================================================
+3. TIPOS DE UNIDADES EMATER
+================================================================================
+
+TIPO 1: CENTRO GERENCIAL
+-------------------------
+Quantidade: 1 (único)
+Localização: Porto Velho
+Função: Coordenação estadual
+
+Exemplo:
+{
+    "nome": "Centro Gerencial",
+    "municipio": "Porto Velho",
+    "tipo": "Centro Gerencial"
+}
+
+TIPO 2: ESREG (Escritório Regional)
+------------------------------------
+Quantidade: 7
+Função: Coordenação regional, supervisão de ESLOCs
+
+Lista Completa:
+1. Esreg de Porto Velho (Porto Velho)
+2. Esreg de Ariquemes (Ariquemes)
+3. Esreg de Ji-Paraná (Ji-Paraná)
+4. Esreg de São Francisco do Guaporé (São Francisco do Guaporé)
+5. Esreg de Rolim de Moura (Rolim de Moura)
+6. Esreg de Pimenta Bueno (Pimenta Bueno)
+7. Esreg de Colorado do Oeste (Colorado do Oeste)
+
+TIPO 3: ESLOC (Escritório Local)
+---------------------------------
+Quantidade: 73
+Função: Atendimento direto aos produtores rurais
+Distribuição: 52 municípios
+
+Características:
+- Presente em praticamente todos os municípios
+- Atendimento técnico local
+- Visitas às propriedades rurais
+- Capacitações e eventos
+
+TIPO 4: CENTRO DE TREINAMENTO
+------------------------------
+Quantidade: 2
+Função: Capacitação técnica especializada
+
+Lista:
+1. Centrer (Ouro Preto do Oeste)
+2. Subunidade 5º BEC (Machadinho D'Oeste)
+
+================================================================================
+4. IMPLEMENTAÇÃO HTML (DROPDOWN MUNICÍPIO → UNIDADES)
+================================================================================
+
+4.1 HTML COMPLETO
+-----------------
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Território EMATER</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>EMATER-RO</h1>
+            <h2>Seleção de Território</h2>
+        </header>
+
+        <form class="territory-form">
+            <!-- DROPDOWN 1: MUNICÍPIO -->
+            <div class="form-group">
+                <label for="select-municipio" class="form-label">
+                    Município
+                    <span class="required">*</span>
+                </label>
+                <select id="select-municipio" 
+                        name="municipio" 
+                        class="form-select" 
+                        required>
+                    <option value="">Selecione o município</option>
+                    <option value="Alta Floresta D'Oeste">Alta Floresta d'Oeste</option>
+                    <option value="Alto Alegre dos Parecis">Alto Alegre dos Parecis</option>
+                    <option value="Alto Paraíso">Alto Paraíso</option>
+                    <option value="Alvorada D'Oeste">Alvorada d'Oeste</option>
+                    <option value="Ariquemes">Ariquemes</option>
+                    <option value="Buritis">Buritis</option>
+                    <option value="Cabixi">Cabixi</option>
+                    <option value="Cacaulândia">Cacaulândia</option>
+                    <option value="Cacoal">Cacoal</option>
+                    <option value="Campo Novo de Rondônia">Campo Novo de Rondônia</option>
+                    <option value="Candeias do Jamari">Candeias do Jamari</option>
+                    <option value="Castanheiras">Castanheiras</option>
+                    <option value="Cerejeiras">Cerejeiras</option>
+                    <option value="Chupinguaia">Chupinguaia</option>
+                    <option value="Colorado do Oeste">Colorado do Oeste</option>
+                    <option value="Corumbiara">Corumbiara</option>
+                    <option value="Costa Marques">Costa Marques</option>
+                    <option value="Cujubim">Cujubim</option>
+                    <option value="Espigão D'Oeste">Espigão d'Oeste</option>
+                    <option value="Governador Jorge Teixeira">Governador Jorge Teixeira</option>
+                    <option value="Guajará-Mirim">Guajará-Mirim</option>
+                    <option value="Itapuã do Oeste">Itapuã do Oeste</option>
+                    <option value="Jaru">Jaru</option>
+                    <option value="Ji-Paraná">Ji-Paraná</option>
+                    <option value="Machadinho D'Oeste">Machadinho d'Oeste</option>
+                    <option value="Ministro Andreazza">Ministro Andreazza</option>
+                    <option value="Mirante da Serra">Mirante da Serra</option>
+                    <option value="Monte Negro">Monte Negro</option>
+                    <option value="Nova Brasilândia D'Oeste">Nova Brasilândia d'Oeste</option>
+                    <option value="Nova Mamoré">Nova Mamoré</option>
+                    <option value="Nova União">Nova União</option>
+                    <option value="Novo Horizonte do Oeste">Novo Horizonte do Oeste</option>
+                    <option value="Ouro Preto do Oeste">Ouro Preto do Oeste</option>
+                    <option value="Parecis">Parecis</option>
+                    <option value="Pimenta Bueno">Pimenta Bueno</option>
+                    <option value="Pimenteiras do Oeste">Pimenteiras do Oeste</option>
+                    <option value="Porto Velho">Porto Velho</option>
+                    <option value="Presidente Médici">Presidente Médici</option>
+                    <option value="Primavera de Rondônia">Primavera de Rondônia</option>
+                    <option value="Rio Crespo">Rio Crespo</option>
+                    <option value="Rolim de Moura">Rolim de Moura</option>
+                    <option value="Santa Luzia D'Oeste">Santa Luzia d'Oeste</option>
+                    <option value="São Felipe D'Oeste">São Felipe d'Oeste</option>
+                    <option value="São Francisco do Guaporé">São Francisco do Guaporé</option>
+                    <option value="São Miguel do Guaporé">São Miguel do Guaporé</option>
+                    <option value="Seringueiras">Seringueiras</option>
+                    <option value="Teixeirópolis">Teixeirópolis</option>
+                    <option value="Theobroma">Theobroma</option>
+                    <option value="Urupá">Urupá</option>
+                    <option value="Vale do Anari">Vale do Anari</option>
+                    <option value="Vale do Paraíso">Vale do Paraíso</option>
+                    <option value="Vilhena">Vilhena</option>
+                </select>
+                <small class="form-hint">
+                    Selecione o município onde a unidade está localizada
+                </small>
+            </div>
+
+            <!-- DROPDOWN 2: UNIDADE EMATER (DINÂMICO) -->
+            <div class="form-group" id="grupo-unidade" style="display: none;">
+                <label for="select-unidade" class="form-label">
+                    Unidade EMATER
+                    <span class="badge-opcional">Opcional</span>
+                </label>
+                <select id="select-unidade" 
+                        name="unidade_emater" 
+                        class="form-select">
+                    <option value="">Carregando unidades...</option>
+                </select>
+                <small class="form-hint">
+                    💡 Unidades disponíveis no município selecionado
+                </small>
+            </div>
+
+            <!-- BOTÃO DE ENVIO -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    Confirmar Seleção
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="unidade-emater.js"></script>
+</body>
+</html>
+
+4.2 ESTRUTURA EXPLICADA
+------------------------
+ELEMENTO 1: Select Município
+- ID: select-municipio
+- Name: municipio
+- Required: true
+- 52 opções ordenadas alfabeticamente
+
+ELEMENTO 2: Grupo Unidade (inicialmente oculto)
+- ID: grupo-unidade
+- Display: none (mostra quando município selecionado)
+
+ELEMENTO 3: Select Unidade (dinâmico)
+- ID: select-unidade
+- Name: unidade_emater
+- Populado via JavaScript após seleção do município
+
+FLUXO:
+1. Usuário seleciona município
+2. JavaScript detecta mudança (event: change)
+3. Busca unidades do município (API ou dados locais)
+4. Popula select-unidade com resultados
+5. Exibe grupo-unidade (display: block)
+
+================================================================================
+5. JAVASCRIPT (LÓGICA DE FILTRAGEM)
+================================================================================
+
+5.1 ESTRUTURA COMPLETA
+-----------------------
+(function() {
+    'use strict';
+    
+    // ========== DADOS LOCAIS (83 UNIDADES) ==========
+    const UNIDADES_EMATER = [
+        {"nome": "Centro Gerencial", "municipio": "Porto Velho", "tipo": "Centro Gerencial"},
+        {"nome": "Esreg de Porto Velho", "municipio": "Porto Velho", "tipo": "ESREG"},
+        {"nome": "Porto Velho", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Porto Verde", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Jaci-Paraná", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Vista Alegre do Abunã", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Rio Pardo", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "União Bandeirantes", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Nova Mamoré", "municipio": "Nova Mamoré", "tipo": "ESLOC"},
+        {"nome": "Nova Dimensão", "municipio": "Nova Mamoré", "tipo": "ESLOC"},
+        {"nome": "Extrema", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Nova Califórnia", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Guajará-Mirim", "municipio": "Guajará-Mirim", "tipo": "ESLOC"},
+        {"nome": "Candeias do Jamari", "municipio": "Candeias do Jamari", "tipo": "ESLOC"},
+        {"nome": "Itapuã do Oeste", "municipio": "Itapuã do Oeste", "tipo": "ESLOC"},
+        {"nome": "Triunfo", "municipio": "Candeias do Jamari", "tipo": "ESLOC"},
+        {"nome": "Calama", "municipio": "Porto Velho", "tipo": "ESLOC"},
+        {"nome": "Esreg de Ariquemes", "municipio": "Ariquemes", "tipo": "ESREG"},
+        {"nome": "Ariquemes", "municipio": "Ariquemes", "tipo": "ESLOC"},
+        {"nome": "Alto Paraíso", "municipio": "Alto Paraíso", "tipo": "ESLOC"},
+        {"nome": "Rio Crespo", "municipio": "Rio Crespo", "tipo": "ESLOC"},
+        {"nome": "Cujubim", "municipio": "Cujubim", "tipo": "ESLOC"},
+        {"nome": "Machadinho do Oeste", "municipio": "Machadinho D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Subunidade 5º BEC", "municipio": "Machadinho D'Oeste", "tipo": "Centro de Treinamento"},
+        {"nome": "Cacaulândia", "municipio": "Cacaulândia", "tipo": "ESLOC"},
+        {"nome": "Monte Negro", "municipio": "Monte Negro", "tipo": "ESLOC"},
+        {"nome": "Buritis", "municipio": "Buritis", "tipo": "ESLOC"},
+        {"nome": "Campo Novo de Rondônia", "municipio": "Campo Novo de Rondônia", "tipo": "ESLOC"},
+        {"nome": "Jacinópolis", "municipio": "Nova Mamoré", "tipo": "ESLOC"},
+        {"nome": "Esreg de Ji-Paraná", "municipio": "Ji-Paraná", "tipo": "ESREG"},
+        {"nome": "Ji-Paraná", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+        {"nome": "Nova Londrina", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+        {"nome": "Nova Colina", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+        {"nome": "Presidente Médici", "municipio": "Presidente Médici", "tipo": "ESLOC"},
+        {"nome": "Estrela de Rondônia", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+        {"nome": "Novo Riachuelo", "municipio": "Presidente Médici", "tipo": "ESLOC"},
+        {"nome": "Urupá", "municipio": "Urupá", "tipo": "ESLOC"},
+        {"nome": "Teixeirópolis", "municipio": "Teixeirópolis", "tipo": "ESLOC"},
+        {"nome": "Vale do Paraíso", "municipio": "Vale do Paraíso", "tipo": "ESLOC"},
+        {"nome": "Rondominas", "municipio": "Ouro Preto do Oeste", "tipo": "ESLOC"},
+        {"nome": "Mirante da Serra", "municipio": "Mirante da Serra", "tipo": "ESLOC"},
+        {"nome": "Nova União", "municipio": "Nova União", "tipo": "ESLOC"},
+        {"nome": "Tarilândia", "municipio": "Jaru", "tipo": "ESLOC"},
+        {"nome": "Governador Jorge Teixeira", "municipio": "Governador Jorge Teixeira", "tipo": "ESLOC"},
+        {"nome": "Colina Verde", "municipio": "Governador Jorge Teixeira", "tipo": "ESLOC"},
+        {"nome": "Jaru", "municipio": "Jaru", "tipo": "ESLOC"},
+        {"nome": "Theobroma", "municipio": "Theobroma", "tipo": "ESLOC"},
+        {"nome": "Vale do Anari", "municipio": "Vale do Anari", "tipo": "ESLOC"},
+        {"nome": "Ouro Preto do Oeste", "municipio": "Ouro Preto do Oeste", "tipo": "ESLOC"},
+        {"nome": "Centrer", "municipio": "Ouro Preto do Oeste", "tipo": "Centro de Treinamento"},
+        {"nome": "Esreg de São Francisco do Guaporé", "municipio": "São Francisco do Guaporé", "tipo": "ESREG"},
+        {"nome": "São Francisco do Guaporé", "municipio": "São Francisco do Guaporé", "tipo": "ESLOC"},
+        {"nome": "São Domingos", "municipio": "Costa Marques", "tipo": "ESLOC"},
+        {"nome": "Costa Marques", "municipio": "Costa Marques", "tipo": "ESLOC"},
+        {"nome": "Seringueiras", "municipio": "Seringueiras", "tipo": "ESLOC"},
+        {"nome": "São Miguel do Guaporé", "municipio": "São Miguel do Guaporé", "tipo": "ESLOC"},
+        {"nome": "Alvorada do Oeste", "municipio": "Alvorada D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Esreg de Rolim de Moura", "municipio": "Rolim de Moura", "tipo": "ESREG"},
+        {"nome": "Rolim de Moura", "municipio": "Rolim de Moura", "tipo": "ESLOC"},
+        {"nome": "Novo Horizonte do Oeste", "municipio": "Novo Horizonte do Oeste", "tipo": "ESLOC"},
+        {"nome": "Nova Brasilândia do Oeste", "municipio": "Nova Brasilândia D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Castanheiras", "municipio": "Castanheiras", "tipo": "ESLOC"},
+        {"nome": "Santa Luzia do Oeste", "municipio": "Santa Luzia D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Alta Floresta do Oeste", "municipio": "Alta Floresta D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Alto Alegre dos Parecis", "municipio": "Alto Alegre dos Parecis", "tipo": "ESLOC"},
+        {"nome": "Izidolândia", "municipio": "Alta Floresta D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Esreg de Pimenta Bueno", "municipio": "Pimenta Bueno", "tipo": "ESREG"},
+        {"nome": "Pimenta Bueno", "municipio": "Pimenta Bueno", "tipo": "ESLOC"},
+        {"nome": "Espigão do Oeste", "municipio": "Espigão D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Cacoal", "municipio": "Cacoal", "tipo": "ESLOC"},
+        {"nome": "Ministro Andreazza", "municipio": "Ministro Andreazza", "tipo": "ESLOC"},
+        {"nome": "São Felipe d'Oeste", "municipio": "São Felipe D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Primavera de Rondônia", "municipio": "Primavera de Rondônia", "tipo": "ESLOC"},
+        {"nome": "Parecis", "municipio": "Parecis", "tipo": "ESLOC"},
+        {"nome": "Boa Vista do Pacarana", "municipio": "Espigão D'Oeste", "tipo": "ESLOC"},
+        {"nome": "Esreg de Colorado do Oeste", "municipio": "Colorado do Oeste", "tipo": "ESREG"},
+        {"nome": "Colorado do Oeste", "municipio": "Colorado do Oeste", "tipo": "ESLOC"},
+        {"nome": "Cabixi", "municipio": "Cabixi", "tipo": "ESLOC"},
+        {"nome": "Pimenteiras do Oeste", "municipio": "Pimenteiras do Oeste", "tipo": "ESLOC"},
+        {"nome": "Cerejeiras", "municipio": "Cerejeiras", "tipo": "ESLOC"},
+        {"nome": "Corumbiara", "municipio": "Corumbiara", "tipo": "ESLOC"},
+        {"nome": "Chupinguaia", "municipio": "Chupinguaia", "tipo": "ESLOC"},
+        {"nome": "Vilhena", "municipio": "Vilhena", "tipo": "ESLOC"}
+    ];
+    
+    // ========== FUNÇÃO PRINCIPAL ==========
+    function inicializar() {
+        const selectMunicipio = document.getElementById('select-municipio');
+        const grupoUnidade = document.getElementById('grupo-unidade');
+        const selectUnidade = document.getElementById('select-unidade');
+        
+        if (!selectMunicipio || !grupoUnidade || !selectUnidade) {
+            console.error('Elementos não encontrados no DOM');
+            return;
+        }
+        
+        // Event Listener: Ao mudar município
+        selectMunicipio.addEventListener('change', function() {
+            const municipioSelecionado = this.value;
+            
+            // Limpar seleção anterior
+            selectUnidade.innerHTML = '';
+            
+            if (!municipioSelecionado) {
+                // Nenhum município selecionado
+                grupoUnidade.style.display = 'none';
+                selectUnidade.innerHTML = '<option value="">Selecione primeiro um município</option>';
+                return;
+            }
+            
+            // Filtrar unidades do município
+            const unidadesFiltradas = filtrarUnidadesPorMunicipio(municipioSelecionado);
+            
+            // Mostrar grupo de unidades
+            grupoUnidade.style.display = 'block';
+            
+            // Popular select
+            if (unidadesFiltradas.length > 0) {
+                popularSelectUnidades(selectUnidade, unidadesFiltradas);
+            } else {
+                selectUnidade.innerHTML = '<option value="">Nenhuma unidade encontrada</option>';
+            }
+            
+            console.log(`✅ ${unidadesFiltradas.length} unidades carregadas para ${municipioSelecionado}`);
+        });
+    }
+    
+    // ========== FUNÇÃO: FILTRAR UNIDADES ==========
+    function filtrarUnidadesPorMunicipio(municipio) {
+        // Normalizar para comparação (case-insensitive)
+        const municipioNormalizado = municipio.toLowerCase().trim();
+        
+        return UNIDADES_EMATER.filter(unidade => {
+            return unidade.municipio.toLowerCase().trim() === municipioNormalizado;
+        });
+    }
+    
+    // ========== FUNÇÃO: POPULAR SELECT ==========
+    function popularSelectUnidades(selectElement, unidades) {
+        // Opção padrão
+        const optionDefault = document.createElement('option');
+        optionDefault.value = '';
+        optionDefault.textContent = 'Selecione a unidade (opcional)';
+        selectElement.appendChild(optionDefault);
+        
+        // Adicionar cada unidade
+        unidades.forEach(unidade => {
+            const option = document.createElement('option');
+            option.value = unidade.nome;
+            
+            // Mostrar tipo se não for ESLOC (padrão)
+            if (unidade.tipo !== 'ESLOC') {
+                option.textContent = `${unidade.nome} (${unidade.tipo})`;
+            } else {
+                option.textContent = unidade.nome;
+            }
+            
+            selectElement.appendChild(option);
+        });
+    }
+    
+    // ========== INICIALIZAÇÃO ==========
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializar);
+    } else {
+        inicializar();
+    }
+    
+})();
+
+5.2 EXPLICAÇÃO LINHA POR LINHA
+-------------------------------
+1. IIFE (Immediately Invoked Function Expression)
+   - Encapsula código para evitar poluir escopo global
+   - 'use strict' ativa modo estrito
+
+2. UNIDADES_EMATER (linhas 5-87)
+   - Array de objetos com 83 unidades
+   - Dados embarcados no JavaScript (funciona offline)
+
+3. inicializar() (linhas 89-122)
+   - Busca elementos do DOM
+   - Adiciona event listener no select de município
+   - Filtra e popula unidades ao trocar município
+
+4. filtrarUnidadesPorMunicipio() (linhas 124-131)
+   - Recebe nome do município
+   - Normaliza string (toLowerCase, trim)
+   - Retorna array filtrado com unidades do município
+
+5. popularSelectUnidades() (linhas 133-152)
+   - Recebe select element e array de unidades
+   - Cria opção padrão
+   - Adiciona cada unidade como <option>
+   - Mostra tipo se não for ESLOC
+
+6. Inicialização (linhas 154-158)
+   - Executa após DOM carregar
+   - Fallback se DOM já carregado
+
+================================================================================
+6. CSS (ESTILOS PARA DROPDOWNS)
+================================================================================
+
+6.1 CSS COMPLETO
+----------------
+/* ========== VARIÁVEIS ========== */
+:root {
+    --primary-color: #2e7d32;
+    --secondary-color: #558b2f;
+    --text-dark: #1b5e20;
+    --bg-light: #f1f8e9;
+    --border-color: #c5e1a5;
+    --error-color: #d32f2f;
+}
+
+/* ========== CONTAINER ========== */
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== HEADER ========== */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.header h1 {
+    font-size: 2.5em;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.header h2 {
+    font-size: 1.3em;
+    color: #666;
+    font-weight: normal;
+}
+
+/* ========== FORM GROUPS ========== */
+.form-group {
+    margin-bottom: 30px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 1.1em;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.required {
+    color: var(--error-color);
+    margin-left: 3px;
+}
+
+.badge-opcional {
+    display: inline-block;
+    background: #9e9e9e;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+/* ========== SELECT ESTILIZADO ========== */
+.form-select {
+    width: 100%;
+    padding: 15px;
+    font-size: 1em;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none; /* Remove estilo padrão do browser */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%206l5%205%205-5%202%201-7%207-7-7%202-1z%22%20fill%3D%22%23666%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    padding-right: 45px;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.form-select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ========== HINT TEXT ========== */
+.form-hint {
+    display: block;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+/* ========== ANIMAÇÃO SHOW/HIDE ========== */
+#grupo-unidade {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== BOTÃO SUBMIT ========== */
+.form-actions {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.btn-submit {
+    padding: 15px 40px;
+    font-size: 1.1em;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+/* ========== RESPONSIVO ========== */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 2em;
+    }
+    
+    .header h2 {
+        font-size: 1.1em;
+    }
+    
+    .form-select {
+        padding: 12px;
+        font-size: 0.95em;
+    }
+    
+    .btn-submit {
+        width: 100%;
+        padding: 15px;
+    }
+}
+
+6.2 DETALHES DO SELECT CUSTOMIZADO
+-----------------------------------
+SETA DROPDOWN (SVG inline):
+background-image: url('data:image/svg+xml;...')
+- Substitui seta padrão do browser
+- SVG customizado cinza (#666)
+- Posicionado à direita
+
+STATES:
+- Normal: Borda #e0e0e0
+- Focus: Borda verde + sombra
+- Disabled: Fundo cinza + opacidade
+
+ANIMAÇÃO:
+- Grupo de unidades aparece com slideDown
+- 0.3s ease
+- Opacidade 0→1 + translateY -10px→0
+
+================================================================================
+7. API BACKEND (PHP)
+================================================================================
+
+7.1 ARQUIVO: get-unidades-emater.php
+-------------------------------------
+<?php
+/**
+ * API para retornar unidades EMATER por município
+ */
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// Dados das 83 unidades EMATER de Rondônia
+$unidades = [
+    ["nome" => "Centro Gerencial", "municipio" => "Porto Velho", "tipo" => "Centro Gerencial"],
+    ["nome" => "Esreg de Porto Velho", "municipio" => "Porto Velho", "tipo" => "ESREG"],
+    ["nome" => "Porto Velho", "municipio" => "Porto Velho", "tipo" => "ESLOC"],
+    // ... [INSERIR TODAS AS 83 UNIDADES AQUI - VER SEÇÃO 9]
+    ["nome" => "Vilhena", "municipio" => "Vilhena", "tipo" => "ESLOC"]
+];
+
+// Se foi passado um município específico, filtrar
+$municipioFiltro = $_GET['municipio'] ?? null;
+
+if ($municipioFiltro) {
+    // Filtrar unidades do município
+    $unidadesFiltradas = array_filter($unidades, function($unidade) use ($municipioFiltro) {
+        return strtolower(trim($unidade['municipio'])) === strtolower(trim($municipioFiltro));
+    });
+    
+    // Reindexar array
+    $unidadesFiltradas = array_values($unidadesFiltradas);
+    
+    // Retornar JSON
+    echo json_encode([
+        'success' => true,
+        'municipio' => $municipioFiltro,
+        'total' => count($unidadesFiltradas),
+        'unidades' => $unidadesFiltradas
+    ], JSON_UNESCAPED_UNICODE);
+} else {
+    // Retornar todas as unidades agrupadas por município
+    $porMunicipio = [];
+    foreach ($unidades as $unidade) {
+        $mun = $unidade['municipio'];
+        if (!isset($porMunicipio[$mun])) {
+            $porMunicipio[$mun] = [];
+        }
+        $porMunicipio[$mun][] = $unidade;
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'total_municipios' => count($porMunicipio),
+        'total_unidades' => count($unidades),
+        'unidades_por_municipio' => $porMunicipio
+    ], JSON_UNESCAPED_UNICODE);
+}
+?>
+
+7.2 ENDPOINTS DA API
+---------------------
+ENDPOINT 1: Buscar unidades de um município
+URL: get-unidades-emater.php?municipio=Porto%20Velho
+Method: GET
+Response:
+{
+    "success": true,
+    "municipio": "Porto Velho",
+    "total": 10,
+    "unidades": [
+        {"nome": "Centro Gerencial", "municipio": "Porto Velho", "tipo": "Centro Gerencial"},
+        {"nome": "Esreg de Porto Velho", "municipio": "Porto Velho", "tipo": "ESREG"},
+        ...
+    ]
+}
+
+ENDPOINT 2: Listar todas as unidades agrupadas
+URL: get-unidades-emater.php
+Method: GET
+Response:
+{
+    "success": true,
+    "total_municipios": 52,
+    "total_unidades": 83,
+    "unidades_por_municipio": {
+        "Porto Velho": [
+            {"nome": "Centro Gerencial", ...},
+            ...
+        ],
+        "Ariquemes": [
+            {"nome": "Esreg de Ariquemes", ...},
+            ...
+        ]
+    }
+}
+
+================================================================================
+8. ESTRATÉGIA OFFLINE (83 UNIDADES EMBARCADAS)
+================================================================================
+
+CONCEITO:
+Para funcionar offline, as 83 unidades são embarcadas diretamente no JavaScript.
+Estratégia: Network First + Fallback
+
+8.1 FLUXO NETWORK FIRST
+------------------------
+1. Usuário seleciona município
+2. JavaScript tenta buscar do servidor (fetch API)
+3. Se SUCESSO: usa dados do servidor (atualizados)
+4. Se FALHA (offline/erro): usa dados locais embarcados
+
+JavaScript (dentro do addEventListener):
+
+selectMunicipio.addEventListener('change', async function() {
+    const municipioSelecionado = this.value;
+    
+    if (!municipioSelecionado) {
+        grupoUnidade.style.display = 'none';
+        return;
+    }
+    
+    grupoUnidade.style.display = 'block';
+    selectUnidade.innerHTML = '<option value="">⏳ Carregando...</option>';
+    selectUnidade.disabled = true;
+    
+    try {
+        // ESTRATÉGIA 1: Tentar servidor
+        console.log('📡 Buscando do servidor...');
+        const url = `get-unidades-emater.php?municipio=${encodeURIComponent(municipioSelecionado)}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.unidades) {
+            popularSelectUnidades(selectUnidade, data.unidades);
+            console.log(`✅ ONLINE: ${data.unidades.length} unidades`);
+        }
+        
+    } catch (error) {
+        // ESTRATÉGIA 2: Fallback offline
+        console.log('⚠️ Servidor indisponível, usando dados locais');
+        console.error('Erro:', error);
+        
+        const unidadesLocal = filtrarUnidadesPorMunicipio(municipioSelecionado);
+        popularSelectUnidades(selectUnidade, unidadesLocal);
+        console.log(`📦 OFFLINE: ${unidadesLocal.length} unidades`);
+        
+    } finally {
+        selectUnidade.disabled = false;
+    }
+});
+
+VANTAGENS:
+✅ Funciona online E offline
+✅ Dados sempre atualizados quando online
+✅ Sem dependência de servidor quando offline
+✅ Feedback visual (⏳ loading, console logs)
+
+================================================================================
+9. DADOS COMPLETOS PARA CÓPIA
+================================================================================
+
+9.1 ARRAY COMPLETO (83 UNIDADES) - FORMATO JSON
+------------------------------------------------
+[
+    {"nome": "Centro Gerencial", "municipio": "Porto Velho", "tipo": "Centro Gerencial"},
+    {"nome": "Esreg de Porto Velho", "municipio": "Porto Velho", "tipo": "ESREG"},
+    {"nome": "Porto Velho", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Porto Verde", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Jaci-Paraná", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Vista Alegre do Abunã", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Rio Pardo", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "União Bandeirantes", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Extrema", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Nova Califórnia", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Calama", "municipio": "Porto Velho", "tipo": "ESLOC"},
+    {"nome": "Esreg de Ariquemes", "municipio": "Ariquemes", "tipo": "ESREG"},
+    {"nome": "Ariquemes", "municipio": "Ariquemes", "tipo": "ESLOC"},
+    {"nome": "Alto Paraíso", "municipio": "Alto Paraíso", "tipo": "ESLOC"},
+    {"nome": "Rio Crespo", "municipio": "Rio Crespo", "tipo": "ESLOC"},
+    {"nome": "Cujubim", "municipio": "Cujubim", "tipo": "ESLOC"},
+    {"nome": "Machadinho do Oeste", "municipio": "Machadinho D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Subunidade 5º BEC", "municipio": "Machadinho D'Oeste", "tipo": "Centro de Treinamento"},
+    {"nome": "Cacaulândia", "municipio": "Cacaulândia", "tipo": "ESLOC"},
+    {"nome": "Monte Negro", "municipio": "Monte Negro", "tipo": "ESLOC"},
+    {"nome": "Buritis", "municipio": "Buritis", "tipo": "ESLOC"},
+    {"nome": "Campo Novo de Rondônia", "municipio": "Campo Novo de Rondônia", "tipo": "ESLOC"},
+    {"nome": "Nova Mamoré", "municipio": "Nova Mamoré", "tipo": "ESLOC"},
+    {"nome": "Nova Dimensão", "municipio": "Nova Mamoré", "tipo": "ESLOC"},
+    {"nome": "Jacinópolis", "municipio": "Nova Mamoré", "tipo": "ESLOC"},
+    {"nome": "Guajará-Mirim", "municipio": "Guajará-Mirim", "tipo": "ESLOC"},
+    {"nome": "Candeias do Jamari", "municipio": "Candeias do Jamari", "tipo": "ESLOC"},
+    {"nome": "Triunfo", "municipio": "Candeias do Jamari", "tipo": "ESLOC"},
+    {"nome": "Itapuã do Oeste", "municipio": "Itapuã do Oeste", "tipo": "ESLOC"},
+    {"nome": "Esreg de Ji-Paraná", "municipio": "Ji-Paraná", "tipo": "ESREG"},
+    {"nome": "Ji-Paraná", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+    {"nome": "Nova Londrina", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+    {"nome": "Nova Colina", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+    {"nome": "Estrela de Rondônia", "municipio": "Ji-Paraná", "tipo": "ESLOC"},
+    {"nome": "Presidente Médici", "municipio": "Presidente Médici", "tipo": "ESLOC"},
+    {"nome": "Novo Riachuelo", "municipio": "Presidente Médici", "tipo": "ESLOC"},
+    {"nome": "Urupá", "municipio": "Urupá", "tipo": "ESLOC"},
+    {"nome": "Teixeirópolis", "municipio": "Teixeirópolis", "tipo": "ESLOC"},
+    {"nome": "Vale do Paraíso", "municipio": "Vale do Paraíso", "tipo": "ESLOC"},
+    {"nome": "Mirante da Serra", "municipio": "Mirante da Serra", "tipo": "ESLOC"},
+    {"nome": "Nova União", "municipio": "Nova União", "tipo": "ESLOC"},
+    {"nome": "Governador Jorge Teixeira", "municipio": "Governador Jorge Teixeira", "tipo": "ESLOC"},
+    {"nome": "Colina Verde", "municipio": "Governador Jorge Teixeira", "tipo": "ESLOC"},
+    {"nome": "Jaru", "municipio": "Jaru", "tipo": "ESLOC"},
+    {"nome": "Tarilândia", "municipio": "Jaru", "tipo": "ESLOC"},
+    {"nome": "Theobroma", "municipio": "Theobroma", "tipo": "ESLOC"},
+    {"nome": "Vale do Anari", "municipio": "Vale do Anari", "tipo": "ESLOC"},
+    {"nome": "Ouro Preto do Oeste", "municipio": "Ouro Preto do Oeste", "tipo": "ESLOC"},
+    {"nome": "Rondominas", "municipio": "Ouro Preto do Oeste", "tipo": "ESLOC"},
+    {"nome": "Centrer", "municipio": "Ouro Preto do Oeste", "tipo": "Centro de Treinamento"},
+    {"nome": "Esreg de São Francisco do Guaporé", "municipio": "São Francisco do Guaporé", "tipo": "ESREG"},
+    {"nome": "São Francisco do Guaporé", "municipio": "São Francisco do Guaporé", "tipo": "ESLOC"},
+    {"nome": "Costa Marques", "municipio": "Costa Marques", "tipo": "ESLOC"},
+    {"nome": "São Domingos", "municipio": "Costa Marques", "tipo": "ESLOC"},
+    {"nome": "Seringueiras", "municipio": "Seringueiras", "tipo": "ESLOC"},
+    {"nome": "São Miguel do Guaporé", "municipio": "São Miguel do Guaporé", "tipo": "ESLOC"},
+    {"nome": "Alvorada do Oeste", "municipio": "Alvorada D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Esreg de Rolim de Moura", "municipio": "Rolim de Moura", "tipo": "ESREG"},
+    {"nome": "Rolim de Moura", "municipio": "Rolim de Moura", "tipo": "ESLOC"},
+    {"nome": "Novo Horizonte do Oeste", "municipio": "Novo Horizonte do Oeste", "tipo": "ESLOC"},
+    {"nome": "Nova Brasilândia do Oeste", "municipio": "Nova Brasilândia D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Castanheiras", "municipio": "Castanheiras", "tipo": "ESLOC"},
+    {"nome": "Santa Luzia do Oeste", "municipio": "Santa Luzia D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Alta Floresta do Oeste", "municipio": "Alta Floresta D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Izidolândia", "municipio": "Alta Floresta D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Alto Alegre dos Parecis", "municipio": "Alto Alegre dos Parecis", "tipo": "ESLOC"},
+    {"nome": "Esreg de Pimenta Bueno", "municipio": "Pimenta Bueno", "tipo": "ESREG"},
+    {"nome": "Pimenta Bueno", "municipio": "Pimenta Bueno", "tipo": "ESLOC"},
+    {"nome": "Espigão do Oeste", "municipio": "Espigão D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Boa Vista do Pacarana", "municipio": "Espigão D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Cacoal", "municipio": "Cacoal", "tipo": "ESLOC"},
+    {"nome": "Ministro Andreazza", "municipio": "Ministro Andreazza", "tipo": "ESLOC"},
+    {"nome": "São Felipe d'Oeste", "municipio": "São Felipe D'Oeste", "tipo": "ESLOC"},
+    {"nome": "Primavera de Rondônia", "municipio": "Primavera de Rondônia", "tipo": "ESLOC"},
+    {"nome": "Parecis", "municipio": "Parecis", "tipo": "ESLOC"},
+    {"nome": "Esreg de Colorado do Oeste", "municipio": "Colorado do Oeste", "tipo": "ESREG"},
+    {"nome": "Colorado do Oeste", "municipio": "Colorado do Oeste", "tipo": "ESLOC"},
+    {"nome": "Cabixi", "municipio": "Cabixi", "tipo": "ESLOC"},
+    {"nome": "Pimenteiras do Oeste", "municipio": "Pimenteiras do Oeste", "tipo": "ESLOC"},
+    {"nome": "Cerejeiras", "municipio": "Cerejeiras", "tipo": "ESLOC"},
+    {"nome": "Corumbiara", "municipio": "Corumbiara", "tipo": "ESLOC"},
+    {"nome": "Chupinguaia", "municipio": "Chupinguaia", "tipo": "ESLOC"},
+    {"nome": "Vilhena", "municipio": "Vilhena", "tipo": "ESLOC"}
+]
+
+9.2 LISTA DE MUNICÍPIOS (52) - ALFABÉTICA
+------------------------------------------
+1. Alta Floresta D'Oeste
+2. Alto Alegre dos Parecis
+3. Alto Paraíso
+4. Alvorada D'Oeste
+5. Ariquemes
+6. Buritis
+7. Cabixi
+8. Cacaulândia
+9. Cacoal
+10. Campo Novo de Rondônia
+11. Candeias do Jamari
+12. Castanheiras
+13. Cerejeiras
+14. Chupinguaia
+15. Colorado do Oeste
+16. Corumbiara
+17. Costa Marques
+18. Cujubim
+19. Espigão D'Oeste
+20. Governador Jorge Teixeira
+21. Guajará-Mirim
+22. Itapuã do Oeste
+23. Jaru
+24. Ji-Paraná
+25. Machadinho D'Oeste
+26. Ministro Andreazza
+27. Mirante da Serra
+28. Monte Negro
+29. Nova Brasilândia D'Oeste
+30. Nova Mamoré
+31. Nova União
+32. Novo Horizonte do Oeste
+33. Ouro Preto do Oeste
+34. Parecis
+35. Pimenta Bueno
+36. Pimenteiras do Oeste
+37. Porto Velho
+38. Presidente Médici
+39. Primavera de Rondônia
+40. Rio Crespo
+41. Rolim de Moura
+42. Santa Luzia D'Oeste
+43. São Felipe D'Oeste
+44. São Francisco do Guaporé
+45. São Miguel do Guaporé
+46. Seringueiras
+47. Teixeirópolis
+48. Theobroma
+49. Urupá
+50. Vale do Anari
+51. Vale do Paraíso
+52. Vilhena
+
+================================================================================
+10. EXEMPLO PRÁTICO COMPLETO
+================================================================================
+
+ARQUIVOS NECESSÁRIOS:
+1. index.html (interface)
+2. unidade-emater.js (lógica)
+3. styles.css (visual)
+4. get-unidades-emater.php (API - opcional para offline)
+
+ESTRUTURA DE PASTAS:
+projeto/
+├── index.html
+├── unidade-emater.js
+├── styles.css
+└── get-unidades-emater.php (opcional)
+
+TESTE LOCAL:
+1. Copiar arquivos da seção 4, 5 e 6
+2. Abrir index.html no navegador
+3. Selecionar um município
+4. Verificar dropdown de unidades aparece
+5. Console log mostra "✅ X unidades carregadas"
+
+INTEGRAÇÃO COM FORMULÁRIO EXISTENTE:
+1. Copiar HTML dos dois dropdowns (seção 4.1)
+2. Adicionar <script src="unidade-emater.js"></script>
+3. Incluir CSS da seção 6.1
+4. Dados já embarcados no JS (funciona offline)
+
+PERSONALIZAÇÃO:
+- Mudar cores: Editar variáveis CSS em :root
+- Adicionar validação: Adicionar atributo "required"
+- Ajustar animação: Modificar @keyframes slideDown
+- Logs detalhados: Descomentar console.logs
+
+================================================================================
+ESTATÍSTICAS FINAIS
+================================================================================
+
+COBERTURA TERRITORIAL:
+- 52 municípios (100% do estado de Rondônia)
+- 83 unidades EMATER distribuídas
+- 7 regiões (ESREG)
+- 1 centro gerencial
+
+DISTRIBUIÇÃO:
+- Porto Velho: 10 unidades (12%)
+- Ji-Paraná: 4 unidades (5%)
+- Outros 50 municípios: 69 unidades (83%)
+
+TIPOS DE UNIDADES:
+- ESLOC: 73 unidades (88%)
+- ESREG: 7 unidades (8%)
+- Centro de Treinamento: 2 unidades (2%)
+- Centro Gerencial: 1 unidade (1%)
+
+TAMANHO DOS DADOS:
+- Array JavaScript: ~15 KB (minificado)
+- JSON completo: ~8 KB (gzip)
+- 52 municípios no select: 3 KB HTML
+
+================================================================================
+SUPORTE E REFERÊNCIAS
+================================================================================
+
+DOCUMENTAÇÃO TÉCNICA:
+- MDN Fetch API: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+- JavaScript Array.filter(): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+- HTML Select Element: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+
+COMPATIBILIDADE:
+- Chrome/Edge: ✅ Funciona perfeitamente
+- Firefox: ✅ Funciona perfeitamente
+- Safari: ✅ Funciona perfeitamente
+- IE11: ⚠️ Requer polyfill para fetch()
+
+FONTE DOS DADOS:
+- EMATER-RO (Entidade Autárquica de Assistência Técnica e Extensão Rural)
+- Estado de Rondônia, Brasil
+- Última atualização: Dezembro 2025
+
+================================================================================
+FIM DO GUIA - TERRITÓRIOS EMATER-RO
+================================================================================

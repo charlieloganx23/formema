@@ -1,0 +1,2681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa EMATER-RO - Unidades de Rondônia (Coordenadas Corrigidas)</title>
+    <!-- v1.4.1 - Cache-bust: Botões de ação adicionados -->
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #e0e0e0;
+        }
+
+        .sidebar h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 10px;
+        }
+
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats h3 {
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #1e3c72;
+            font-weight: bold;
+        }
+
+        .territorio-list {
+            margin-top: 20px;
+        }
+
+        .territorio-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #ccc;
+            position: relative;
+        }
+
+        .territorio-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .territorio-info-icon {
+            background: #2a5298;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .territorio-info-icon:hover {
+            background: #1e3c72;
+            transform: scale(1.1);
+        }
+
+        .territorio-tooltip {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            min-width: 300px;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            border: 3px solid #2a5298;
+        }
+
+        .territorio-tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .territorio-tooltip-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .territorio-tooltip-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .territorio-tooltip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2a5298;
+        }
+
+        .territorio-tooltip h4 {
+            color: #1e3c72;
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .territorio-tooltip-close {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .territorio-tooltip-close:hover {
+            background: #c0392b;
+            transform: rotate(90deg);
+        }
+
+        .territorio-tooltip ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .territorio-tooltip li {
+            padding: 8px 0;
+            color: #555;
+            font-size: 0.9em;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .territorio-tooltip li:last-child {
+            border-bottom: none;
+        }
+
+        .territorio-tooltip li:before {
+            margin-right: 8px;
+        }
+
+        .territorio-tooltip::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .territorio-tooltip::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .territorio-tooltip::-webkit-scrollbar-thumb {
+            background: #2a5298;
+            border-radius: 10px;
+        }
+
+        .territorio-item.active {
+            border-left-width: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .territorio-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .territorio-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+
+        .territorio-name {
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 0.95em;
+            flex: 1;
+        }
+
+        .territorio-count {
+            background: #2a5298;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+        }
+
+        .legend h4 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+
+        .legend-icon {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+
+        /* Popups */
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup-content {
+            padding: 10px;
+            min-width: 250px;
+        }
+
+        .popup-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #2a5298;
+            padding-bottom: 5px;
+        }
+
+        .popup-info {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .popup-label {
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-section h3 {
+            color: #2a5298;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #2a5298;
+            border-radius: 20px;
+            font-size: 0.9em;
+            outline: none;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .search-input:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 0 8px rgba(42, 82, 152, 0.3);
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: 2px solid #2a5298;
+            background: white;
+            color: #2a5298;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #2a5298;
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: #2a5298;
+            color: white;
+        }
+
+        /* Botão de Reset do Zoom */
+        .reset-zoom-btn {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid #2a5298;
+            border-radius: 10px;
+            padding: 12px 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #2a5298;
+            font-size: 0.9em;
+        }
+
+        .reset-zoom-btn:hover {
+            background: #2a5298;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-zoom-btn:active {
+            transform: translateY(0);
+        }
+
+        .reset-zoom-icon {
+            font-size: 1.2em;
+        }
+
+        /* Botões de ação minimalistas */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            background: #f5f5f5;
+            border-color: #999;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        /* Scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #2a5298;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #1e3c72;
+        }
+
+        /* Polígonos dos municípios */
+        .municipio-polygon {
+            stroke: #555;
+            stroke-width: 1;
+            fill-opacity: 0.70;
+        }
+
+        .municipio-polygon-hover {
+            stroke-width: 2.5;
+            fill-opacity: 0.85;
+        }
+
+        /* Estilos para status de cobertura */
+        .unidade-visitada {
+            filter: hue-rotate(90deg) brightness(1.2);
+        }
+
+        .unidade-nao-visitada {
+            filter: grayscale(100%) opacity(0.5);
+        }
+
+        .badge-visitas {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #27ae60;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .stat-value.green {
+            color: #27ae60;
+        }
+
+        .stat-value.red {
+            color: #e74c3c;
+        }
+
+        .stat-value.orange {
+            color: #f39c12;
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+
+            .sidebar {
+                max-height: 300px;
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            .territorio-tooltip {
+                max-width: 90vw;
+                max-height: 80vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .content {
+                height: calc(100vh - 150px);
+            }
+
+            .reset-zoom-btn {
+                top: 10px;
+                right: 10px;
+                padding: 10px 14px;
+                font-size: 0.85em;
+            }
+
+            .reset-zoom-btn span:not(.reset-zoom-icon) {
+                display: none;
+            }
+
+            .reset-zoom-icon {
+                font-size: 1.4em;
+            }
+        }
+
+        /* Estilo para tooltips dos polígonos municipais */
+        .municipio-tooltip-geojson {
+            background: rgba(0, 0, 0, 0.85) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 6px !important;
+            padding: 8px 14px !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4) !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        .municipio-tooltip-geojson::before {
+            border-top-color: rgba(0, 0, 0, 0.85) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button onclick="window.location.href='admin.html'" style="background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ← Painel Admin
+                </button>
+                <div style="flex: 1; text-align: center;">
+                    <h1 style="margin: 0; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                        <img src="logo-ematech1.png" alt="Logo EMATECH" style="height: 40px; width: auto; object-fit: contain;">
+                        Mapa de Cobertura EMATER-RO
+                    </h1>
+                    <p style="margin: 5px 0 0 0;">Monitoramento de Visitas e Formulários Preenchidos por Unidade</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="limparCache()">🗑️ Limpar Cache</button>
+                    <button class="action-btn" onclick="atualizarMapa()">🔄 Atualizar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <h2>📊 Informações</h2>
+                
+                <div class="stats">
+                    <h3>Estatísticas Gerais</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Total de Unidades:</span>
+                        <span class="stat-value" id="total-unidades">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Territórios:</span>
+                        <span class="stat-value" id="total-territorios">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Municípios (IBGE):</span>
+                        <span class="stat-value" id="total-municipios">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Municípios + Distritos:</span>
+                        <span class="stat-value" id="total-localidades">-</span>
+                    </div>
+
+                </div>
+
+                <div class="filter-section">
+                    <h3>🔍 Buscar Unidade</h3>
+                    <input type="text" class="search-input" id="search-input" placeholder="Digite o nome da unidade, município ou distrito...">
+                </div>
+
+                <div class="filter-section">
+                    <h3>📋 Filtrar por Tipo</h3>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-tipo="todos">Todos</button>
+                        <button class="filter-btn" data-tipo="ESREG">ESREG</button>
+                        <button class="filter-btn" data-tipo="ESLOC">ESLOC</button>
+                        <button class="filter-btn" data-tipo="Centro Gerencial">Centro Gerencial</button>
+                        <button class="filter-btn" data-tipo="Centro de Treinamento">Centro de Treinamento</button>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <h3>📍 Filtrar por Cobertura</h3>
+                    <div class="filter-buttons">
+                        <button class="filter-btn" id="filter-municipios-visitados" onclick="destacarMunicipiosVisitados()">
+                            ✅ Municípios Visitados
+                        </button>
+                        <button class="filter-btn" id="filter-limpar-destaque" onclick="limparDestaqueMunicipios()" style="display: none;">
+                            🔄 Mostrar Todos
+                        </button>
+                    </div>
+                </div>
+
+                <h2>🏛️ Unidades Emater por Territórios</h2>
+                <div class="territorio-list" id="territorio-list">
+                    <div class="loading">Carregando...</div>
+                </div>
+            </div>
+
+            <div id="map">
+                <button class="reset-zoom-btn" id="reset-zoom-btn" title="Voltar para visão completa de Rondônia">
+                    <span class="reset-zoom-icon">🔄</span>
+                    <span>Resetar Zoom</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay para tooltip -->
+    <div class="territorio-tooltip-overlay" id="tooltip-overlay"></div>
+    
+    <!-- Container para tooltips (fora dos cards) -->
+    <div id="tooltips-container"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Dados EMATER-RO com coordenadas corrigidas
+        const ematerData = {
+            "estado": "Rondônia",
+            "codigo_uf": 11,
+            "sigla": "RO",
+            "total_unidades": 83,
+            "fonte": "EMATER-RO 2017 (Coordenadas: IBGE 2023)",
+            "territorios": [
+                {
+                    "id": 1,
+                    "nome": "Território Rural da Cidadania Madeira Mamoré",
+                    "cor": "#F5E6A8",
+                    "unidades": [
+                        {
+                            "id": 1,
+                            "tipo": "Centro Gerencial",
+                            "nome": "Centro Gerencial",
+                            "municipio": "Porto Velho",
+                            "latitude": -8.761944,
+                            "longitude": -63.903889,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 2,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de Porto Velho",
+                            "municipio": "Porto Velho",
+                            "latitude": -8.761944,
+                            "longitude": -63.903889,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 3,
+                            "tipo": "ESLOC",
+                            "nome": "Porto Velho",
+                            "municipio": "Porto Velho",
+                            "latitude": -8.761944,
+                            "longitude": -63.903889,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 4,
+                            "tipo": "ESLOC",
+                            "nome": "Porto Verde",
+                            "municipio": "Porto Velho",
+                            "distrito": "Porto Verde",
+                            "latitude": -9.850000,
+                            "longitude": -64.450000,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 5,
+                            "tipo": "ESLOC",
+                            "nome": "Jaci-Paraná",
+                            "municipio": "Porto Velho",
+                            "distrito": "Jaci-Paraná",
+                            "latitude": -9.256944,
+                            "longitude": -64.395000,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 6,
+                            "tipo": "ESLOC",
+                            "nome": "Vista Alegre do Abunã",
+                            "municipio": "Porto Velho",
+                            "distrito": "Vista Alegre do Abunã",
+                            "latitude": -9.656436,
+                            "longitude": -65.736261,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 7,
+                            "tipo": "ESLOC",
+                            "nome": "Rio Pardo",
+                            "municipio": "Porto Velho",
+                            "distrito": "Rio Pardo",
+                            "latitude": -9.630981,
+                            "longitude": -63.966378,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 8,
+                            "tipo": "ESLOC",
+                            "nome": "União Bandeirantes",
+                            "municipio": "Porto Velho",
+                            "distrito": "União Bandeirantes",
+                            "latitude": -9.705922,
+                            "longitude": -64.529519,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 9,
+                            "tipo": "ESLOC",
+                            "nome": "Nova Mamoré",
+                            "municipio": "Nova Mamoré",
+                            "latitude": -10.401940,
+                            "longitude": -65.326670,
+                            "codigo_ibge": 1100338,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 10,
+                            "tipo": "ESLOC",
+                            "nome": "Nova Dimensão",
+                            "municipio": "Nova Mamoré",
+                            "latitude": -10.371060,
+                            "longitude": -64.80771,
+                            "codigo_ibge": 1100338,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 11,
+                            "tipo": "ESLOC",
+                            "nome": "Extrema",
+                            "municipio": "Porto Velho",
+                            "distrito": "Extrema de Rondônia",
+                            "latitude": -9.773314,
+                            "longitude": -66.358258,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 12,
+                            "tipo": "ESLOC",
+                            "nome": "Nova Califórnia",
+                            "municipio": "Porto Velho",
+                            "distrito": "Nova Califórnia",
+                            "latitude": -9.754119,
+                            "longitude": -66.613106,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 13,
+                            "tipo": "ESLOC",
+                            "nome": "Guajará-Mirim",
+                            "municipio": "Guajará-Mirim",
+                            "latitude": -10.790900,
+                            "longitude": -65.332200,
+                            "codigo_ibge": 1100106,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 14,
+                            "tipo": "ESLOC",
+                            "nome": "Candeias do Jamari",
+                            "municipio": "Candeias do Jamari",
+                            "latitude": -8.809720,
+                            "longitude": -63.695600,
+                            "codigo_ibge": 1100809,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 15,
+                            "tipo": "ESLOC",
+                            "nome": "Itapuã do Oeste",
+                            "municipio": "Itapuã do Oeste",
+                            "latitude": -9.202220,
+                            "longitude": -63.180000,
+                            "codigo_ibge": 1101104,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 16,
+                            "tipo": "ESLOC",
+                            "nome": "Triunfo",
+                            "municipio": "Candeias do Jamari",
+                            "distrito": "Triunfo",
+                            "latitude": -9.280720,
+                            "longitude": -63.46876,
+                            "codigo_ibge": 1100809,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 17,
+                            "tipo": "ESLOC",
+                            "nome": "Calama",
+                            "municipio": "Porto Velho",
+                            "distrito": "Calama",
+                            "latitude": -8.028425,
+                            "longitude": -62.875158,
+                            "codigo_ibge": 1100205,
+                            "ddd": 69
+                        }
+                    ]
+                },
+                {
+                    "id": 2,
+                    "nome": "Território Rural da Cidadania do Vale do Jamari",
+                    "cor": "#E8B5A5",
+                    "unidades": [
+                        {
+                            "id": 18,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de Ariquemes",
+                            "municipio": "Ariquemes",
+                            "latitude": -9.912800,
+                            "longitude": -63.033300,
+                            "codigo_ibge": 1100023,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 19,
+                            "tipo": "ESLOC",
+                            "nome": "Ariquemes",
+                            "municipio": "Ariquemes",
+                            "latitude": -9.912800,
+                            "longitude": -63.033300,
+                            "codigo_ibge": 1100023,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 20,
+                            "tipo": "ESLOC",
+                            "nome": "Alto Paraíso",
+                            "municipio": "Alto Paraíso",
+                            "latitude": -9.714300,
+                            "longitude": -63.318800,
+                            "codigo_ibge": 1100403,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 21,
+                            "tipo": "ESLOC",
+                            "nome": "Rio Crespo",
+                            "municipio": "Rio Crespo",
+                            "latitude": -9.693300,
+                            "longitude": -62.883300,
+                            "codigo_ibge": 1100262,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 22,
+                            "tipo": "ESLOC",
+                            "nome": "Cujubim",
+                            "municipio": "Cujubim",
+                            "latitude": -9.366700,
+                            "longitude": -62.583300,
+                            "codigo_ibge": 1100940,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 23,
+                            "tipo": "ESLOC",
+                            "nome": "Machadinho do Oeste",
+                            "municipio": "Machadinho D'Oeste",
+                            "latitude": -9.42409,
+                            "longitude": -61.9923,
+                            "codigo_ibge": 1100130,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 24,
+                            "tipo": "Centro de Treinamento",
+                            "nome": "Subunidade 5º BEC",
+                            "municipio": "Machadinho D'Oeste",
+                            "latitude": -9.68896,
+                            "longitude": -62.21125,
+                            "codigo_ibge": 1100130,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 25,
+                            "tipo": "ESLOC",
+                            "nome": "Cacaulândia",
+                            "municipio": "Cacaulândia",
+                            "latitude": -10.340800,
+                            "longitude": -62.899700,
+                            "codigo_ibge": 1100601,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 26,
+                            "tipo": "ESLOC",
+                            "nome": "Monte Negro",
+                            "municipio": "Monte Negro",
+                            "latitude": -10.252500,
+                            "longitude": -63.297200,
+                            "codigo_ibge": 1101401,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 27,
+                            "tipo": "ESLOC",
+                            "nome": "Buritis",
+                            "municipio": "Buritis",
+                            "latitude": -10.203300,
+                            "longitude": -63.829400,
+                            "codigo_ibge": 1100452,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 28,
+                            "tipo": "ESLOC",
+                            "nome": "Campo Novo de Rondônia",
+                            "municipio": "Campo Novo de Rondônia",
+                            "latitude": -10.567200,
+                            "longitude": -63.617200,
+                            "codigo_ibge": 1100700,
+                            "ddd": 69
+                        },
+                        {
+                            // Jacinópolis: Território 2 (texto), mas IBGE/cor de Nova Mamoré (Território 1)
+                            "id": 29,
+                            "tipo": "ESLOC",
+                            "nome": "Jacinópolis",
+                            "municipio": "Nova Mamoré",
+                            "distrito": "Jacinópolis",
+                            "latitude": -10.272272,
+                            "longitude": -64.273303,
+                            "codigo_ibge": 1100338,
+                            "ddd": 69
+                        }
+                    ]
+                },
+                {
+                    "id": 3,
+                    "nome": "Território da Cidadania Central de Rondônia",
+                    "cor": "#A8D5E8",
+                    "unidades": [
+                        {
+                            "id": 30,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de Ji-Paraná",
+                            "municipio": "Ji-Paraná",
+                            "latitude": -10.881100,
+                            "longitude": -61.941700,
+                            "codigo_ibge": 1100122,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 31,
+                            "tipo": "ESLOC",
+                            "nome": "Ji-Paraná",
+                            "municipio": "Ji-Paraná",
+                            "latitude": -10.877800,
+                            "longitude": -61.927800,
+                            "codigo_ibge": 1100122,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 32,
+                            "tipo": "ESLOC",
+                            "nome": "Nova Londrina",
+                            "municipio": "Ji-Paraná",
+                            "latitude": -11.064790,
+                            "longitude": -62.009850,
+                            "codigo_ibge": 1100122,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 33,
+                            "tipo": "ESLOC",
+                            "nome": "Nova Colina",
+                            "municipio": "Ji-Paraná",
+                            "latitude": -10.791800,
+                            "longitude": -61.693170,
+                            "codigo_ibge": 1100122,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 34,
+                            "tipo": "ESLOC",
+                            "nome": "Presidente Médici",
+                            "municipio": "Presidente Médici",
+                            "latitude": -11.172500,
+                            "longitude": -61.898600,
+                            "codigo_ibge": 1100254,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 35,
+                            "tipo": "ESLOC",
+                            "nome": "Estrela de Rondônia",
+                            "municipio": "Ji-Paraná",
+                            "latitude": -11.301450,
+                            "longitude": -61.782880,
+                            "codigo_ibge": 1100122,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 36,
+                            "tipo": "ESLOC",
+                            "nome": "Novo Riachuelo",
+                            "municipio": "Presidente Médici",
+                            "latitude": -11.082630,
+                            "longitude": -61.656970,
+                            "codigo_ibge": 1100254,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 37,
+                            "tipo": "ESLOC",
+                            "nome": "Urupá",
+                            "municipio": "Urupá",
+                            "latitude": -11.108300,
+                            "longitude": -62.347200,
+                            "codigo_ibge": 1101708,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 38,
+                            "tipo": "ESLOC",
+                            "nome": "Teixeirópolis",
+                            "municipio": "Teixeirópolis",
+                            "latitude": -10.891700,
+                            "longitude": -62.216700,
+                            "codigo_ibge": 1101559,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 39,
+                            "tipo": "ESLOC",
+                            "nome": "Vale do Paraíso",
+                            "municipio": "Vale do Paraíso",
+                            "latitude": -10.866700,
+                            "longitude": -62.083300,
+                            "codigo_ibge": 1101807,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 40,
+                            "tipo": "ESLOC",
+                            "nome": "Rondominas",
+                            "municipio": "Ouro Preto do Oeste",
+                            "latitude": -10.513200,
+                            "longitude": -61.999640,
+                            "codigo_ibge": 1100155,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 41,
+                            "tipo": "ESLOC",
+                            "nome": "Mirante da Serra",
+                            "municipio": "Mirante da Serra",
+                            "latitude": -11.016700,
+                            "longitude": -62.666700,
+                            "codigo_ibge": 1101302,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 42,
+                            "tipo": "ESLOC",
+                            "nome": "Nova União",
+                            "municipio": "Nova União",
+                            "latitude": -10.908300,
+                            "longitude": -62.533300,
+                            "codigo_ibge": 1101435,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 43,
+                            "tipo": "ESLOC",
+                            "nome": "Tarilândia",
+                            "municipio": "Jaru",
+                            "latitude": -10.855390,
+                            "longitude": -62.796840,
+                            "codigo_ibge": 1100114,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 44,
+                            "tipo": "ESLOC",
+                            "nome": "Governador Jorge Teixeira",
+                            "municipio": "Governador Jorge Teixeira",
+                            "latitude": -10.614020,
+                            "longitude": -62.7326400,
+                            "codigo_ibge": 1101005,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 45,
+                            "tipo": "ESLOC",
+                            "nome": "Colina Verde",
+                            "municipio": "Governador Jorge Teixeira",
+                            "latitude": -10.541740,
+                            "longitude": -63.0181600,
+                            "codigo_ibge": 1101005,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 46,
+                            "tipo": "ESLOC",
+                            "nome": "Jaru",
+                            "municipio": "Jaru",
+                            "latitude": -10.438900,
+                            "longitude": -62.466400,
+                            "codigo_ibge": 1100114,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 47,
+                            "tipo": "ESLOC",
+                            "nome": "Theobroma",
+                            "municipio": "Theobroma",
+                            "latitude": -10.241700,
+                            "longitude": -62.358300,
+                            "codigo_ibge": 1101609,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 48,
+                            "tipo": "ESLOC",
+                            "nome": "Vale do Anari",
+                            "municipio": "Vale do Anari",
+                            "latitude": -9.855600,
+                            "longitude": -62.233300,
+                            "codigo_ibge": 1101757,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 49,
+                            "tipo": "ESLOC",
+                            "nome": "Ouro Preto do Oeste",
+                            "municipio": "Ouro Preto do Oeste",
+                            "latitude": -10.747200,
+                            "longitude": -62.215800,
+                            "codigo_ibge": 1100155,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 50,
+                            "tipo": "Centro de Treinamento",
+                            "nome": "Centrer",
+                            "municipio": "Ouro Preto do Oeste",
+                            "latitude": -10.747200,
+                            "longitude": -62.215800,
+                            "codigo_ibge": 1100155,
+                            "ddd": 69
+                        }
+                    ]
+                },
+                {
+                    "id": 4,
+                    "nome": "Território de Identidade Vale do Guaporé",
+                    "cor": "#A855A8",
+                    "unidades": [
+                        {
+                            "id": 51,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de São Francisco do Guaporé",
+                            "municipio": "São Francisco do Guaporé",
+                            "latitude": -12.058300,
+                            "longitude": -63.566700,
+                            "codigo_ibge": 1101492,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 52,
+                            "tipo": "ESLOC",
+                            "nome": "São Francisco do Guaporé",
+                            "municipio": "São Francisco do Guaporé",
+                            "latitude": -12.058300,
+                            "longitude": -63.566700,
+                            "codigo_ibge": 1101492,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 53,
+                            "tipo": "ESLOC",
+                            "nome": "São Domingos",
+                            "municipio": "Costa Marques",
+                            "distrito": "São Domingos",
+                            "latitude": -12.07514,
+                            "longitude": -64.02769,
+                            "codigo_ibge": 1100080,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 54,
+                            "tipo": "ESLOC",
+                            "nome": "Costa Marques",
+                            "municipio": "Costa Marques",
+                            "latitude": -12.436100,
+                            "longitude": -64.231400,
+                            "codigo_ibge": 1100080,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 55,
+                            "tipo": "ESLOC",
+                            "nome": "Seringueiras",
+                            "municipio": "Seringueiras",
+                            "latitude": -11.808300,
+                            "longitude": -63.016700,
+                            "codigo_ibge": 1101500,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 56,
+                            "tipo": "ESLOC",
+                            "nome": "São Miguel do Guaporé",
+                            "municipio": "São Miguel do Guaporé",
+                            "latitude": -11.691700,
+                            "longitude": -62.716700,
+                            "codigo_ibge": 1100320,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 57,
+                            "tipo": "ESLOC",
+                            "nome": "Alvorada do Oeste",
+                            "municipio": "Alvorada D'Oeste",
+                            "latitude": -11.333300,
+                            "longitude": -62.283300,
+                            "codigo_ibge": 1100346,
+                            "ddd": 69
+                        }
+                    ]
+                },
+                {
+                    "id": 5,
+                    "nome": "Território de Identidade Zona da Mata",
+                    "cor": "#5A7FB8",
+                    "unidades": [
+                        {
+                            "id": 58,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de Rolim de Moura",
+                            "municipio": "Rolim de Moura",
+                            "latitude": -11.727200,
+                            "longitude": -61.774700,
+                            "codigo_ibge": 1100288,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 59,
+                            "tipo": "ESLOC",
+                            "nome": "Rolim de Moura",
+                            "municipio": "Rolim de Moura",
+                            "latitude": -11.727200,
+                            "longitude": -61.774700,
+                            "codigo_ibge": 1100288,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 60,
+                            "tipo": "ESLOC",
+                            "nome": "Novo Horizonte do Oeste",
+                            "municipio": "Novo Horizonte do Oeste",
+                            "latitude": -11.700000,
+                            "longitude": -61.983300,
+                            "codigo_ibge": 1100502,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 61,
+                            "tipo": "ESLOC",
+                            "nome": "Nova Brasilândia do Oeste",
+                            "municipio": "Nova Brasilândia D'Oeste",
+                            "latitude": -11.716700,
+                            "longitude": -62.316700,
+                            "codigo_ibge": 1100148,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 62,
+                            "tipo": "ESLOC",
+                            "nome": "Castanheiras",
+                            "municipio": "Castanheiras",
+                            "latitude": -11.433300,
+                            "longitude": -61.950000,
+                            "codigo_ibge": 1100908,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 63,
+                            "tipo": "ESLOC",
+                            "nome": "Santa Luzia do Oeste",
+                            "municipio": "Santa Luzia D'Oeste",
+                            "latitude": -11.855556,
+                            "longitude": -61.783333,
+                            "codigo_ibge": 1100296,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 64,
+                            "tipo": "ESLOC",
+                            "nome": "Alta Floresta do Oeste",
+                            "municipio": "Alta Floresta D'Oeste",
+                            "latitude": -11.928300,
+                            "longitude": -61.995300,
+                            "codigo_ibge": 1100015,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 65,
+                            "tipo": "ESLOC",
+                            "nome": "Alto Alegre dos Parecis",
+                            "municipio": "Alto Alegre dos Parecis",
+                            "latitude": -12.132000,
+                            "longitude": -61.835000,
+                            "codigo_ibge": 1100379,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 66,
+                            "tipo": "ESLOC",
+                            "nome": "Izidolândia",
+                            "municipio": "Alta Floresta D'Oeste",
+                            "distrito": "Izidolândia",
+                            "latitude": -12.604510,
+                            "longitude": -62.174920,
+                            "codigo_ibge": 1100015,
+                            "ddd": 69
+                        }
+                    ]
+                },
+                {
+                    "id": 6,
+                    "nome": "Território de Identidade Rio Machado",
+                    "cor": "#E8A5C8",
+                    "unidades": [
+                        {
+                            "id": 67,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de Pimenta Bueno",
+                            "municipio": "Pimenta Bueno",
+                            "latitude": -11.672200,
+                            "longitude": -61.193100,
+                            "codigo_ibge": 1100189,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 68,
+                            "tipo": "ESLOC",
+                            "nome": "Pimenta Bueno",
+                            "municipio": "Pimenta Bueno",
+                            "latitude": -11.672200,
+                            "longitude": -61.193100,
+                            "codigo_ibge": 1100189,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 69,
+                            "tipo": "ESLOC",
+                            "nome": "Espigão do Oeste",
+                            "municipio": "Espigão D'Oeste",
+                            "latitude": -11.525600,
+                            "longitude": -61.005600,
+                            "codigo_ibge": 1100098,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 70,
+                            "tipo": "ESLOC",
+                            "nome": "Cacoal",
+                            "municipio": "Cacoal",
+                            "latitude": -11.438600,
+                            "longitude": -61.447200,
+                            "codigo_ibge": 1100049,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 71,
+                            "tipo": "ESLOC",
+                            "nome": "Ministro Andreazza",
+                            "municipio": "Ministro Andreazza",
+                            "latitude": -11.074170,
+                            "longitude": -61.516940,
+                            "codigo_ibge": 1101203,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 72,
+                            "tipo": "ESLOC",
+                            "nome": "São Felipe d'Oeste",
+                            "municipio": "São Felipe D'Oeste",
+                            "latitude": -11.910800,
+                            "longitude": -61.513010,
+                            "codigo_ibge": 1101484,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 73,
+                            "tipo": "ESLOC",
+                            "nome": "Primavera de Rondônia",
+                            "municipio": "Primavera de Rondônia",
+                            "latitude": -11.829460,
+                            "longitude": -61.315340,
+                            "codigo_ibge": 1101476,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 74,
+                            "tipo": "ESLOC",
+                            "nome": "Parecis",
+                            "municipio": "Parecis",
+                            "latitude": -12.286600  ,
+                            "longitude": -61.316600,
+                            "codigo_ibge": 1101450,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 75,
+                            "tipo": "ESLOC",
+                            "nome": "Boa Vista do Pacarana",
+                            "municipio": "Espigão D'Oeste",
+                            "distrito": "Boa Vista do Pacarana",
+                            "latitude": -11.001930,
+                            "longitude": -60.847350,
+                            "codigo_ibge": 1100098,
+                            "ddd": 69
+                        }
+                    ]
+                },
+                {
+                    "id": 7,
+                    "nome": "Território de Identidade Cone Sul",
+                    "cor": "#FF9800",
+                    "unidades": [
+                        {
+                            "id": 76,
+                            "tipo": "ESREG",
+                            "nome": "Esreg de Colorado do Oeste",
+                            "municipio": "Colorado do Oeste",
+                            "latitude": -13.116700,
+                            "longitude": -60.533300,
+                            "codigo_ibge": 1100064,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 77,
+                            "tipo": "ESLOC",
+                            "nome": "Colorado do Oeste",
+                            "municipio": "Colorado do Oeste",
+                            "latitude": -13.116700,
+                            "longitude": -60.533300,
+                            "codigo_ibge": 1100064,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 78,
+                            "tipo": "ESLOC",
+                            "nome": "Cabixi",
+                            "municipio": "Cabixi",
+                            "latitude": -13.500000,
+                            "longitude": -60.541700,
+                            "codigo_ibge": 1100031,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 79,
+                            "tipo": "ESLOC",
+                            "nome": "Pimenteiras do Oeste",
+                            "municipio": "Pimenteiras do Oeste",
+                            "latitude": -13.483300,
+                            "longitude": -61.033300,
+                            "codigo_ibge": 1101468,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 80,
+                            "tipo": "ESLOC",
+                            "nome": "Cerejeiras",
+                            "municipio": "Cerejeiras",
+                            "latitude": -13.183300,
+                            "longitude": -60.816700,
+                            "codigo_ibge": 1100056,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 81,
+                            "tipo": "ESLOC",
+                            "nome": "Corumbiara",
+                            "municipio": "Corumbiara",
+                            "latitude": -12.983300,
+                            "longitude": -60.916700,
+                            "codigo_ibge": 1100072,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 82,
+                            "tipo": "ESLOC",
+                            "nome": "Chupinguaia",
+                            "municipio": "Chupinguaia",
+                            "latitude": -12.566700,
+                            "longitude": -60.900000,
+                            "codigo_ibge": 1100924,
+                            "ddd": 69
+                        },
+                        {
+                            "id": 83,
+                            "tipo": "ESLOC",
+                            "nome": "Vilhena",
+                            "municipio": "Vilhena",
+                            "latitude": -12.740600,
+                            "longitude": -60.145800,
+                            "codigo_ibge": 1100304,
+                            "ddd": 69
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Variável global para armazenar dados de cobertura
+        let dadosCobertura = {
+            municipios: [],
+            resumo: {}
+        };
+
+        // Função para buscar estatísticas de cobertura da API
+        async function buscarEstatisticasCobertura() {
+            try {
+                const response = await fetch('./get-estatisticas-cobertura.php');
+                const data = await response.json();
+                
+                if (data.success) {
+                    dadosCobertura = data;
+                    console.log('📊 Estatísticas carregadas:', data.resumo);
+                    console.log('🟢 Municípios visitados:', data.municipios.map(m => m.municipio));
+                    atualizarEstatisticasSidebar();
+                    return data;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao buscar estatísticas:', error);
+            }
+            return null;
+        }
+
+        // Função para atualizar estatísticas na sidebar
+        function atualizarEstatisticasSidebar() {
+            const resumo = dadosCobertura.resumo;
+            
+            // Atualizar valores
+            document.getElementById('total-unidades').textContent = resumo.total_unidades_emater || 83;
+            document.getElementById('total-municipios').textContent = resumo.total_municipios || 52;
+            
+            // Limpar estatísticas de cobertura anteriores (se existirem)
+            const statsDiv = document.querySelector('.stats');
+            const statItemsExistentes = statsDiv.querySelectorAll('.stat-item');
+            
+            // Remove itens após o 4º (os 4 primeiros são: Total Unidades, Territórios, Municípios IBGE, Municípios+Distritos)
+            if (statItemsExistentes.length > 4) {
+                for (let i = statItemsExistentes.length - 1; i >= 4; i--) {
+                    statItemsExistentes[i].remove();
+                }
+            }
+            
+            // Adicionar estatísticas de cobertura
+            const coberturaHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Formulários Preenchidos:</span>
+                    <span class="stat-value green">${resumo.total_formularios || 0}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Unidades Visitadas:</span>
+                    <span class="stat-value orange">${resumo.unidades_visitadas || 0}/${resumo.total_unidades_emater || 83}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Municípios Visitados:</span>
+                    <span class="stat-value orange">${resumo.municipios_visitados || 0}/${resumo.total_municipios || 52}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Cobertura Unidades:</span>
+                    <span class="stat-value ${resumo.percentual_cobertura_unidades >= 50 ? 'green' : 'red'}">${resumo.percentual_cobertura_unidades || 0}%</span>
+                </div>
+            `;
+            
+            // Inserir após as estatísticas existentes
+            const lastStatItem = statsDiv.querySelector('.stat-item:last-child');
+            if (lastStatItem) {
+                lastStatItem.insertAdjacentHTML('afterend', coberturaHTML);
+            }
+        }
+
+        // Função para verificar se uma unidade EMATER foi visitada
+        function unidadeFoiVisitada(nomeUnidade) {
+            if (!dadosCobertura.unidades) return false;
+            const visitada = dadosCobertura.unidades.some(u => 
+                u.unidade.toLowerCase().trim() === nomeUnidade.toLowerCase().trim()
+            );
+            if (visitada) {
+                console.log(`✅ Unidade ${nomeUnidade} foi VISITADA`);
+            }
+            return visitada;
+        }
+
+        // Função para obter informações de visitas da unidade EMATER
+        function getInfoVisitasUnidade(nomeUnidade) {
+            if (!dadosCobertura.unidades) return null;
+            return dadosCobertura.unidades.find(u => 
+                u.unidade.toLowerCase().trim() === nomeUnidade.toLowerCase().trim()
+            );
+        }
+
+        // Função para verificar se um município foi visitado (compatibilidade)
+        function municipioFoiVisitado(nomeMunicipio) {
+            if (!dadosCobertura.municipios) return false;
+            const visitado = dadosCobertura.municipios.some(m => 
+                m.municipio.toLowerCase().trim() === nomeMunicipio.toLowerCase().trim()
+            );
+            if (visitado) {
+                console.log(`✅ ${nomeMunicipio} foi VISITADO`);
+            }
+            return visitado;
+        }
+
+        // Função para obter informações de visitas do município (compatibilidade)
+        function getInfoVisitasMunicipio(nomeMunicipio) {
+            if (!dadosCobertura.municipios) return null;
+            return dadosCobertura.municipios.find(m => 
+                m.municipio.toLowerCase().trim() === nomeMunicipio.toLowerCase().trim()
+            );
+        }
+
+        // Função para atualizar destaque dos territórios
+        function atualizarDestaqueTerritorio(territorioId) {
+            territorioAtivoId = territorioId;
+            
+            // Redesenhar layer de municípios se existir
+            if (layerMunicipios) {
+                layerMunicipios.setStyle((feature) => {
+                    const props = feature.properties || {};
+                    const idIbge = props.id;
+                    const nome = props.name || props.NOME || props.NM_MUN || '';
+                    
+                    const foiVisitado = municipioFoiVisitado(nome);
+                    
+                    let territorio = null;
+                    if (idIbge && municipioParaTerritorio[idIbge]) {
+                        territorio = municipioParaTerritorio[idIbge];
+                    } else {
+                        const keyNome = normalizaNomeMunicipio(nome);
+                        if (municipioParaTerritorio[keyNome]) {
+                            territorio = municipioParaTerritorio[keyNome];
+                        }
+                    }
+                    
+                    let cor, borda, opacidade;
+                    
+                    // Se não há território ativo, ou este município pertence ao território ativo
+                    const pertenceAoTerritorioAtivo = !territorioAtivoId || (territorio && territorio.id === territorioAtivoId);
+                    
+                    if (foiVisitado) {
+                        cor = '#27ae60';
+                        borda = '#1e8449';
+                        opacidade = pertenceAoTerritorioAtivo ? 0.45 : 0.15;
+                    } else {
+                        if (pertenceAoTerritorioAtivo) {
+                            // Território ativo: cor original
+                            cor = territorio ? territorio.cor : '#95a5a6';
+                            borda = '#7f8c8d';
+                            opacidade = 0.15;
+                        } else {
+                            // Território inativo: cinza neutro
+                            cor = '#d5d5d5';
+                            borda = '#b0b0b0';
+                            opacidade = 0.08;
+                        }
+                    }
+                    
+                    return {
+                        color: borda,
+                        weight: foiVisitado ? 2 : 1,
+                        fillColor: cor,
+                        fillOpacity: opacidade,
+                        className: foiVisitado ? 'municipio-visitado' : 'municipio-polygon'
+                    };
+                });
+            }
+        }
+
+        // Variável global para território ativo (destaque)
+        let territorioAtivoId = null;
+        let layerMunicipios = null;
+        let geoJsonLayer = null; // Camada de polígonos dos municípios
+        let filtroMunicipiosVisitados = false; // Novo: controla filtro de municípios visitados
+
+        // Inicializar mapa
+        const map = L.map('map').setView([-10.9, -62.8], 7);
+        const defaultView = {
+            center: [-10.9, -62.8],
+            zoom: 7
+        };
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Carregar polígonos dos municípios
+        carregarPoligonosMunicipios();
+
+        let markers = [];
+        let markerGroups = {};
+        let currentFilter = 'todos';
+        let searchTerm = '';
+
+        const iconTypes = {
+            'Centro Gerencial': '🏛️',
+            'ESREG': '🏢',
+            'ESLOC': '📍',
+            'Centro de Treinamento': '🎓'
+        };
+
+        // Função para carregar polígonos dos municípios
+        async function carregarPoligonosMunicipios() {
+            try {
+                const response = await fetch('geojs-11-mun.json');
+                const geoJsonData = await response.json();
+
+                geoJsonLayer = L.geoJSON(geoJsonData, {
+                    style: function(feature) {
+                        return getPolygonStyle(feature.properties.name);
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties && feature.properties.name) {
+                            layer.bindTooltip(feature.properties.name, {
+                                permanent: false,
+                                direction: 'center',
+                                className: 'municipio-tooltip-geojson'
+                            });
+                        }
+
+                        layer.on({
+                            mouseover: function(e) {
+                                const layer = e.target;
+                                layer.setStyle({
+                                    weight: 3,
+                                    color: '#2a5298',
+                                    fillOpacity: 0.7
+                                });
+                            },
+                            mouseout: function(e) {
+                                geoJsonLayer.resetStyle(e.target);
+                            },
+                            click: function(e) {
+                                const municipioNome = e.target.feature.properties.name;
+                                // Encontrar marcadores deste município
+                                const marcadoresMunicipio = markers.filter(m => 
+                                    m.unidadeMunicipio === municipioNome
+                                );
+                                if (marcadoresMunicipio.length > 0) {
+                                    map.setView([e.latlng.lat, e.latlng.lng], 10);
+                                    marcadoresMunicipio[0].openPopup();
+                                }
+                            }
+                        });
+                    }
+                }).addTo(map);
+
+                // Enviar polígonos para trás dos marcadores
+                geoJsonLayer.bringToBack();
+
+                console.log('✅ Polígonos dos municípios carregados com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao carregar polígonos:', error);
+            }
+        }
+
+        // Função para obter estilo do polígono baseado em dados
+        function getPolygonStyle(municipio) {
+            if (!municipio) return getStylePadrao();
+            
+            const foiVisitado = municipioFoiVisitado(municipio);
+            const infoVisitas = getInfoVisitasMunicipio(municipio);
+            
+            if (foiVisitado && infoVisitas) {
+                const count = infoVisitas.total_formularios;
+                
+                if (count <= 2) {
+                    return {
+                        fillColor: '#667eea',
+                        weight: 2,
+                        opacity: 1,
+                        color: '#4c51bf',
+                        fillOpacity: 0.4
+                    };
+                } else if (count <= 5) {
+                    return {
+                        fillColor: '#f39c12',
+                        weight: 2,
+                        opacity: 1,
+                        color: '#d68910',
+                        fillOpacity: 0.4
+                    };
+                } else {
+                    return {
+                        fillColor: '#27ae60',
+                        weight: 2,
+                        opacity: 1,
+                        color: '#1e8449',
+                        fillOpacity: 0.5
+                    };
+                }
+            }
+            
+            return getStylePadrao();
+        }
+
+        function getStylePadrao() {
+            return {
+                fillColor: '#e0e0e0',
+                weight: 1.5,
+                opacity: 1,
+                color: '#999',
+                fillOpacity: 0.2
+            };
+        }
+
+        // Função para atualizar cores dos polígonos
+        function atualizarCoresPoligonos() {
+            if (!geoJsonLayer) return;
+
+            geoJsonLayer.eachLayer(function(layer) {
+                const municipioNome = layer.feature.properties.name;
+                const estilo = getPolygonStyle(municipioNome);
+                layer.setStyle(estilo);
+            });
+        }
+
+        // Função para resetar o zoom
+        function resetZoom() {
+            map.setView(defaultView.center, defaultView.zoom, {
+                animate: true,
+                duration: 1
+            });
+            // Remove classe active de todos os territórios
+            document.querySelectorAll('.territorio-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Resetar destaque (mostrar todos os territórios)
+            atualizarDestaqueTerritorio(null);
+        }
+
+        // Função para destacar apenas municípios visitados
+        function destacarMunicipiosVisitados() {
+            console.log('🔍 Destacando municípios visitados...');
+            filtroMunicipiosVisitados = true;
+            
+            // Desativar território ativo
+            territorioAtivoId = null;
+            document.querySelectorAll('.territorio-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Atualizar estilos do layer GeoJSON
+            if (geoJsonLayer) {
+                geoJsonLayer.eachLayer(function(layer) {
+                    const municipioNome = layer.feature.properties.name;
+                    const foiVisitado = municipioFoiVisitado(municipioNome);
+                    
+                    if (foiVisitado) {
+                        layer.setStyle({
+                            fillColor: '#27ae60',
+                            weight: 3,
+                            opacity: 1,
+                            color: '#1e8449',
+                            fillOpacity: 0.7
+                        });
+                    } else {
+                        layer.setStyle({
+                            fillColor: '#d5d5d5',
+                            weight: 1,
+                            opacity: 0.5,
+                            color: '#b0b0b0',
+                            fillOpacity: 0.15
+                        });
+                    }
+                });
+            }
+            
+            // Atualizar estilos do layer antigo (compatibilidade)
+            if (layerMunicipios) {
+                layerMunicipios.setStyle((feature) => {
+                    const props = feature.properties || {};
+                    const nome = props.name || props.NOME || props.NM_MUN || '';
+                    const foiVisitado = municipioFoiVisitado(nome);
+                    
+                    let cor, borda, opacidade;
+                    
+                    if (foiVisitado) {
+                        // Município visitado: verde vibrante
+                        cor = '#27ae60';
+                        borda = '#1e8449';
+                        opacidade = 0.85;
+                    } else {
+                        // Município não visitado: cinza neutro
+                        cor = '#d5d5d5';
+                        borda = '#b0b0b0';
+                        opacidade = 0.10;
+                    }
+                    
+                    return {
+                        color: borda,
+                        weight: foiVisitado ? 2 : 1,
+                        fillColor: cor,
+                        fillOpacity: opacidade,
+                        className: foiVisitado ? 'municipio-visitado' : 'municipio-polygon'
+                    };
+                });
+            }
+            
+            // Atualizar botões
+            document.getElementById('filter-municipios-visitados').style.display = 'none';
+            document.getElementById('filter-limpar-destaque').style.display = 'block';
+            
+            console.log('✅ Municípios visitados destacados!');
+        }
+
+        // Função para limpar destaque e mostrar todos
+        function limparDestaqueMunicipios() {
+            console.log('🔄 Limpando destaque...');
+            filtroMunicipiosVisitados = false;
+            
+            // Resetar polígonos GeoJSON para cores originais
+            if (geoJsonLayer) {
+                geoJsonLayer.eachLayer(function(layer) {
+                    const municipioNome = layer.feature.properties.name;
+                    const estilo = getPolygonStyle(municipioNome);
+                    layer.setStyle(estilo);
+                });
+            }
+            
+            // Resetar para mostrar todos os territórios
+            atualizarDestaqueTerritorio(null);
+            
+            // Atualizar botões
+            document.getElementById('filter-municipios-visitados').style.display = 'block';
+            document.getElementById('filter-limpar-destaque').style.display = 'none';
+            
+            console.log('✅ Todos os municípios visíveis!');
+        }
+
+        // Adicionar evento ao botão de reset
+        document.getElementById('reset-zoom-btn').addEventListener('click', resetZoom);
+
+        function createCustomIcon(cor, tipo, unidadeVisitada, infoVisitas) {
+            const emoji = iconTypes[tipo] || '📍';
+            
+            // Determinar cor baseada no status de visita
+            let corFinal = cor;
+            let badge = '';
+            
+            if (unidadeVisitada && infoVisitas) {
+                // Município visitado - marcador verde
+                const diasDesdeUltima = infoVisitas.dias_desde_ultima || 0;
+                
+                if (diasDesdeUltima <= 30) {
+                    corFinal = '#27ae60'; // Verde escuro (recente)
+                } else {
+                    corFinal = '#52c77a'; // Verde claro (antiga)
+                }
+                
+                // Adicionar badge com número de visitas (sempre que houver visitas)
+                if (infoVisitas.total_visitas >= 1) {
+                    badge = `<div style="
+                        position: absolute;
+                        top: -8px;
+                        right: -8px;
+                        background: #e74c3c;
+                        color: white;
+                        border-radius: 50%;
+                        width: 18px;
+                        height: 18px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.65em;
+                        font-weight: bold;
+                        border: 2px solid white;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                    ">${infoVisitas.total_visitas}</div>`;
+                }
+            } else {
+                // Município não visitado - marcador cinza
+                corFinal = '#bdc3c7';
+            }
+            
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    position: relative;
+                    background-color: ${corFinal};
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    border: 3px solid ${unidadeVisitada ? '#27ae60' : '#95a5a6'};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                ">${emoji}${badge}</div>`,
+
+                iconSize: [30, 30],
+                iconAnchor: [15, 15],
+                popupAnchor: [0, -15]
+            });
+        }
+
+        // Adiciona marcadores (com exceção visual para Jacinópolis)
+        function addMarkers() {
+            ematerData.territorios.forEach(territorio => {
+                markerGroups[territorio.id] = [];
+                
+                territorio.unidades.forEach(unidade => {
+                    const latOffset = (Math.random() - 0.5) * 0.005;
+                    const lngOffset = (Math.random() - 0.5) * 0.005;
+
+                    // Cor padrão: cor do próprio território
+                    let corMarker = territorio.cor;
+
+                    // EXCEÇÃO: Jacinópolis deve usar a mesma cor de Nova Mamoré (território 1)
+                    if (unidade.nome === "Jacinópolis") {
+                        const territorioNovaMamore = ematerData.territorios.find(t =>
+                            t.unidades.some(u => u.codigo_ibge === 1100338) // código de Nova Mamoré
+                        );
+                        if (territorioNovaMamore) {
+                            corMarker = territorioNovaMamore.cor;
+                        }
+                    }
+
+                    // Verificar se unidade EMATER foi visitada
+                    const unidadeVisitada = unidadeFoiVisitada(unidade.nome);
+                    const infoVisitas = getInfoVisitasUnidade(unidade.nome);
+
+                    const marker = L.marker(
+                        [unidade.latitude + latOffset, unidade.longitude + lngOffset],
+                        { icon: createCustomIcon(corMarker, unidade.tipo, unidadeVisitada, infoVisitas) }
+                    );
+
+                    // Adicionar informações de visita ao popup
+                    let statusVisita = '';
+                    if (unidadeVisitada && infoVisitas) {
+                        const diasDesde = infoVisitas.dias_desde_ultima;
+                        const dataUltima = new Date(infoVisitas.ultima_visita).toLocaleDateString('pt-BR');
+                        statusVisita = `
+                            <div class="popup-info" style="background: #d4edda; padding: 8px; border-radius: 5px; margin-top: 10px;">
+                                <span class="popup-label" style="color: #155724;">✅ Unidade Visitada</span><br>
+                                <span style="color: #155724; font-size: 0.9em;">
+                                    Total de visitas: <b>${infoVisitas.total_visitas}</b><br>
+                                    Última visita: <b>${dataUltima}</b> (${diasDesde} dias atrás)
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        statusVisita = `
+                            <div class="popup-info" style="background: #f8d7da; padding: 8px; border-radius: 5px; margin-top: 10px;">
+                                <span class="popup-label" style="color: #721c24;">❌ Unidade não visitada</span><br>
+                                <span style="color: #721c24; font-size: 0.9em;">
+                                    Nenhum formulário preenchido nesta unidade
+                                </span>
+                            </div>
+                        `;
+                    }
+
+                    const popupContent = `
+                        <div class="popup-content">
+                            <div class="popup-title">${unidade.nome}</div>
+                            <div class="popup-info">
+                                <span class="popup-label">Tipo:</span> ${unidade.tipo}
+                            </div>
+                            <div class="popup-info">
+                                <span class="popup-label">Município:</span> ${unidade.municipio}
+                            </div>
+                            ${unidade.distrito ? `<div class="popup-info">
+                                <span class="popup-label">Distrito:</span> ${unidade.distrito}
+                            </div>` : ''}
+                            <div class="popup-info">
+                                <span class="popup-label">Território:</span> ${territorio.nome}
+                            </div>
+                            ${statusVisita}
+                            <div class="popup-info" style="margin-top: 10px; font-size: 0.85em; color: #666;">
+                                <span class="popup-label">DDD:</span> ${unidade.ddd} | 
+                                <span class="popup-label">IBGE:</span> ${unidade.codigo_ibge}
+                            </div>
+                        </div>
+                    `;
+
+                    marker.bindPopup(popupContent, {
+                        className: 'custom-popup',
+                        maxWidth: 300
+                    });
+
+                    marker.territorioId = territorio.id;
+                    marker.unidadeTipo = unidade.tipo;
+                    marker.unidadeNome = unidade.nome;
+                    marker.unidadeMunicipio = unidade.municipio;
+                    marker.unidadeDistrito = unidade.distrito || '';
+                    marker.addTo(map);
+                    
+                    markers.push(marker);
+                    markerGroups[territorio.id].push(marker);
+                });
+            });
+        }
+
+        function createTerritorioList() {
+            const list = document.getElementById('territorio-list');
+            const overlay = document.getElementById('tooltip-overlay');
+            const tooltipsContainer = document.getElementById('tooltips-container');
+            list.innerHTML = '';
+            tooltipsContainer.innerHTML = '';
+
+            ematerData.territorios.forEach(territorio => {
+                const item = document.createElement('div');
+                item.className = 'territorio-item';
+                item.style.borderLeftColor = territorio.cor;
+                
+                // Criar lista de todas as unidades do território
+                const unidadesHtml = territorio.unidades.map(u => {
+                    const tipoEmoji = {
+                        'Centro Gerencial': '🏛️',
+                        'ESREG': '🏢',
+                        'ESLOC': '📍',
+                        'Centro de Treinamento': '🎓'
+                    };
+                    const emoji = tipoEmoji[u.tipo] || '📍';
+                    const distrito = u.distrito ? ` (Distrito de ${u.municipio})` : '';
+                    return `<li>${emoji} ${u.nome}${distrito}</li>`;
+                }).join('');
+                
+                const tooltipId = `tooltip-${territorio.id}`;
+                
+                item.innerHTML = `
+                    <div class="territorio-header">
+                        <div class="territorio-color" style="background-color: ${territorio.cor}"></div>
+                        <div class="territorio-name">${territorio.nome}</div>
+                        <div class="territorio-count">${territorio.unidades.length}</div>
+                        <div class="territorio-info-icon" data-tooltip="${tooltipId}" title="Ver unidades">ℹ️</div>
+                    </div>
+                `;
+
+                // Criar tooltip separadamente
+                const tooltip = document.createElement('div');
+                tooltip.className = 'territorio-tooltip';
+                tooltip.id = tooltipId;
+                tooltip.innerHTML = `
+                    <div class="territorio-tooltip-header">
+                        <h4>Unidades deste território:</h4>
+                        <button class="territorio-tooltip-close" title="Fechar">×</button>
+                    </div>
+                    <ul>
+                        ${unidadesHtml}
+                    </ul>
+                `;
+                tooltipsContainer.appendChild(tooltip);
+
+                // Event listener para zoom no território (clique no card, mas não no ícone info)
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.territorio-info-icon')) {
+                        return;
+                    }
+                    
+                    document.querySelectorAll('.territorio-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    item.classList.add('active');
+                    
+                    // Atualizar destaque do território
+                    atualizarDestaqueTerritorio(territorio.id);
+                    
+                    const bounds = L.latLngBounds(
+                        territorio.unidades.map(u => [u.latitude, u.longitude])
+                    );
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                });
+
+                // Event listener para mostrar tooltip
+                const infoIcon = item.querySelector('.territorio-info-icon');
+                const closeBtn = tooltip.querySelector('.territorio-tooltip-close');
+
+                infoIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    // Fechar todos os outros tooltips
+                    document.querySelectorAll('.territorio-tooltip').forEach(t => {
+                        t.classList.remove('show');
+                    });
+                    tooltip.classList.add('show');
+                    overlay.classList.add('show');
+                });
+
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    tooltip.classList.remove('show');
+                    overlay.classList.remove('show');
+                });
+
+                list.appendChild(item);
+            });
+
+            // Event listener para fechar ao clicar no overlay
+            overlay.addEventListener('click', () => {
+                document.querySelectorAll('.territorio-tooltip').forEach(t => {
+                    t.classList.remove('show');
+                });
+                overlay.classList.remove('show');
+            });
+        }
+
+        function updateStats() {
+            // Total de unidades (cada unidade é uma localidade)
+            let totalUnidades = 0;
+            // Municípios distintos pelo código IBGE (município oficial)
+            const municipiosIbgeUnicos = new Set();
+
+            ematerData.territorios.forEach(t => {
+                totalUnidades += t.unidades.length;
+                t.unidades.forEach(u => {
+                    if (u.codigo_ibge) {
+                        municipiosIbgeUnicos.add(u.codigo_ibge);
+                    }
+                });
+            });
+
+            document.getElementById('total-unidades').textContent = totalUnidades;
+            document.getElementById('total-territorios').textContent = ematerData.territorios.length;
+            document.getElementById('total-municipios').textContent = municipiosIbgeUnicos.size;
+            document.getElementById('total-localidades').textContent = totalUnidades;
+        }
+
+        function filterMarkers(tipo) {
+            currentFilter = tipo;
+            applyFilters();
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tipo === tipo) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function applyFilters() {
+            markers.forEach(marker => {
+                const passTypeFilter = currentFilter === 'todos' || marker.unidadeTipo === currentFilter;
+                const passSearchFilter = searchTerm === '' || 
+                    marker.unidadeNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    marker.unidadeMunicipio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (marker.unidadeDistrito && marker.unidadeDistrito.toLowerCase().includes(searchTerm.toLowerCase()));
+                
+                if (passTypeFilter && passSearchFilter) {
+                    marker.addTo(map);
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterMarkers(btn.dataset.tipo);
+            });
+        });
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            applyFilters();
+        });
+
+        const legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function() {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = '<h4>📍 Tipos de Unidade</h4>';
+            
+            Object.entries(iconTypes).forEach(([tipo, emoji]) => {
+                div.innerHTML += `
+                    <div class="legend-item">
+                        <span style="font-size: 18px;">${emoji}</span>
+                        <span>${tipo}</span>
+                    </div>
+                `;
+            });
+            
+            div.innerHTML += `
+                <div style="margin-top: 15px; padding-top: 12px; border-top: 2px solid #e0e0e0;">
+                    <h4 style="margin-bottom: 8px;">🗺️ Polígonos Municipais</h4>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 20px; background: rgba(102, 126, 234, 0.4); border: 2px solid #4c51bf; border-radius: 3px;"></div>
+                        <span style="font-size: 0.9em;">1-2 formulários</span>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 20px; background: rgba(243, 156, 18, 0.4); border: 2px solid #d68910; border-radius: 3px;"></div>
+                        <span style="font-size: 0.9em;">3-5 formulários</span>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 20px; background: rgba(39, 174, 96, 0.5); border: 2px solid #1e8449; border-radius: 3px;"></div>
+                        <span style="font-size: 0.9em;">6+ formulários</span>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 20px; background: rgba(224, 224, 224, 0.2); border: 1.5px solid #999; border-radius: 3px;"></div>
+                        <span style="font-size: 0.9em;">Sem formulários</span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.8em; color: #666; font-style: italic;">
+                        💡 Passe o mouse sobre os municípios
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        };
+        legend.addTo(map);
+
+        // Mapa auxiliar: município -> território (para pintar polígonos)
+        const municipioParaTerritorio = {};
+
+        ematerData.territorios.forEach(territorio => {
+            territorio.unidades.forEach(u => {
+                const key = u.municipio
+                    .trim()
+                    .toLowerCase();
+
+                if (!municipioParaTerritorio[key]) {
+                    municipioParaTerritorio[key] = territorio;
+                }
+
+                if (u.codigo_ibge) {
+                    const ibgeKey = u.codigo_ibge.toString();
+                    if (!municipioParaTerritorio[ibgeKey]) {
+                        municipioParaTerritorio[ibgeKey] = territorio;
+                    }
+                }
+            });
+        });
+
+        function normalizaNomeMunicipio(nome) {
+            return nome
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/d'oeste/gi, "doeste")
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+        }
+
+        // Carregar GeoJSON dos municípios de RO
+        fetch('geojs-11-mun.json')
+            .then(r => r.json())
+            .then(geo => {
+                layerMunicipios = L.geoJSON(geo, {
+                    style: feature => {
+                        const props = feature.properties || {};
+                        const idIbge = props.id;
+                        const nome = props.name || props.NOME || props.NM_MUN || '';
+                        
+                        // Verificar se município foi visitado
+                        const foiVisitado = municipioFoiVisitado(nome);
+                        
+                        let territorio = null;
+                        if (idIbge && municipioParaTerritorio[idIbge]) {
+                            territorio = municipioParaTerritorio[idIbge];
+                        } else {
+                            const keyNome = normalizaNomeMunicipio(nome);
+                            if (municipioParaTerritorio[keyNome]) {
+                                territorio = municipioParaTerritorio[keyNome];
+                            }
+                        }
+
+                        // Cores diferentes para visitados e não visitados
+                        let cor, borda, opacidade;
+                        if (foiVisitado) {
+                            // Município VISITADO - Verde vibrante
+                            cor = '#27ae60'; // Verde escuro
+                            borda = '#1e8449'; // Verde mais escuro na borda
+                            opacidade = 0.45; // Mais opaco para destacar
+                        } else {
+                            // Município NÃO VISITADO - Cor do território ou cinza
+                            cor = territorio ? territorio.cor : '#95a5a6';
+                            borda = '#7f8c8d';
+                            opacidade = 0.15; // Mais transparente
+                        }
+
+                        return {
+                            color: borda,
+                            weight: foiVisitado ? 2 : 1,
+                            fillColor: cor,
+                            fillOpacity: opacidade,
+                            className: foiVisitado ? 'municipio-visitado' : 'municipio-polygon'
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties || {};
+                        const idIbge = props.id;
+                        const nome = props.name || props.NOME || props.NM_MUN || '';
+
+                        let territorio = null;
+                        if (idIbge && municipioParaTerritorio[idIbge]) {
+                            territorio = municipioParaTerritorio[idIbge];
+                        } else {
+                            const keyNome = normalizaNomeMunicipio(nome);
+                            if (municipioParaTerritorio[keyNome]) {
+                                territorio = municipioParaTerritorio[keyNome];
+                            }
+                        }
+
+                        let unidadesDoMunicipio = [];
+                        ematerData.territorios.forEach(t => {
+                            t.unidades.forEach(u => {
+                                if (
+                                    u.codigo_ibge === Number(idIbge) ||
+                                    normalizaNomeMunicipio(u.municipio) === normalizaNomeMunicipio(nome)
+                                ) {
+                                    unidadesDoMunicipio.push({
+                                        ...u,
+                                        territorio: t
+                                    });
+                                }
+                            });
+                        });
+
+                        const popupHtml = `
+                            <div class="popup-content">
+                                <div class="popup-title">${nome}</div>
+                                <div class="popup-info">
+                                    <span class="popup-label">Território (cor do mapa):</span>
+                                    ${territorio ? territorio.nome : 'Não definido'}
+                                </div>
+                                <div class="popup-info">
+                                    <span class="popup-label">Código IBGE:</span> ${idIbge || '-'}
+                                </div>
+                                <div class="popup-info">
+                                    <span class="popup-label">Unidades EMATER:</span>
+                                    ${unidadesDoMunicipio.length}
+                                </div>
+                                ${unidadesDoMunicipio.length ? `
+                                <div class="popup-info">
+                                    <span class="popup-label">Lista de unidades:</span><br>
+                                    <ul style="padding-left:18px; margin:4px 0 0 0;">
+                                        ${unidadesDoMunicipio.map(u => `
+                                            <li>${u.tipo} - ${u.nome}${u.distrito ? ' (Distrito: ' + u.distrito + ')' : ''} (${u.latitude.toFixed(4)}, ${u.longitude.toFixed(4)})</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>` : ''}
+                            </div>
+                        `;
+
+                        layer.bindPopup(popupHtml, {
+                            className: 'custom-popup',
+                            maxWidth: 320
+                        });
+
+                        layer.on('mouseover', () => {
+                            layer.setStyle({
+                                weight: 2.5,
+                                fillOpacity: 0.95
+                            });
+                        });
+                        layer.on('mouseout', () => {
+                            layer.setStyle({
+                                weight: 1,
+                                fillOpacity: 0.85
+                            });
+                        });
+                    }
+                });
+
+                layerMunicipios.addTo(map);
+                console.log('✅ Polígonos dos municípios carregados');
+            })
+            .catch(err => {
+                console.error('❌ Erro ao carregar geojs-11-mun.json', err);
+            });
+
+        // Inicialização com dados de cobertura
+        async function inicializarMapa() {
+            console.log('🔄 Carregando estatísticas de cobertura...');
+            await buscarEstatisticasCobertura();
+            addMarkers();
+            createTerritorioList();
+            updateStats();
+            
+            // Atualizar cores dos polígonos após carregar dados
+            setTimeout(() => {
+                atualizarCoresPoligonos();
+            }, 1000);
+            
+            console.log('✅ Mapa de Cobertura EMATER-RO carregado com sucesso!');
+        }
+
+        // Função para limpar cache
+        async function limparCache() {
+            if (!confirm('Deseja limpar o cache do mapa? Isso removerá todos os dados em cache.')) {
+                return;
+            }
+
+            try {
+                // Limpar cache do service worker
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                    console.log('✅ Cache limpo com sucesso');
+                }
+
+                // Desregistrar service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(
+                        registrations.map(registration => registration.unregister())
+                    );
+                    console.log('✅ Service workers desregistrados');
+                }
+
+                alert('Cache limpo com sucesso! A página será recarregada.');
+                window.location.reload(true);
+            } catch (error) {
+                console.error('❌ Erro ao limpar cache:', error);
+                alert('Erro ao limpar cache. Verifique o console.');
+            }
+        }
+
+        // Função para atualizar o mapa
+        async function atualizarMapa() {
+            try {
+                console.log('🔄 Atualizando mapa...');
+                
+                // Recarregar dados
+                await buscarEstatisticasCobertura();
+                
+                // Limpar marcadores existentes
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+                Object.keys(markerGroups).forEach(key => {
+                    markerGroups[key] = [];
+                });
+                
+                // Recriar tudo
+                addMarkers();
+                createTerritorioList();
+                updateStats();
+                
+                // Atualizar cores dos polígonos
+                atualizarCoresPoligonos();
+                
+                // Resetar território ativo
+                atualizarDestaqueTerritorio(null);
+                
+                console.log('✅ Mapa atualizado com sucesso!');
+                alert('Mapa atualizado com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao atualizar mapa:', error);
+                alert('Erro ao atualizar mapa. Verifique o console.');
+            }
+        }
+
+        // Iniciar quando a página carregar
+        inicializarMapa();
+    </script>
+</body>
+</html>
+

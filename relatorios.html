@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios e Análises - EMATECH</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .relatorios-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .page-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        
+        .relatorios-content {
+            padding: 40px;
+        }
+        
+        .filtros-section {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .filtros-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .filtros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .filtro-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .filtro-group label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filtro-group select,
+        .filtro-group input {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .filtro-group select:focus,
+        .filtro-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .action-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn-filtrar,
+        .btn-action {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-filtrar {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+        }
+        
+        .btn-filtrar:hover {
+            background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-3px);
+        }
+        
+        .resumo-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 15px 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-sublabel {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .mapa-section {
+            margin-bottom: 40px;
+        }
+        
+        .charts-section {
+            display: grid;
+            gap: 30px;
+        }
+        
+        .chart-container {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .chart-subtitle {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+        
+        .chart-export {
+            padding: 10px 18px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chart-export:hover {
+            background: #2e7d32;
+            color: white;
+            border-color: #2e7d32;
+            transform: translateY(-2px);
+        }
+        
+        .chart-canvas {
+            position: relative;
+            height: 400px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 30px;
+        }
+        
+        #map {
+            height: 600px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 80px 20px;
+            color: #a0aec0;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .relatorios-content {
+                padding: 30px 20px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .resumo-stats {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .page-header {
+                padding: 30px 20px;
+            }
+            
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .relatorios-content {
+                padding: 20px;
+            }
+            
+            .resumo-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 2.5rem;
+            }
+            
+            .chart-canvas {
+                height: 300px;
+            }
+            
+            #map {
+                height: 400px;
+            }
+            
+            .action-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(102, 126, 234, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    ">
+        <div class="loading-spinner" style="border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+        <p style="margin-top: 20px; font-size: 1.3rem; color: white; font-weight: 600;">
+            🔄 Carregando relatórios...
+        </p>
+    </div>
+    
+    <div class="relatorios-container">
+        <div class="page-header">
+            <h1>📊 Relatórios e Análises</h1>
+            <p>Dashboard Completo de Dados Coletados - EMATECH</p>
+        </div>
+        
+        <div class="relatorios-content">
+            <!-- Filtros -->
+            <div class="filtros-section">
+                <h3 class="filtros-title">🔍 Filtros Avançados</h3>
+                <div class="filtros-grid">
+                <div class="filtro-group">
+                    <label>Período - Início</label>
+                    <input type="date" id="filtro-data-inicio">
+                </div>
+                <div class="filtro-group">
+                    <label>Período - Fim</label>
+                    <input type="date" id="filtro-data-fim">
+                </div>
+                <div class="filtro-group">
+                    <label>Município</label>
+                    <select id="filtro-municipio">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label>Sistema Produtivo</label>
+                    <select id="filtro-sistema">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="btn-filtrar" onclick="aplicarFiltros()">
+                    🔍 Aplicar Filtros
+                </button>
+                <button class="btn-action btn-secondary" onclick="limparFiltros()">
+                    🔄 Limpar Filtros
+                </button>
+                <button class="btn-action btn-secondary" onclick="exportarRelatorio()">
+                    📥 Exportar PDF
+                </button>
+                <button class="btn-action btn-secondary" onclick="voltarAdmin()">
+                    ← Voltar ao Painel
+                </button>
+            </div>
+        </div>
+        
+        <!-- Resumo Estatístico -->
+        <div class="resumo-stats" id="resumoStats">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="total-produtores">-</div>
+                <div class="stat-label">Produtores Entrevistados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏘️</div>
+                <div class="stat-value" id="total-municipios">-</div>
+                <div class="stat-label">Municípios Atendidos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌱</div>
+                <div class="stat-value" id="taxa-adocao">-</div>
+                <div class="stat-label">Taxa de Adoção</div>
+                <div class="stat-sublabel">Práticas sustentáveis</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" id="media-satisfacao">-</div>
+                <div class="stat-label">Satisfação Média</div>
+                <div class="stat-sublabel">Escala 1-5</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="tempo-medio">-</div>
+                <div class="stat-label">Tempo Médio</div>
+                <div class="stat-sublabel">De atendimento</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value" id="melhoria-renda">-</div>
+                <div class="stat-label">Melhoria de Renda</div>
+                <div class="stat-sublabel">% dos produtores</div>
+            </div>
+        </div>
+        
+        <!-- Mapa de Geolocalização -->
+        <div class="mapa-section">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">📍 Mapa de Distribuição Geográfica</div>
+                        <div class="chart-subtitle">Localização das entrevistas com coordenadas GPS capturadas</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="gps-counter" style="font-size: 0.9em; color: #666;">-</span>
+                    </div>
+                </div>
+                <div id="map" style="height: 500px; border-radius: 8px; overflow: hidden;"></div>
+            </div>
+        </div>
+        
+        <!-- Gráficos -->
+        <div class="charts-section">
+            <!-- Gráficos em Grid -->
+            <div class="charts-grid">
+                <!-- Gráfico 1: Sistemas Produtivos -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Sistemas Produtivos</div>
+                            <div class="chart-subtitle">Distribuição dos produtores por sistema</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartSistemas')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartSistemas"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Gráfico 2: Área Produtiva -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Área Produtiva</div>
+                            <div class="chart-subtitle">Distribuição por faixa de hectares</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartArea')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartArea"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico 3: Adoção de Práticas (Largura Total) -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Adoção de Práticas Sustentáveis</div>
+                        <div class="chart-subtitle">Percentual de adoção e principais práticas adotadas</div>
+                    </div>
+                    <button class="chart-export" onclick="exportarGrafico('chartPraticas')">📥 Exportar</button>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="chartPraticas"></canvas>
+                </div>
+            </div>
+            
+            <!-- Gráficos em Grid -->
+            <div class="charts-grid">
+                <!-- Gráfico 4: Tempo de Atendimento -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Tempo de Atendimento</div>
+                            <div class="chart-subtitle">Distribuição por faixa temporal</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartTempo')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartTempo"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Gráfico 5: Organização Coletiva -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Organização Coletiva</div>
+                            <div class="chart-subtitle">Participação em cooperativas e associações</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartOrganizacao')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartOrganizacao"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico 6: Satisfação Geral (Largura Total) -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <div class="chart-title">Níveis de Satisfação</div>
+                        <div class="chart-subtitle">Média de satisfação por categoria avaliada</div>
+                    </div>
+                    <button class="chart-export" onclick="exportarGrafico('chartSatisfacao')">📥 Exportar</button>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="chartSatisfacao"></canvas>
+                </div>
+            </div>
+            
+            <!-- Gráficos em Grid -->
+            <div class="charts-grid">
+                <!-- Gráfico 7: Mudanças Percebidas -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Mudanças Percebidas</div>
+                            <div class="chart-subtitle">Produção, qualidade e vendas</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartMudancas')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartMudancas"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Gráfico 8: Canais de Comercialização -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <div class="chart-title">Canais de Comercialização</div>
+                            <div class="chart-subtitle">Frequência de utilização</div>
+                        </div>
+                        <button class="chart-export" onclick="exportarGrafico('chartCanais')">📥 Exportar</button>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="chartCanais"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <script src="db-extensionistas.js"></script>
+    <script>
+        // ========================================
+        // RELATÓRIOS.JS - IMPLEMENTAÇÃO INLINE
+        // ========================================
+        
+        let todosFormularios = [];
+        let mapaRelatorios = null;
+        let charts = {};
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', async () => {
+            await carregarDados();
+        });
+        
+        // Carregar dados do IndexedDB
+        async function carregarDados() {
+            try {
+                mostrarLoading(true);
+                
+                await initDB();
+                todosFormularios = await buscarTodosFormularios();
+                
+                if (todosFormularios.length === 0) {
+                    ocultarLoading();
+                    mostrarMensagemVazia();
+                    return;
+                }
+                
+                renderizarResumo();
+                renderizarGraficos();
+                inicializarMapa();
+                
+                ocultarLoading();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                ocultarLoading();
+                alert('Erro ao carregar dados para relatórios.');
+            }
+        }
+        
+        // Buscar todos os formulários
+        async function buscarTodosFormularios() {
+            const db = await initDB();
+            const transaction = db.transaction(['formularios'], 'readonly');
+            const store = transaction.objectStore('formularios');
+            const request = store.getAll();
+            
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        // Renderizar resumo estatístico
+        function renderizarResumo() {
+            const total = todosFormularios.length;
+            const municipios = new Set(todosFormularios.map(f => f.respostas?.municipio).filter(Boolean)).size;
+            
+            // Taxa de adoção de práticas sustentáveis
+            const comPraticas = todosFormularios.filter(f => {
+                const praticas = f.respostas?.praticas_sustentaveis;
+                return praticas && Array.isArray(praticas) && praticas.length > 0;
+            }).length;
+            const taxaAdocao = total > 0 ? Math.round((comPraticas / total) * 100) : 0;
+            
+            // Satisfação média
+            const satisfacoes = todosFormularios
+                .map(f => parseFloat(f.respostas?.satisfacao_geral))
+                .filter(s => !isNaN(s) && s > 0);
+            const mediaSatisfacao = satisfacoes.length > 0
+                ? (satisfacoes.reduce((a, b) => a + b, 0) / satisfacoes.length).toFixed(1)
+                : '-';
+            
+            // Tempo médio
+            const durações = todosFormularios
+                .map(f => f.duracaoMinutos || f.duracao_minutos || 0)
+                .filter(d => d > 0);
+            const tempoMedio = durações.length > 0
+                ? Math.round(durações.reduce((a, b) => a + b, 0) / durações.length)
+                : 0;
+            
+            // Melhoria de renda
+            const comMelhoria = todosFormularios.filter(f => 
+                f.respostas?.mudanca_renda === 'melhorou' || 
+                f.respostas?.mudanca_renda === 'Melhorou'
+            ).length;
+            const taxaMelhoria = total > 0 ? Math.round((comMelhoria / total) * 100) : 0;
+            
+            // Atualizar HTML
+            document.getElementById('total-produtores').textContent = total;
+            document.getElementById('total-municipios').textContent = municipios;
+            document.getElementById('taxa-adocao').textContent = taxaAdocao + '%';
+            document.getElementById('media-satisfacao').textContent = mediaSatisfacao;
+            document.getElementById('tempo-medio').textContent = tempoMedio + 'min';
+            document.getElementById('melhoria-renda').textContent = taxaMelhoria + '%';
+        }
+        
+        // Renderizar gráficos
+        function renderizarGraficos() {
+            renderizarGraficoSistemas();
+            renderizarGraficoArea();
+            renderizarGraficoPraticas();
+            renderizarGraficoTempo();
+            renderizarGraficoOrganizacao();
+            renderizarGraficoSatisfacao();
+            renderizarGraficoMudancas();
+            renderizarGraficoCanais();
+        }
+        
+        // Gráfico 1: Sistemas Produtivos
+        function renderizarGraficoSistemas() {
+            const sistemas = {};
+            todosFormularios.forEach(f => {
+                const sistema = f.respostas?.sistema_produtivo;
+                if (sistema) {
+                    sistemas[sistema] = (sistemas[sistema] || 0) + 1;
+                }
+            });
+            
+            const ctx = document.getElementById('chartSistemas');
+            if (!ctx) return;
+            
+            charts.sistemas = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(sistemas),
+                    datasets: [{
+                        label: 'Quantidade',
+                        data: Object.values(sistemas),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 2: Área Produtiva
+        function renderizarGraficoArea() {
+            const areas = {
+                'Até 10 ha': 0,
+                '10-50 ha': 0,
+                '50-100 ha': 0,
+                'Mais de 100 ha': 0
+            };
+            
+            todosFormularios.forEach(f => {
+                const area = f.respostas?.area_produtiva;
+                if (area && areas.hasOwnProperty(area)) {
+                    areas[area]++;
+                }
+            });
+            
+            const ctx = document.getElementById('chartArea');
+            if (!ctx) return;
+            
+            charts.area = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(areas),
+                    datasets: [{
+                        data: Object.values(areas),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Gráfico 3: Práticas Sustentáveis
+        function renderizarGraficoPraticas() {
+            const praticasCount = {};
+            
+            todosFormularios.forEach(f => {
+                const praticas = f.respostas?.praticas_sustentaveis;
+                if (Array.isArray(praticas)) {
+                    praticas.forEach(p => {
+                        praticasCount[p] = (praticasCount[p] || 0) + 1;
+                    });
+                }
+            });
+            
+            const ctx = document.getElementById('chartPraticas');
+            if (!ctx) return;
+            
+            // Top 10 práticas
+            const topPraticas = Object.entries(praticasCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            charts.praticas = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: topPraticas.map(p => p[0]),
+                    datasets: [{
+                        label: 'Adoções',
+                        data: topPraticas.map(p => p[1]),
+                        backgroundColor: '#27ae60'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 4: Tempo de Atendimento
+        function renderizarGraficoTempo() {
+            const faixas = {
+                '0-15 min': 0,
+                '15-30 min': 0,
+                '30-60 min': 0,
+                'Mais de 60 min': 0
+            };
+            
+            todosFormularios.forEach(f => {
+                const tempo = f.duracaoMinutos || f.duracao_minutos || 0;
+                if (tempo <= 15) faixas['0-15 min']++;
+                else if (tempo <= 30) faixas['15-30 min']++;
+                else if (tempo <= 60) faixas['30-60 min']++;
+                else faixas['Mais de 60 min']++;
+            });
+            
+            const ctx = document.getElementById('chartTempo');
+            if (!ctx) return;
+            
+            charts.tempo = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(faixas),
+                    datasets: [{
+                        data: Object.values(faixas),
+                        backgroundColor: ['#48bb78', '#667eea', '#f56565', '#ed8936']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Gráfico 5: Organização Coletiva
+        function renderizarGraficoOrganizacao() {
+            const organizacoes = {
+                'Cooperativa': 0,
+                'Associação': 0,
+                'Sindicato': 0,
+                'Não participa': 0
+            };
+            
+            todosFormularios.forEach(f => {
+                const org = f.respostas?.organizacao_coletiva || 'Não participa';
+                if (organizacoes.hasOwnProperty(org)) {
+                    organizacoes[org]++;
+                }
+            });
+            
+            const ctx = document.getElementById('chartOrganizacao');
+            if (!ctx) return;
+            
+            charts.organizacao = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(organizacoes),
+                    datasets: [{
+                        label: 'Produtores',
+                        data: Object.values(organizacoes),
+                        backgroundColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 6: Satisfação
+        function renderizarGraficoSatisfacao() {
+            const categorias = {
+                'Atendimento': [],
+                'Orientações': [],
+                'Resultado': [],
+                'Geral': []
+            };
+            
+            todosFormularios.forEach(f => {
+                if (f.respostas?.satisfacao_atendimento) 
+                    categorias['Atendimento'].push(parseFloat(f.respostas.satisfacao_atendimento));
+                if (f.respostas?.satisfacao_orientacoes) 
+                    categorias['Orientações'].push(parseFloat(f.respostas.satisfacao_orientacoes));
+                if (f.respostas?.satisfacao_resultado) 
+                    categorias['Resultado'].push(parseFloat(f.respostas.satisfacao_resultado));
+                if (f.respostas?.satisfacao_geral) 
+                    categorias['Geral'].push(parseFloat(f.respostas.satisfacao_geral));
+            });
+            
+            const medias = Object.keys(categorias).map(cat => {
+                const valores = categorias[cat];
+                return valores.length > 0 
+                    ? (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1)
+                    : 0;
+            });
+            
+            const ctx = document.getElementById('chartSatisfacao');
+            if (!ctx) return;
+            
+            charts.satisfacao = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(categorias),
+                    datasets: [{
+                        label: 'Média de Satisfação (1-5)',
+                        data: medias,
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: '#667eea',
+                        pointBackgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 7: Mudanças Percebidas
+        function renderizarGraficoMudancas() {
+            const mudancas = {
+                'Produção': { 'Melhorou': 0, 'Manteve': 0, 'Piorou': 0 },
+                'Qualidade': { 'Melhorou': 0, 'Manteve': 0, 'Piorou': 0 },
+                'Vendas': { 'Melhorou': 0, 'Manteve': 0, 'Piorou': 0 }
+            };
+            
+            todosFormularios.forEach(f => {
+                const prod = f.respostas?.mudanca_producao;
+                const qual = f.respostas?.mudanca_qualidade;
+                const vend = f.respostas?.mudanca_vendas;
+                
+                if (prod && mudancas['Produção'][prod]) mudancas['Produção'][prod]++;
+                if (qual && mudancas['Qualidade'][qual]) mudancas['Qualidade'][qual]++;
+                if (vend && mudancas['Vendas'][vend]) mudancas['Vendas'][vend]++;
+            });
+            
+            const ctx = document.getElementById('chartMudancas');
+            if (!ctx) return;
+            
+            charts.mudancas = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(mudancas),
+                    datasets: [
+                        {
+                            label: 'Melhorou',
+                            data: Object.values(mudancas).map(m => m['Melhorou']),
+                            backgroundColor: '#48bb78'
+                        },
+                        {
+                            label: 'Manteve',
+                            data: Object.values(mudancas).map(m => m['Manteve']),
+                            backgroundColor: '#ed8936'
+                        },
+                        {
+                            label: 'Piorou',
+                            data: Object.values(mudancas).map(m => m['Piorou']),
+                            backgroundColor: '#f56565'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Gráfico 8: Canais de Comercialização
+        function renderizarGraficoCanais() {
+            const canais = {};
+            
+            todosFormularios.forEach(f => {
+                const canaisForm = f.respostas?.canais_comercializacao;
+                if (Array.isArray(canaisForm)) {
+                    canaisForm.forEach(c => {
+                        canais[c] = (canais[c] || 0) + 1;
+                    });
+                }
+            });
+            
+            const ctx = document.getElementById('chartCanais');
+            if (!ctx) return;
+            
+            charts.canais = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(canais),
+                    datasets: [{
+                        label: 'Frequência',
+                        data: Object.values(canais),
+                        backgroundColor: '#4facfe'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Inicializar mapa
+        function inicializarMapa() {
+            const mapElement = document.getElementById('map');
+            if (!mapElement) return;
+            
+            mapaRelatorios = L.map('map').setView([-10.9, -62.8], 7);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mapaRelatorios);
+            
+            // Adicionar marcadores com GPS
+            let countGPS = 0;
+            todosFormularios.forEach(f => {
+                const geo = f.geolocalizacao || f;
+                if (geo && geo.latitude && geo.longitude) {
+                    const marker = L.marker([geo.latitude, geo.longitude])
+                        .bindPopup(`
+                            <strong>${f.protocolo}</strong><br>
+                            ${f.respostas?.municipio || 'N/A'}<br>
+                            <small>Precisão: ±${Math.round(geo.precisao || 0)}m</small>
+                        `);
+                    marker.addTo(mapaRelatorios);
+                    countGPS++;
+                }
+            });
+            
+            const counterElement = document.getElementById('gps-counter');
+            if (counterElement) {
+                counterElement.textContent = `${countGPS} registros com GPS`;
+            }
+        }
+        
+        // Funções auxiliares
+        function mostrarLoading(mostrar) {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.style.display = mostrar ? 'flex' : 'none';
+            }
+        }
+        
+        function ocultarLoading() {
+            mostrarLoading(false);
+        }
+        
+        function mostrarMensagemVazia() {
+            const container = document.querySelector('.relatorios-container');
+            if (container) {
+                container.innerHTML += '<div class=\"no-data\">📊 Nenhum formulário encontrado. Complete alguns formulários para visualizar os relatórios.</div>';
+            }
+        }
+        
+        // Aplicar filtros
+        function aplicarFiltros() {
+            alert('Filtros ainda não implementados. Utilize esta função para filtrar por período, município, etc.');
+        }
+        
+        // Limpar filtros
+        function limparFiltros() {
+            document.getElementById('filtro-data-inicio').value = '';
+            document.getElementById('filtro-data-fim').value = '';
+            document.getElementById('filtro-municipio').value = '';
+            document.getElementById('filtro-sistema').value = '';
+            carregarDados();
+        }
+        
+        // Exportar relatório
+        function exportarRelatorio() {
+            alert('Exportação para PDF ainda não implementada.');
+        }
+        
+        // Voltar ao painel
+        function voltarAdmin() {
+            window.location.href = 'admin.html';
+        }
+    </script>
+</body>
+</html>

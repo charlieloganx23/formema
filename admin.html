@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Painel Administrativo - EMATECH v2.0</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .admin-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .admin-header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+        
+        .admin-content {
+            padding: 40px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 15px 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.95;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-sublabel {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .action-section {
+            margin-bottom: 40px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .btn-action {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+        }
+        
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .btn-action:active {
+            transform: translateY(-1px);
+        }
+        
+        .data-table {
+            width: 100%;
+            background: #f7fafc;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            color: white;
+            padding: 20px 25px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .table-content {
+            max-height: 600px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .table-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .table-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .table-content::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        .table-content::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        
+        .data-row {
+            padding: 18px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 0.8fr 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .data-row:hover {
+            background: #f7fafc;
+            box-shadow: inset 0 0 0 2px #667eea;
+        }
+        
+        .data-row:last-child {
+            border-bottom: none;
+        }
+        
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            color: #22543d;
+            box-shadow: 0 2px 4px rgba(34, 84, 61, 0.1);
+        }
+        
+        .badge-warning {
+            background: linear-gradient(135deg, #feebc8 0%, #fbd38d 100%);
+            color: #744210;
+            box-shadow: 0 2px 4px rgba(116, 66, 16, 0.1);
+        }
+        
+        @media (max-width: 1024px) {
+            .admin-content {
+                padding: 30px 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 15px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .admin-header {
+                padding: 30px 20px;
+            }
+            
+            .admin-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 2.5rem;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+        
+        /* Botão de Relatórios em Destaque */
+        .btn-relatorios {
+            background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(25, 118, 210, 0.4);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-relatorios:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(25, 118, 210, 0.6);
+            background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);
+        }
+        
+        .btn-relatorios:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Estilos da barra de progresso de sincronização */
+        .sync-progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        }
+        
+        .sync-progress-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+            max-width: 500px;
+        }
+        
+        .sync-progress-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .sync-progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .sync-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2e7d32 0%, #4caf50 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .sync-progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+            margin-top: 10px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>📊 Painel Administrativo</h1>
+            <p>Gerenciamento Completo de Dados - EMATECH v2.0</p>
+        </header>
+        
+        <div class="admin-content">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="stat-total">-</div>
+                    <div class="stat-label">Total de Formulários</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏛️</div>
+                    <div class="stat-value" id="stat-municipios">-</div>
+                    <div class="stat-label">Municípios Visitados</div>
+                    <div class="stat-sublabel">de 52 municípios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-value" id="stat-cobertura">-</div>
+                    <div class="stat-label">Cobertura</div>
+                    <div class="stat-sublabel">% do estado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-value" id="stat-7dias">-</div>
+                    <div class="stat-label">Últimos 7 Dias</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-value" id="stat-tempo">-</div>
+                    <div class="stat-label">Tempo Médio</div>
+                    <div class="stat-sublabel">minutos</div>
+                </div>
+            </div>
+        
+            <!-- Botão de Relatórios em Destaque -->
+            <div class="action-section" style="text-align: center;">
+                <button class="btn-relatorios" onclick="abrirRelatorios()">
+                    📊 VER RELATÓRIOS E GRÁFICOS COMPLETOS
+                </button>
+            </div>
+            
+            <!-- Ações Principais -->
+            <div class="action-section">
+                <h2 class="section-title">🚀 Ações Rápidas</h2>
+                <div class="action-buttons">
+                    <button class="btn-action btn-primary" onclick="window.location.href='mapa-cobertura.html'">
+                        🗺️ Mapa de Cobertura
+                    </button>
+                    <button class="btn-action btn-primary" onclick="atualizarPagina()">
+                        🔄 Atualizar Página
+                    </button>
+                    <button class="btn-action btn-primary" onclick="exportarTodosExcel()">
+                        📊 Exportar Excel
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="exportarTodos()">
+                        📂 Exportar JSON
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="sincronizarTodos()">
+                        🔄 Sincronizar Tudo
+                    </button>
+                    <button class="btn-action btn-danger" onclick="limparDadosLocais()">
+                        🗑️ Limpar Dados Locais
+                    </button>
+                    <button class="btn-action btn-secondary" onclick="voltarFormulario()">
+                        ← Voltar ao Formulário
+                    </button>
+                </div>
+            </div>
+        
+            <!-- Tabela de Formulários -->
+            <div class="data-table">
+                <div class="table-header">
+                    📋 Formulários Coletados
+                </div>
+                <div class="table-content" id="tableContent">
+                    <p style="padding: 20px; text-align: center; color: #666;">
+                        Carregando dados...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Detalhes -->
+    <div id="modalDetalhes" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalhes do Formulário</h2>
+                <button class="modal-close" onclick="fecharModal()">×</button>
+            </div>
+            <div id="modalBody">
+                <!-- Conteúdo dinâmico -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="db-extensionistas.js"></script>
+    <script>
+        // Variável global para armazenar formulários
+        let formulariosGlobal = [];
+        
+        // Inicializar painel
+        document.addEventListener('DOMContentLoaded', async function() {
+            await carregarDadosServidor();
+            await carregarFormulariosPendentes();
+        });
+        
+        // Atualizar página com hard refresh (limpa cache)
+        function atualizarPagina() {
+            console.log('🔄 Atualizando página com hard refresh...');
+            
+            // Adicionar parâmetro de timestamp para forçar bypass do cache
+            const url = new URL(window.location.href);
+            url.searchParams.set('nocache', Date.now());
+            
+            // Recarregar com novo URL (força download de recursos)
+            window.location.href = url.toString();
+        }
+        
+        // Carregar dados do IndexedDB local
+        async function carregarDadosServidor() {
+            try {
+                console.log('🔄 Carregando estatísticas do IndexedDB...');
+                
+                // Buscar todos os formulários do IndexedDB
+                const db = await initDB();
+                const transaction = db.transaction(['formularios'], 'readonly');
+                const store = transaction.objectStore('formularios');
+                const request = store.getAll();
+                
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => {
+                        const todosFormularios = request.result;
+                        formulariosGlobal = todosFormularios;
+                        
+                        console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
+                        
+                        // Calcular KPIs
+                        const totalFormularios = todosFormularios.length;
+                        const municipiosUnicos = new Set(todosFormularios.map(f => f.respostas?.municipio).filter(Boolean));
+                        const municipiosVisitados = municipiosUnicos.size;
+                        const coberturaPercentual = Math.round((municipiosVisitados / 52) * 100);
+                        
+                        // Formulários dos últimos 7 dias
+                        const seteDiasAtras = new Date();
+                        seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+                        const ultimos7dias = todosFormularios.filter(f => {
+                            const dataForm = new Date(f.timestampFim || f.timestamp_fim);
+                            return dataForm >= seteDiasAtras;
+                        }).length;
+                        
+                        // Tempo médio
+                        const formsComDuracao = todosFormularios.filter(f => f.duracaoMinutos || f.duracao_minutos);
+                        const tempoMedio = formsComDuracao.length > 0
+                            ? Math.round(formsComDuracao.reduce((sum, f) => sum + (f.duracaoMinutos || f.duracao_minutos || 0), 0) / formsComDuracao.length)
+                            : 0;
+                        
+                        // Atualizar KPIs
+                        document.getElementById('stat-total').textContent = totalFormularios;
+                        document.getElementById('stat-municipios').textContent = municipiosVisitados;
+                        document.getElementById('stat-cobertura').textContent = coberturaPercentual + '%';
+                        document.getElementById('stat-7dias').textContent = ultimos7dias;
+                        document.getElementById('stat-tempo').textContent = tempoMedio;
+                        
+                        // Renderizar últimos 20 formulários
+                        const ultimosFormularios = todosFormularios
+                            .sort((a, b) => {
+                                const dataA = new Date(a.timestampFim || a.timestamp_fim || 0);
+                                const dataB = new Date(b.timestampFim || b.timestamp_fim || 0);
+                                return dataB - dataA;
+                            })
+                            .slice(0, 20);
+                        
+                        renderizarFormularios(ultimosFormularios);
+                        
+                        console.log('✅ Painel atualizado com sucesso!');
+                        resolve();
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('❌ Erro ao buscar formulários do IndexedDB');
+                        document.getElementById('tableContent').innerHTML = `
+                            <p style="padding: 20px; text-align: center; color: #d32f2f;">
+                                ⚠️ Erro ao carregar dados do IndexedDB
+                            </p>
+                        `;
+                        reject(request.error);
+                    };
+                });
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados:', error);
+                document.getElementById('tableContent').innerHTML = `
+                    <p style="padding: 20px; text-align: center; color: #d32f2f;">
+                        ⚠️ Erro ao carregar dados: ${error.message}
+                    </p>
+                `;
+            }
+        }
+        
+        // Carregar estatísticas (DEPRECATED - agora vem do servidor)
+        async function carregarEstatisticas() {
+            // Mantido para compatibilidade, mas não usado mais
+            console.log('⚠️ carregarEstatisticas() deprecated - usando dados do servidor');
+        }
+        
+        // Carregar lista de formulários (DEPRECATED - agora vem do servidor)
+        async function carregarFormularios() {
+            // Mantido para compatibilidade, mas não usado mais
+            console.log('⚠️ carregarFormularios() deprecated - usando dados do servidor');
+        }
+        
+        // Carregar formulários pendentes do IndexedDB
+        async function carregarFormulariosPendentes() {
+            try {
+                console.log('🔄 Verificando formulários pendentes no IndexedDB...');
+                
+                // Usar initDB do db.js
+                const db = await initDB();
+                const transaction = db.transaction(['formularios'], 'readonly');
+                const store = transaction.objectStore('formularios');
+                const request = store.getAll();
+                
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => {
+                        const todosForms = request.result;
+                        
+                        // Filtrar apenas os não sincronizados
+                        const pendentes = todosForms.filter(f => !f.sincronizado);
+                        
+                        if (pendentes.length > 0) {
+                            console.log(`⚠️ ${pendentes.length} formulário(s) pendente(s) de sincronização`);
+                            
+                            // Atualizar contador na estatística
+                            const statPendentes = document.createElement('div');
+                            statPendentes.className = 'stat-card';
+                            statPendentes.style.background = 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)';
+                            statPendentes.innerHTML = `
+                                <div class="stat-label" style="color: white;">⚠️ Pendentes</div>
+                                <div class="stat-value" style="color: white;">${pendentes.length}</div>
+                                <small style="color: rgba(255,255,255,0.9); font-size: 0.8em;">aguardando sincronização</small>
+                            `;
+                            document.getElementById('statsGrid').appendChild(statPendentes);
+                            
+                            // Adicionar seção de pendentes antes da tabela de formulários
+                            const container = document.getElementById('tableContent');
+                            const pendentesHtml = `
+                                <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                                    <h3 style="margin: 0 0 10px 0; color: #856404;">
+                                        ⚠️ Formulários Pendentes de Sincronização (${pendentes.length})
+                                    </h3>
+                                    <p style="margin: 0 0 15px 0; color: #856404; font-size: 14px;">
+                                        Estes formulários estão salvos localmente mas ainda não foram enviados ao servidor.
+                                    </p>
+                                    ${pendentes.map(form => `
+                                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #f39c12;">
+                                            <strong style="color: #856404;">${form.protocolo}</strong>
+                                            <span style="margin-left: 10px; color: #666; font-size: 13px;">
+                                                ${form.respostas?.municipio || 'N/A'} - 
+                                                ${form.timestampFim ? new Date(form.timestampFim).toLocaleDateString('pt-BR') : 'N/A'}
+                                            </span>
+                                            <span style="float: right; background: #f39c12; color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px;">
+                                                PENDENTE
+                                            </span>
+                                        </div>
+                                    `).join('')}
+                                    <button id="btn-sync-manual" onclick="sincronizarManual()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 10px;">
+                                        🔄 Sincronizar Todos Agora
+                                    </button>
+                                </div>
+                            `;
+                            container.insertAdjacentHTML('afterbegin', pendentesHtml);
+                        } else {
+                            console.log('✅ Nenhum formulário pendente');
+                        }
+                        
+                        resolve(pendentes);
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('❌ Erro ao buscar formulários pendentes');
+                        reject(request.error);
+                    };
+                });
+            } catch (error) {
+                console.error('❌ Erro ao verificar pendentes:', error);
+            }
+        }
+        
+        // Renderizar formulários na tabela
+        function renderizarFormularios(formularios) {
+            try {
+                const container = document.getElementById('tableContent');
+                
+                if (!formularios || formularios.length === 0) {
+                    container.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Nenhum formulário encontrado.</p>';
+                    return;
+                }
+                
+                console.log(`📋 Renderizando ${formularios.length} últimos formulários...`);
+                container.innerHTML = '';
+                
+                formularios.forEach(form => {
+                    const row = document.createElement('div');
+                    row.className = 'data-row';
+                    
+                    // Normalizar campos (suporta tanto snake_case do PHP quanto camelCase do JS)
+                    const protocolo = form.protocolo;
+                    const municipio = form.municipio || form.respostas?.municipio || 'N/A';
+                    const timestampFim = form.timestampFim || form.timestamp_fim;
+                    const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
+                    const status = form.status || 'N/A';
+                    
+                    // Formatar data
+                    const dataFormatada = timestampFim ? 
+                        new Date(timestampFim).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : 'N/A';
+                    
+                    row.innerHTML = `
+                        <div>
+                            <strong>${protocolo || 'N/A'}</strong><br>
+                            <small>${municipio}</small>
+                        </div>
+                        <div>${dataFormatada}</div>
+                        <div>${duracaoMinutos}min</div>
+                        <div>
+                            <span class="badge ${form.status === 'completo' || form.status === 'concluido' ? 'badge-success' : 'badge-warning'}">
+                                ${form.status || 'N/A'}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-action btn-secondary" style="padding: 6px 12px; font-size: 0.85em;" onclick="verDetalhes('${form.protocolo}')">
+                                👁️ Ver Detalhes
+                            </button>
+                            <button class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.85em; background: #1976d2;" onclick="exportarExcel('${form.protocolo}')" title="Exportar para Excel">
+                                📊 Excel
+                            </button>
+                        </div>
+                    `;
+                    
+                    container.appendChild(row);
+                });
+                
+                console.log('✅ Formulários renderizados com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao renderizar formulários:', error);
+            }
+        }
+        
+        // Ver detalhes do formulário
+        async function verDetalhes(protocolo) {
+            try {
+                // Buscar formulário no array global
+                const form = formulariosGlobal.find(f => f.protocolo === protocolo);
+                
+                if (!form) {
+                    alert('Formulário não encontrado');
+                    return;
+                }
+                const modal = document.getElementById('modalDetalhes');
+                const body = document.getElementById('modalBody');
+                
+                // Preparar informações de GPS (suporta tanto objeto quanto campos diretos)
+                const geo = form.geolocalizacao || form;
+                let gpsInfo = '<p><strong>📍 Geolocalização:</strong> ';
+                if (geo && geo.latitude) {
+                        const lat = geo.latitude.toFixed(6);
+                        const lng = geo.longitude.toFixed(6);
+                        const precisao = Math.round(geo.precisao || 0);
+                        
+                        // Formatar precisão
+                        let precisaoTexto = '';
+                        let qualidadeTexto = '';
+                        let corQualidade = '#666';
+                        
+                        if (precisao >= 1000) {
+                            precisaoTexto = `${(precisao / 1000).toFixed(1)}km`;
+                        } else {
+                            precisaoTexto = `${precisao}m`;
+                        }
+                        
+                        if (precisao < 20) {
+                            qualidadeTexto = 'Excelente';
+                            corQualidade = '#2e7d32';
+                        } else if (precisao < 50) {
+                            qualidadeTexto = 'Boa';
+                            corQualidade = '#388e3c';
+                        } else if (precisao < 100) {
+                            qualidadeTexto = 'Moderada';
+                            corQualidade = '#f57c00';
+                        } else if (precisao < 1000) {
+                            qualidadeTexto = 'Baixa';
+                            corQualidade = '#e64a19';
+                        } else {
+                            qualidadeTexto = 'Muito Baixa';
+                            corQualidade = '#d32f2f';
+                        }
+                        
+                        gpsInfo += `<br>
+                            • Latitude: ${lat}<br>
+                            • Longitude: ${lng}<br>
+                            • Precisão: ±${precisaoTexto} <span style="color: ${corQualidade}; font-weight: 600;">(${qualidadeTexto})</span><br>
+                            • <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" style="color: #1976d2;">🗺️ Ver no Google Maps</a>
+                        `;
+                    } else if (geo.erro) {
+                        gpsInfo += `<span style="color: #d32f2f;">${geo.erro}</span>`;
+                    }
+                } else {
+                    gpsInfo += '<span style="color: #666;">Não capturado</span>';
+                }
+                gpsInfo += '</p>';
+                
+                // Preparar galeria de fotos
+                let fotosGaleria = '';
+                if (form.fotos && form.fotos.length > 0) {
+                    fotosGaleria = `
+                        <p><strong>📸 Fotos da Propriedade:</strong> ${form.fotos.length} foto(s)</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px;">
+                            ${form.fotos.map((foto, index) => `
+                                <div style="position: relative; cursor: pointer;" onclick="abrirFotoModal('${form.protocolo}', ${index})">
+                                    <img src="${foto.data}" 
+                                         alt="${foto.nome}" 
+                                         style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <div style="position: absolute; bottom: 5px; left: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 3px; border-radius: 4px; text-align: center;">
+                                        ${(foto.tamanho / 1024).toFixed(0)}KB
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                            <em>Clique nas fotos para visualizar em tamanho maior</em>
+                        </p>
+                    `;
+                }
+                
+                body.innerHTML = `
+                    <h3>Protocolo: ${form.protocolo}</h3>
+                    <p><strong>Município:</strong> ${municipio}</p>
+                    <p><strong>Produtor:</strong> ${form.identificador_iniciais || form.respostas?.identificador_iniciais || 'N/A'}</p>
+                    ${form.unidade_emater ? `<p><strong>Unidade EMATER:</strong> ${form.unidade_emater}</p>` : ''}
+                    <p><strong>Data/Hora:</strong> ${timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A'}</p>
+                    <p><strong>Duração:</strong> ${duracaoMinutos} minutos</p>
+                    <p><strong>Status:</strong> ${form.status === 'completo' ? 'Completo' : 'Pendente'}</p>
+                    ${gpsInfo}
+                    ${fotosGaleria}
+                    <hr>
+                    <h4>Respostas do Formulário:</h4>
+                    <pre>${JSON.stringify(form.respostas || {}, null, 2)}</pre>
+                `;
+                
+                modal.style.display = 'flex';
+            } catch (error) {
+                console.error('Erro ao carregar detalhes:', error);
+                alert('Erro ao carregar detalhes do formulário.');
+            }
+        }
+        
+        // Abrir foto em modal
+        async function abrirFotoModal(protocolo, fotoIndex) {
+            try {
+                // Buscar formulário no array global
+                const form = formulariosGlobal.find(f => f.protocolo === protocolo);
+                
+                if (!form || !form.fotos || !form.fotos[fotoIndex]) {
+                    alert('Foto não encontrada');
+                    return;
+                }
+                
+                const foto = form.fotos[fotoIndex];
+                
+                // Criar modal para foto
+                const modalFoto = document.createElement('div');
+                modalFoto.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.95);
+                    z-index: 11000;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                `;
+                
+                const dataFoto = new Date(foto.timestamp).toLocaleString('pt-BR');
+                
+                modalFoto.innerHTML = `
+                    <div style="position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer;">×</div>
+                    <img src="${foto.data}" style="max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+                    <div style="color: white; margin-top: 20px; text-align: center;">
+                        <div style="font-size: 16px; font-weight: 600;">${foto.nome}</div>
+                        <div style="font-size: 14px; margin-top: 5px; opacity: 0.8;">
+                            ${(foto.tamanho / 1024).toFixed(1)}KB • ${dataFoto}
+                        </div>
+                        <button onclick="baixarFoto('${foto.data}', '${foto.nome}')" 
+                                style="margin-top: 15px; padding: 10px 20px; background: #2e7d32; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            📥 Baixar Foto
+                        </button>
+                    </div>
+                `;
+                
+                modalFoto.onclick = () => document.body.removeChild(modalFoto);
+                document.body.appendChild(modalFoto);
+                
+            } catch (error) {
+                console.error('Erro ao abrir foto:', error);
+            }
+        }
+        
+        // Baixar foto individual
+        function baixarFoto(dataUrl, nomeArquivo) {
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        // Fechar modal
+        function fecharModal() {
+            document.getElementById('modalDetalhes').style.display = 'none';
+        }
+        
+        // Exportar todos os dados (JSON) - MODIFICADO: buscar do servidor
+        async function exportarTodos() {
+            try {
+                // Usar dados globais em vez de IndexedDB
+                const dados = {
+                    versao: '2.0',
+                    dataExportacao: new Date().toISOString(),
+                    totalFormularios: formulariosGlobal.length,
+                    fonte: 'MySQL Railway Server',
+                    formularios: formulariosGlobal
+                };
+                
+                const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ematech_backup_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert(`Exportação concluída! ${dados.totalFormularios} formulários exportados.`);
+            } catch (error) {
+                console.error('Erro ao exportar:', error);
+                alert('Erro ao exportar dados.');
+            }
+        }
+        
+        // Sincronizar todos - Recarregar do IndexedDB
+        async function sincronizarTodos() {
+            if (confirm('Deseja recarregar os dados do IndexedDB?')) {
+                await carregarDadosServidor();
+                await carregarFormulariosPendentes();
+                alert('Dados atualizados!');
+            }
+        }
+        
+        // Limpar dados locais do IndexedDB (apenas deste dispositivo)
+        async function limparDadosLocais() {
+            const confirmacao1 = confirm(
+                '⚠️ ATENÇÃO: Limpar Dados Locais\n\n' +
+                'Esta ação irá APAGAR todos os formulários armazenados LOCALMENTE neste dispositivo.\n\n' +
+                '⚠️ Formulários NÃO SINCRONIZADOS serão PERDIDOS!\n' +
+                '✅ Formulários já sincronizados permanecerão no servidor.\n\n' +
+                'Deseja continuar?'
+            );
+            
+            if (!confirmacao1) return;
+            
+            const confirmacao2 = confirm(
+                '🔴 ÚLTIMA CONFIRMAÇÃO\n\n' +
+                'Você tem CERTEZA ABSOLUTA que deseja apagar os dados locais?\n\n' +
+                'Esta ação é IRREVERSÍVEL!\n\n' +
+                'Clique OK para APAGAR ou Cancelar para MANTER os dados.'
+            );
+            
+            if (!confirmacao2) return;
+            
+            try {
+                console.log('🗑️ Iniciando limpeza do IndexedDB local...');
+                
+                // Apagar banco de dados local
+                const deleteRequest = indexedDB.deleteDatabase('EmaterFormularios');
+                
+                deleteRequest.onsuccess = function() {
+                    console.log('✅ IndexedDB local apagado com sucesso');
+                    alert(
+                        '✅ Dados locais apagados com sucesso!\n\n' +
+                        'O IndexedDB deste dispositivo foi limpo.\n' +
+                        'A página será recarregada.'
+                    );
+                    setTimeout(() => window.location.reload(), 1000);
+                };
+                
+                deleteRequest.onerror = function(event) {
+                    console.error('❌ Erro ao apagar IndexedDB:', event);
+                    alert('❌ Erro ao apagar dados locais. Verifique o console.');
+                };
+                
+                deleteRequest.onblocked = function() {
+                    console.warn('⚠️ Operação bloqueada - feche outras abas do site');
+                    alert(
+                        '⚠️ Operação bloqueada!\n\n' +
+                        'Feche todas as outras abas/janelas deste site e tente novamente.'
+                    );
+                };
+                
+            } catch (error) {
+                console.error('❌ Erro ao limpar dados locais:', error);
+                alert('❌ Erro ao limpar dados locais: ' + error.message);
+            }
+        }
+        
+        // Limpar dados antigos - DESABILITADO (requer endpoint PHP específico)
+        async function limparDados() {
+            alert('⚠️ Esta função requer implementação no servidor MySQL.\n\nPor segurança, a exclusão de dados deve ser feita diretamente no banco de dados ou via ferramenta administrativa.');
+        }
+        
+        // Exportar formulário individual para Excel
+        async function exportarExcel(protocolo) {
+            try {
+                // Buscar formulário no array global
+                const form = formulariosGlobal.find(f => f.protocolo === protocolo);
+                
+                if (!form) {
+                    alert('Formulário não encontrado');
+                    return;
+                }
+                
+                console.log('📊 Exportando formulário:', form);
+                
+                // Criar dados estruturados para Excel
+                const dados = [];
+                
+                // Normalizar campos
+                const municipio = form.municipio || form.respostas?.municipio || 'N/A';
+                const timestampInicio = form.timestampInicio || form.timestamp_inicio;
+                const timestampFim = form.timestampFim || form.timestamp_fim;
+                const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
+                
+                // Cabeçalho do formulário
+                dados.push(['FORMULÁRIO DE PESQUISA - EMATER-RO']);
+                dados.push(['Protocolo:', form.protocolo]);
+                dados.push(['Município:', municipio]);
+                dados.push(['Produtor:', form.identificador_iniciais || form.respostas?.identificador_iniciais || 'N/A']);
+                if (form.unidade_emater) {
+                    dados.push(['Unidade EMATER:', form.unidade_emater]);
+                }
+                dados.push(['Data Início:', timestampInicio ? new Date(timestampInicio).toLocaleString('pt-BR') : 'N/A']);
+                dados.push(['Data Fim:', timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A']);
+                dados.push(['Duração:', `${duracaoMinutos} minutos`]);
+                dados.push(['Status:', form.status === 'completo' || form.status === 'concluido' ? 'Completo' : 'Pendente']);
+                dados.push(['']); // Linha em branco
+                
+                // Geolocalização (se houver)
+                if (form.geolocalizacao && form.geolocalizacao.latitude) {
+                    dados.push(['GEOLOCALIZAÇÃO']);
+                    dados.push(['Latitude:', form.geolocalizacao.latitude]);
+                    dados.push(['Longitude:', form.geolocalizacao.longitude]);
+                    const precisao = Math.round(form.geolocalizacao.precisao);
+                    const precisaoTexto = precisao >= 1000 ? `${(precisao/1000).toFixed(1)}km` : `${precisao}m`;
+                    dados.push(['Precisão:', precisaoTexto]);
+                    if (form.geolocalizacao.altitude) {
+                        dados.push(['Altitude:', `${Math.round(form.geolocalizacao.altitude)}m`]);
+                    }
+                    dados.push(['Timestamp GPS:', new Date(form.geolocalizacao.timestamp).toLocaleString('pt-BR')]);
+                    dados.push(['Link Google Maps:', `https://www.google.com/maps?q=${form.geolocalizacao.latitude},${form.geolocalizacao.longitude}`]);
+                    dados.push(['']); // Linha em branco
+                } else if (form.geolocalizacao && form.geolocalizacao.erro) {
+                    dados.push(['GEOLOCALIZAÇÃO']);
+                    dados.push(['Status:', `Erro - ${form.geolocalizacao.erro}`]);
+                    dados.push(['']); // Linha em branco
+                }
+                
+                // Informações gerais do formulário
+                dados.push(['INFORMAÇÕES GERAIS']);
+                const comunidade = form.comunidade || form.respostas?.comunidade_localidade;
+                const sistemaProdutivo = form.sistema_produtivo || form.respostas?.sistema_produtivo;
+                const areaProdutiva = form.area_produtiva || form.respostas?.area_produtiva;
+                const atendimentoEmater = form.atendimento_emater || form.respostas?.atendimento_emater;
+                
+                if (comunidade) {
+                    dados.push(['Comunidade/Localidade:', comunidade]);
+                }
+                if (sistemaProdutivo) {
+                    dados.push(['Sistema Produtivo:', sistemaProdutivo]);
+                }
+                if (areaProdutiva) {
+                    dados.push(['Área Produtiva:', areaProdutiva]);
+                }
+                if (atendimentoEmater) {
+                    dados.push(['Atendimento EMATER:', atendimentoEmater]);
+                }
+                dados.push(['']); // Linha em branco
+                
+                // Respostas do questionário (JSON completo)
+                dados.push(['RESPOSTAS DO QUESTIONÁRIO']);
+                dados.push(['']); // Linha em branco
+                
+                if (form.respostas && typeof form.respostas === 'object') {
+                    // Iterar pelas respostas
+                    for (const [chave, valor] of Object.entries(form.respostas)) {
+                        if (valor !== null && valor !== undefined && valor !== '') {
+                            dados.push([chave + ':', JSON.stringify(valor)]);
+                        }
+                    }
+                } else {
+                    dados.push(['Nenhuma resposta registrada']);
+                }
+                dados.push(['']); // Linha em branco
+                
+                // Converter para CSV
+                const csv = dados.map(row => {
+                    return row.map(cell => {
+                        // Escapar aspas e envolver em aspas se contiver vírgula
+                        const cellStr = String(cell || '');
+                        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                            return '"' + cellStr.replace(/"/g, '""') + '"';
+                        }
+                        return cellStr;
+                    }).join(',');
+                }).join('\n');
+                
+                // Adicionar BOM para UTF-8 (corrige acentuação no Excel)
+                const BOM = '\uFEFF';
+                const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+                
+                // Download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `formulario_${protocolo}_${Date.now()}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log('✅ Formulário exportado para Excel com todas as respostas');
+                
+            } catch (error) {
+                console.error('Erro ao exportar para Excel:', error);
+                alert('Erro ao exportar formulário. Verifique o console.');
+            }
+        }
+        
+        // Exportar todos os formulários para Excel em um único arquivo
+        async function exportarTodosExcel() {
+            try {
+                // Usar dados globais do servidor
+                const formularios = formulariosGlobal;
+                
+                if (formularios.length === 0) {
+                    alert('Nenhum formulário para exportar.');
+                    return;
+                }
+                
+                // Mostrar mensagem de progresso
+                const originalText = event.target.textContent;
+                event.target.textContent = `⏳ Exportando ${formularios.length} formulários...`;
+                event.target.disabled = true;
+                
+                console.log(`📊 Exportando ${formularios.length} formulários para Excel...`);
+                
+                // Criar array de dados
+                const dados = [];
+                
+                // Cabeçalho do arquivo
+                dados.push(['FORMULÁRIOS DE PESQUISA - EMATER-RO']);
+                dados.push(['Total de Formulários:', formularios.length]);
+                dados.push(['Data Exportação:', new Date().toLocaleString('pt-BR')]);
+                dados.push(['']); // Linha em branco
+                dados.push(['']); // Linha em branco
+                
+                // Cabeçalho das colunas
+                const colunas = [
+                    'Protocolo',
+                    'Data Início',
+                    'Data Fim',
+                    'Duração (min)',
+                    'Município',
+                    'Comunidade',
+                    'Sistema Produtivo',
+                    'Área Produtiva',
+                    'Atendimento EMATER',
+                    'Consentimento',
+                    'Latitude',
+                    'Longitude',
+                    'Precisão GPS',
+                    'Práticas Sustentáveis',
+                    'Produtividade',
+                    'Renda',
+                    'Satisfação Geral',
+                    'Públicos Prioritários',
+                    'Canais Comercialização',
+                    'Sincronizado'
+                ];
+                dados.push(colunas);
+                
+                // Adicionar dados de cada formulário
+                for (const form of formularios) {
+                    const linha = [
+                        form.protocolo || '',
+                        (form.timestampInicio || form.timestamp_inicio) ? new Date(form.timestampInicio || form.timestamp_inicio).toLocaleString('pt-BR') : '',
+                        (form.timestampFim || form.timestamp_fim) ? new Date(form.timestampFim || form.timestamp_fim).toLocaleString('pt-BR') : '',
+                        form.duracaoMinutos || form.duracao_minutos || '',
+                        form.respostas?.municipio || form.municipio || '',
+                        form.respostas?.comunidade_localidade || '',
+                        form.respostas?.sistema_produtivo || '',
+                        form.respostas?.area_produtiva || '',
+                        form.atendimentoEmater || '',
+                        form.consentimento || '',
+                        form.geolocalizacao?.latitude?.toFixed(6) || '',
+                        form.geolocalizacao?.longitude?.toFixed(6) || '',
+                        form.geolocalizacao?.precisao ? `±${Math.round(form.geolocalizacao.precisao)}m` : '',
+                        Array.isArray(form.respostas?.praticas_sustentaveis) ? form.respostas.praticas_sustentaveis.join('; ') : form.respostas?.praticas_sustentaveis || '',
+                        form.respostas?.produtividade || '',
+                        form.respostas?.renda || '',
+                        form.respostas?.satisfacao_geral || '',
+                        Array.isArray(form.respostas?.publicos_prioritarios) ? form.respostas.publicos_prioritarios.join('; ') : '',
+                        Array.isArray(form.respostas?.canais_comercializacao) ? form.respostas.canais_comercializacao.join('; ') : '',
+                        form.sincronizado ? 'Sim' : 'Não'
+                    ];
+                    dados.push(linha);
+                }
+                
+                // Converter para CSV
+                const csv = dados.map(row => {
+                    return row.map(cell => {
+                        const cellStr = String(cell || '');
+                        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                            return '"' + cellStr.replace(/"/g, '""') + '"';
+                        }
+                        return cellStr;
+                    }).join(',');
+                }).join('\n');
+                
+                // Adicionar BOM para UTF-8
+                const BOM = '\uFEFF';
+                const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+                
+                // Download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const timestamp = new Date().toISOString().split('T')[0];
+                a.download = `formularios_emater_${timestamp}_${formularios.length}registros.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log(`✅ ${formularios.length} formulários exportados para Excel`);
+                alert(`✅ ${formularios.length} formulários exportados com sucesso!\n\nArquivo: formularios_emater_${timestamp}_${formularios.length}registros.csv`);
+                
+                // Restaurar botão
+                event.target.textContent = originalText;
+                event.target.disabled = false;
+                
+            } catch (error) {
+                console.error('Erro ao exportar todos para Excel:', error);
+                alert('Erro ao exportar formulários. Verifique o console.');
+                // Restaurar botão em caso de erro
+                if (event && event.target) {
+                    event.target.textContent = originalText || '📥 EXPORTAR TODOS (EXCEL)';
+                    event.target.disabled = false;
+                }
+            }
+        }
+        
+        // Abrir página de relatórios
+        function abrirRelatorios() {
+            window.location.href = 'relatorios.html';
+        }
+        
+        // Voltar ao formulário
+        function voltarFormulario() {
+            window.location.href = 'index.html';
+        }
+        
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalDetalhes');
+            if (event.target == modal) {
+                fecharModal();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1617 @@
+================================================================================
+         GUIA COMPLETO DE REPLICAÇÃO DO MAPA DE COBERTURA INTERATIVO
+================================================================================
+
+Data: 08/12/2025
+Sistema: EMATECH - EMATER-RO
+Arquivo Base: mapa-cobertura.html
+Objetivo: Replicar mapa interativo com cobertura geográfica e estatísticas
+
+================================================================================
+ÍNDICE
+================================================================================
+
+1. VISÃO GERAL DO MAPA DE COBERTURA
+2. ESTRUTURA HTML COMPLETA
+3. BIBLIOTECAS E DEPENDÊNCIAS
+4. DADOS GEOGRÁFICOS (GeoJSON)
+5. ESTRUTURA DE DADOS
+6. FUNCIONALIDADES PRINCIPAIS
+7. PERSONALIZAÇÃO VISUAL
+8. INTEGRAÇÃO COM API
+9. PASSO A PASSO DE REPLICAÇÃO
+10. EXEMPLOS DE CÓDIGO
+11. TROUBLESHOOTING
+
+================================================================================
+1. VISÃO GERAL DO MAPA DE COBERTURA
+================================================================================
+
+PROPÓSITO:
+----------
+Visualizar geograficamente a cobertura das unidades EMATER-RO no estado,
+mostrando:
+- Localização de todas as 83 unidades (ESREG, ESLOC)
+- Polígonos dos 52 municípios de Rondônia
+- Estatísticas de cobertura por território
+- Marcadores coloridos por tipo de unidade
+- Filtros e busca interativa
+- Dados de formulários coletados por município
+
+COMPONENTES VISUAIS:
+--------------------
+
+┌─────────────────────────────────────────────────────────┐
+│                      HEADER                             │
+│              Mapa EMATER-RO - Cobertura                 │
+└─────────────────────────────────────────────────────────┘
+┌─────────────┬───────────────────────────────────────────┐
+│  SIDEBAR    │            MAPA INTERATIVO                │
+│             │                                           │
+│ Estatísticas│  ┌────────────────────────────────┐       │
+│ Gerais      │  │  Polígonos dos Municípios      │       │
+│             │  │  (coloridos por território)    │       │
+│ Filtros     │  │                                │       │
+│ - Todos     │  │  🏢 Marcadores das Unidades    │       │
+│ - ESREG     │  │  (ícones por tipo)             │       │
+│ - ESLOC     │  │                                │       │
+│             │  │  📍 Popups com informações     │       │
+│ Busca       │  └────────────────────────────────┘       │
+│ [_______]   │                                           │
+│             │  Controles:                               │
+│ Lista de    │  - Zoom in/out                            │
+│ Territórios │  - Reset zoom                             │
+│ - T1: ...   │  - Legenda                                │
+│ - T2: ...   │  - Filtros                                │
+│ - ...       │                                           │
+└─────────────┴───────────────────────────────────────────┘
+
+FUNCIONALIDADES:
+----------------
+✅ Mapa interativo com Leaflet.js
+✅ Polígonos de municípios (GeoJSON)
+✅ 83 marcadores de unidades EMATER
+✅ Cores por território (7 territórios)
+✅ Filtros por tipo (ESREG, ESLOC)
+✅ Busca por nome
+✅ Estatísticas dinâmicas
+✅ Popups informativos
+✅ Destaque de municípios visitados (verde)
+✅ Integração com API de formulários
+✅ Reset de zoom
+✅ Legenda interativa
+
+================================================================================
+2. ESTRUTURA HTML COMPLETA
+================================================================================
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Cobertura - [NOME DO SISTEMA]</title>
+    
+    <!-- Leaflet CSS (OBRIGATÓRIO) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* ESTILOS COMPLETOS AQUI */
+    </style>
+</head>
+<body>
+    <!-- Container Principal -->
+    <div class="container">
+        
+        <!-- Header -->
+        <div class="header">
+            <h1>🗺️ Mapa de Cobertura - [SISTEMA]</h1>
+            <p>Visualização geográfica das unidades e cobertura</p>
+        </div>
+        
+        <!-- Conteúdo Principal -->
+        <div class="content">
+            
+            <!-- SIDEBAR ESQUERDA -->
+            <div class="sidebar">
+                
+                <!-- Estatísticas Gerais -->
+                <div class="stats">
+                    <h3>📊 Estatísticas Gerais</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Total de Unidades:</span>
+                        <span class="stat-value" id="stat-total-unidades">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Municípios Cobertos:</span>
+                        <span class="stat-value" id="stat-municipios-cobertos">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Formulários Coletados:</span>
+                        <span class="stat-value green" id="stat-formularios">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Municípios Visitados:</span>
+                        <span class="stat-value green" id="stat-municipios-visitados">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Cobertura:</span>
+                        <span class="stat-value orange" id="stat-cobertura">0%</span>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="filtros">
+                    <h3>🔍 Filtros</h3>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-tipo="">
+                            Todos
+                        </button>
+                        <button class="filter-btn" data-tipo="ESREG">
+                            ESREG
+                        </button>
+                        <button class="filter-btn" data-tipo="ESLOC">
+                            ESLOC
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Busca -->
+                <div class="busca">
+                    <input type="text" 
+                           id="search-input" 
+                           placeholder="🔎 Buscar unidade..."
+                           class="search-input">
+                </div>
+                
+                <!-- Lista de Territórios -->
+                <div class="territorio-list" id="territorio-list">
+                    <!-- Preenchido dinamicamente via JavaScript -->
+                </div>
+                
+            </div>
+            
+            <!-- MAPA PRINCIPAL -->
+            <div id="map"></div>
+            
+            <!-- Botão Reset Zoom (Sobreposto ao mapa) -->
+            <button class="reset-zoom-btn" onclick="resetZoom()">
+                <span class="reset-zoom-icon">🔄</span>
+                <span>Resetar Zoom</span>
+            </button>
+            
+        </div>
+        
+    </div>
+    
+    <!-- Leaflet JavaScript (OBRIGATÓRIO) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        /* JAVASCRIPT COMPLETO AQUI */
+    </script>
+</body>
+</html>
+
+================================================================================
+3. BIBLIOTECAS E DEPENDÊNCIAS
+================================================================================
+
+LEAFLET.JS v1.9.4:
+------------------
+Biblioteca JavaScript para mapas interativos (open source)
+
+CDN:
+<!-- CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+Documentação: https://leafletjs.com/
+
+RECURSOS USADOS:
+- L.map() → Criar mapa
+- L.tileLayer() → Camada de tiles (OpenStreetMap)
+- L.marker() → Marcadores de pontos
+- L.geoJSON() → Polígonos de municípios
+- L.control() → Controles customizados (legenda)
+- L.divIcon() → Ícones HTML/CSS customizados
+
+ARQUIVO GEOJSON:
+----------------
+Arquivo: geojs-11-mun.json
+Descrição: Polígonos dos 52 municípios de Rondônia (código IBGE 11)
+Fonte: https://github.com/tbrugz/geodata-br
+
+Estrutura:
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "1100015",      // Código IBGE
+        "name": "Alta Floresta d'Oeste",
+        "description": "Alta Floresta d'Oeste-RO, Brasil"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[lng, lat], [lng, lat], ...]]
+      }
+    }
+  ]
+}
+
+Onde Encontrar:
+1. GitHub: tbrugz/geodata-br
+2. IBGE: https://www.ibge.gov.br/geociencias/
+3. Nosso arquivo: DEPLOY_RAILWAY/geojs-11-mun.json
+
+================================================================================
+4. DADOS GEOGRÁFICOS (GeoJSON)
+================================================================================
+
+ESTRUTURA DO GEOJSON DE MUNICÍPIOS:
+------------------------------------
+
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "1100015",           // Código IBGE (string ou number)
+        "name": "Alta Floresta d'Oeste",  // Nome do município
+        "description": "...",
+        // Pode ter outros campos: NOME, NM_MUN, etc.
+      },
+      "geometry": {
+        "type": "Polygon",         // Ou "MultiPolygon"
+        "coordinates": [
+          [
+            [-61.234567, -11.123456],  // [longitude, latitude]
+            [-61.234568, -11.123457],
+            // ... mais coordenadas
+          ]
+        ]
+      }
+    },
+    // ... mais 51 municípios
+  ]
+}
+
+CARREGAR GEOJSON NO MAPA:
+--------------------------
+
+fetch('geojs-11-mun.json')
+    .then(response => response.json())
+    .then(geoData => {
+        L.geoJSON(geoData, {
+            style: feature => {
+                return {
+                    color: '#555',        // Cor da borda
+                    weight: 1,            // Espessura da borda
+                    fillColor: '#A8D5E8', // Cor de preenchimento
+                    fillOpacity: 0.4      // Opacidade
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                // Adicionar popup
+                const nome = feature.properties.name;
+                layer.bindPopup(`<strong>${nome}</strong>`);
+                
+                // Eventos
+                layer.on('mouseover', () => {
+                    layer.setStyle({ fillOpacity: 0.7 });
+                });
+                layer.on('mouseout', () => {
+                    layer.setStyle({ fillOpacity: 0.4 });
+                });
+            }
+        }).addTo(map);
+    })
+    .catch(error => {
+        console.error('Erro ao carregar GeoJSON:', error);
+    });
+
+IMPORTANTE:
+-----------
+- Coordenadas no GeoJSON: [longitude, latitude] (INVERSO do padrão!)
+- Código IBGE de Rondônia: 11xxxxx (11 = RO)
+- Total de municípios em RO: 52
+
+================================================================================
+5. ESTRUTURA DE DADOS
+================================================================================
+
+DADOS DAS UNIDADES (JavaScript Object):
+----------------------------------------
+
+const ematerData = {
+    totalUnidades: 83,
+    territorios: [
+        {
+            id: 1,
+            nome: "Território da Cidadania Portal da Amazônia",
+            cor: "#FFB6C1",  // Rosa claro
+            unidades: [
+                {
+                    id: 1,
+                    tipo: "ESREG",  // ou "ESLOC"
+                    nome: "Esreg de Ariquemes",
+                    municipio: "Ariquemes",
+                    latitude: -9.913300,
+                    longitude: -63.040600,
+                    codigo_ibge: 1100023,
+                    ddd: 69,
+                    distrito: null  // Opcional
+                },
+                {
+                    id: 2,
+                    tipo: "ESLOC",
+                    nome: "Ariquemes",
+                    municipio: "Ariquemes",
+                    latitude: -9.908900,
+                    longitude: -63.038900,
+                    codigo_ibge: 1100023,
+                    ddd: 69
+                }
+                // ... mais unidades
+            ]
+        },
+        {
+            id: 2,
+            nome: "Território da Cidadania Madeira-Mamoré",
+            cor: "#F4A460",  // Laranja claro
+            unidades: [
+                // ...
+            ]
+        }
+        // ... total de 7 territórios
+    ]
+};
+
+TIPOS DE UNIDADES:
+------------------
+1. ESREG → Escritório Regional (maior hierarquia)
+2. ESLOC → Escritório Local
+
+CAMPOS OBRIGATÓRIOS:
+--------------------
+- id: Número único
+- tipo: "ESREG" ou "ESLOC"
+- nome: Nome da unidade
+- municipio: Nome do município
+- latitude: Coordenada (decimal)
+- longitude: Coordenada (decimal)
+- codigo_ibge: Código IBGE do município (number)
+
+CAMPOS OPCIONAIS:
+-----------------
+- distrito: Nome do distrito (quando unidade não é na sede)
+- ddd: Código DDD
+- telefone: Telefone da unidade
+- email: E-mail
+- endereco: Endereço completo
+
+================================================================================
+6. FUNCIONALIDADES PRINCIPAIS
+================================================================================
+
+FUNÇÃO 1: INICIALIZAR MAPA
+---------------------------
+
+// Criar mapa centrado em Rondônia
+const map = L.map('map').setView([-10.9, -62.8], 7);
+
+// Adicionar camada de tiles (OpenStreetMap)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18,
+    minZoom: 6
+}).addTo(map);
+
+PARÂMETROS:
+- setView([lat, lon], zoom)
+  - lat/lon: Centro do mapa (Rondônia: -10.9, -62.8)
+  - zoom: Nível de zoom inicial (7 = estado inteiro)
+
+FUNÇÃO 2: ADICIONAR MARCADORES
+-------------------------------
+
+function addMarkers() {
+    ematerData.territorios.forEach(territorio => {
+        territorio.unidades.forEach(unidade => {
+            // Criar ícone customizado
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div class="marker-${unidade.tipo.toLowerCase()}">
+                           ${getEmojiPorTipo(unidade.tipo)}
+                       </div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            });
+            
+            // Criar marcador
+            const marker = L.marker([unidade.latitude, unidade.longitude], {
+                icon: icon
+            });
+            
+            // Criar popup
+            const popupContent = `
+                <div class="popup-content">
+                    <div class="popup-title">${unidade.nome}</div>
+                    <div class="popup-info">
+                        <strong>Tipo:</strong> ${unidade.tipo}<br>
+                        <strong>Município:</strong> ${unidade.municipio}<br>
+                        <strong>Território:</strong> ${territorio.nome}<br>
+                        ${unidade.distrito ? `<strong>Distrito:</strong> ${unidade.distrito}<br>` : ''}
+                        <strong>Coordenadas:</strong> ${unidade.latitude.toFixed(4)}, ${unidade.longitude.toFixed(4)}
+                    </div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent, {
+                maxWidth: 300,
+                className: 'custom-popup'
+            });
+            
+            // Adicionar ao mapa
+            marker.addTo(map);
+            
+            // Armazenar referência
+            markers.push(marker);
+            markerGroups[unidade.tipo].push(marker);
+        });
+    });
+}
+
+FUNÇÃO 3: CARREGAR POLÍGONOS DOS MUNICÍPIOS
+--------------------------------------------
+
+let layerMunicipios = null;
+
+fetch('geojs-11-mun.json')
+    .then(r => r.json())
+    .then(geoData => {
+        layerMunicipios = L.geoJSON(geoData, {
+            style: feature => {
+                const municipio = feature.properties.name;
+                const territorio = getTerritorioPorMunicipio(municipio);
+                
+                return {
+                    color: '#555',
+                    weight: 1,
+                    fillColor: territorio ? territorio.cor : '#95a5a6',
+                    fillOpacity: 0.4
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                const nome = feature.properties.name;
+                const codigoIbge = feature.properties.id;
+                
+                // Popup
+                layer.bindPopup(`
+                    <strong>${nome}</strong><br>
+                    Código IBGE: ${codigoIbge}
+                `);
+                
+                // Hover effects
+                layer.on('mouseover', () => {
+                    layer.setStyle({ fillOpacity: 0.7, weight: 2 });
+                });
+                layer.on('mouseout', () => {
+                    layer.setStyle({ fillOpacity: 0.4, weight: 1 });
+                });
+            }
+        });
+        
+        layerMunicipios.addTo(map);
+    })
+    .catch(err => console.error('Erro ao carregar GeoJSON:', err));
+
+FUNÇÃO 4: FILTRAR MARCADORES
+-----------------------------
+
+let activeFilter = '';
+let searchTerm = '';
+
+function applyFilters() {
+    markers.forEach(marker => {
+        const unidade = marker.unidade; // Armazenar referência na criação
+        
+        // Filtro por tipo
+        const passTypeFilter = !activeFilter || unidade.tipo === activeFilter;
+        
+        // Filtro por busca
+        const passSearchFilter = !searchTerm || 
+            unidade.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            unidade.municipio.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // Mostrar/ocultar marcador
+        if (passTypeFilter && passSearchFilter) {
+            marker.addTo(map);
+        } else {
+            map.removeLayer(marker);
+        }
+    });
+}
+
+// Event listeners
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        activeFilter = btn.dataset.tipo;
+        
+        // Atualizar botões ativos
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        
+        applyFilters();
+    });
+});
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+    searchTerm = e.target.value;
+    applyFilters();
+});
+
+FUNÇÃO 5: DESTACAR TERRITÓRIO
+------------------------------
+
+function focusTerritorioNoMapa(territorio) {
+    // Calcular bounds (limites) das unidades do território
+    const coords = territorio.unidades.map(u => [u.latitude, u.longitude]);
+    
+    if (coords.length === 0) return;
+    
+    const bounds = L.latLngBounds(coords);
+    
+    // Ajustar mapa para mostrar todas as unidades
+    map.fitBounds(bounds, {
+        padding: [50, 50],
+        maxZoom: 10
+    });
+    
+    // Destacar marcadores do território
+    markers.forEach(marker => {
+        const unidade = marker.unidade;
+        const pertence = territorio.unidades.some(u => u.id === unidade.id);
+        
+        if (pertence) {
+            marker.getElement().classList.add('marker-highlight');
+        } else {
+            marker.getElement().classList.add('marker-dimmed');
+        }
+    });
+}
+
+FUNÇÃO 6: RESET DE ZOOM
+------------------------
+
+const defaultView = {
+    center: [-10.9, -62.8],
+    zoom: 7
+};
+
+function resetZoom() {
+    map.setView(defaultView.center, defaultView.zoom, {
+        animate: true,
+        duration: 0.5
+    });
+    
+    // Remover destaques
+    markers.forEach(marker => {
+        marker.getElement().classList.remove('marker-highlight', 'marker-dimmed');
+    });
+}
+
+FUNÇÃO 7: INTEGRAÇÃO COM API (FORMULÁRIOS)
+-------------------------------------------
+
+let formulariosPorMunicipio = {};
+
+async function buscarEstatisticasCobertura() {
+    try {
+        const response = await fetch('./get-estatisticas-cobertura.php');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mapear formulários por município
+            formulariosPorMunicipio = {};
+            data.por_municipio.forEach(item => {
+                formulariosPorMunicipio[item.municipio] = item.total;
+            });
+            
+            // Atualizar estatísticas
+            document.getElementById('stat-formularios').textContent = data.total_formularios;
+            
+            // Recolorir municípios visitados
+            repintarMunicipios();
+        }
+    } catch (error) {
+        console.error('Erro ao buscar estatísticas:', error);
+    }
+}
+
+function municipioFoiVisitado(municipio) {
+    return formulariosPorMunicipio[municipio] > 0;
+}
+
+function repintarMunicipios() {
+    if (!layerMunicipios) return;
+    
+    layerMunicipios.eachLayer(layer => {
+        const municipio = layer.feature.properties.name;
+        const foiVisitado = municipioFoiVisitado(municipio);
+        
+        if (foiVisitado) {
+            layer.setStyle({
+                fillColor: '#27ae60',  // Verde
+                fillOpacity: 0.6,
+                weight: 2
+            });
+        }
+    });
+}
+
+FUNÇÃO 8: CRIAR LEGENDA
+-----------------------
+
+const legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function(map) {
+    const div = L.DomUtil.create('div', 'legend');
+    
+    div.innerHTML = '<h4>Tipos de Unidade</h4>';
+    
+    const tipos = {
+        'ESREG': '🏢',
+        'ESLOC': '🏠'
+    };
+    
+    Object.entries(tipos).forEach(([tipo, emoji]) => {
+        div.innerHTML += `
+            <div class="legend-item">
+                <span style="font-size: 20px;">${emoji}</span>
+                <span>${tipo}</span>
+            </div>
+        `;
+    });
+    
+    return div;
+};
+
+legend.addTo(map);
+
+FUNÇÃO 9: ESTATÍSTICAS DINÂMICAS
+---------------------------------
+
+function updateStats() {
+    // Total de unidades
+    const totalUnidades = ematerData.totalUnidades;
+    document.getElementById('stat-total-unidades').textContent = totalUnidades;
+    
+    // Municípios com unidades
+    const municipiosUnicos = new Set();
+    ematerData.territorios.forEach(t => {
+        t.unidades.forEach(u => municipiosUnicos.add(u.municipio));
+    });
+    document.getElementById('stat-municipios-cobertos').textContent = municipiosUnicos.size;
+    
+    // Cobertura percentual
+    const cobertura = ((municipiosUnicos.size / 52) * 100).toFixed(1);
+    document.getElementById('stat-cobertura').textContent = `${cobertura}%`;
+    
+    // Municípios visitados
+    const municipiosVisitados = Object.keys(formulariosPorMunicipio).length;
+    document.getElementById('stat-municipios-visitados').textContent = municipiosVisitados;
+}
+
+================================================================================
+7. PERSONALIZAÇÃO VISUAL
+================================================================================
+
+CSS PRINCIPAL:
+--------------
+
+/* Container do mapa */
+#map {
+    height: 100%;
+    width: 100%;
+    border-radius: 0 0 20px 0;
+}
+
+/* Sidebar */
+.sidebar {
+    background: #f8f9fa;
+    padding: 20px;
+    overflow-y: auto;
+    border-right: 2px solid #e0e0e0;
+}
+
+/* Cards de estatísticas */
+.stats {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.stat-value {
+    color: #1e3c72;
+    font-weight: bold;
+}
+
+.stat-value.green { color: #27ae60; }
+.stat-value.red { color: #e74c3c; }
+.stat-value.orange { color: #f39c12; }
+
+/* Botões de filtro */
+.filter-btn {
+    padding: 8px 15px;
+    border: 2px solid #2a5298;
+    background: white;
+    color: #2a5298;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #2a5298;
+    color: white;
+}
+
+/* Marcadores customizados */
+.custom-marker {
+    background: white;
+    border: 2px solid #2a5298;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.custom-marker:hover {
+    transform: scale(1.2);
+    z-index: 1000;
+}
+
+.marker-highlight {
+    filter: brightness(1.2) drop-shadow(0 0 10px #ffeb3b);
+}
+
+.marker-dimmed {
+    opacity: 0.3;
+}
+
+/* Popups customizados */
+.custom-popup .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.popup-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #1e3c72;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #2a5298;
+}
+
+.popup-info {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Legenda */
+.legend {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.legend h4 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    color: #1e3c72;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+/* Polígonos dos municípios */
+.municipio-polygon {
+    transition: all 0.3s ease;
+}
+
+.municipio-visitado {
+    fill: #27ae60 !important;
+    fill-opacity: 0.6 !important;
+    stroke-width: 2 !important;
+}
+
+/* Reset zoom button */
+.reset-zoom-btn {
+    position: absolute;
+    top: 80px;
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    border: 2px solid #2a5298;
+    border-radius: 10px;
+    padding: 12px 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.reset-zoom-btn:hover {
+    background: #2a5298;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+    
+    .sidebar {
+        max-height: 300px;
+        border-right: none;
+        border-bottom: 2px solid #e0e0e0;
+    }
+}
+
+================================================================================
+8. INTEGRAÇÃO COM API
+================================================================================
+
+API: GET-ESTATISTICAS-COBERTURA.PHP
+------------------------------------
+
+<?php
+header('Content-Type: application/json; charset=utf-8');
+require_once 'db-config.php';
+
+try {
+    // Total de formulários
+    $sqlTotal = "SELECT COUNT(*) as total FROM formularios";
+    $stmtTotal = $pdo->query($sqlTotal);
+    $totalFormularios = $stmtTotal->fetch(PDO::FETCH_ASSOC)['total'];
+    
+    // Formulários por município
+    $sqlPorMunicipio = "
+        SELECT 
+            municipio, 
+            COUNT(*) as total 
+        FROM formularios 
+        GROUP BY municipio
+    ";
+    $stmtPorMunicipio = $pdo->query($sqlPorMunicipio);
+    $porMunicipio = $stmtPorMunicipio->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Municípios únicos visitados
+    $sqlMunicipiosVisitados = "
+        SELECT COUNT(DISTINCT municipio) as total 
+        FROM formularios
+    ";
+    $stmtMunicipiosVisitados = $pdo->query($sqlMunicipiosVisitados);
+    $municipiosVisitados = $stmtMunicipiosVisitados->fetch(PDO::FETCH_ASSOC)['total'];
+    
+    // Com geolocalização
+    $sqlComGeo = "
+        SELECT COUNT(*) as total 
+        FROM formularios 
+        WHERE geolocalizacao_json IS NOT NULL
+    ";
+    $stmtComGeo = $pdo->query($sqlComGeo);
+    $comGeolocalizacao = $stmtComGeo->fetch(PDO::FETCH_ASSOC)['total'];
+    
+    // Resposta
+    echo json_encode([
+        'success' => true,
+        'total_formularios' => (int)$totalFormularios,
+        'municipios_visitados' => (int)$municipiosVisitados,
+        'com_geolocalizacao' => (int)$comGeolocalizacao,
+        'por_municipio' => $porMunicipio,
+        'timestamp' => date('Y-m-d H:i:s')
+    ]);
+    
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
+}
+?>
+
+CHAMADA DA API NO JAVASCRIPT:
+------------------------------
+
+async function buscarEstatisticasCobertura() {
+    try {
+        showLoading('Carregando estatísticas...');
+        
+        const response = await fetch('./get-estatisticas-cobertura.php');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Erro desconhecido');
+        }
+        
+        console.log('✅ Estatísticas carregadas:', data);
+        
+        // Atualizar variáveis globais
+        formulariosPorMunicipio = {};
+        data.por_municipio.forEach(item => {
+            formulariosPorMunicipio[item.municipio] = parseInt(item.total);
+        });
+        
+        // Atualizar UI
+        document.getElementById('stat-formularios').textContent = data.total_formularios;
+        document.getElementById('stat-municipios-visitados').textContent = data.municipios_visitados;
+        
+        // Repintar municípios
+        repintarMunicipios();
+        
+        hideLoading();
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar estatísticas:', error);
+        hideLoading();
+        alert('Erro ao carregar estatísticas de cobertura.');
+    }
+}
+
+================================================================================
+9. PASSO A PASSO DE REPLICAÇÃO
+================================================================================
+
+CHECKLIST COMPLETO:
+-------------------
+
+□ ETAPA 1: PREPARAÇÃO
+   □ Definir escopo do mapa (unidades, regiões, etc)
+   □ Coletar coordenadas de todas as unidades
+   □ Obter arquivo GeoJSON dos polígonos (municípios/estados)
+   □ Definir cores dos territórios/regiões
+   □ Listar KPIs e estatísticas necessárias
+
+□ ETAPA 2: ESTRUTURA DE DADOS
+   □ Criar objeto JavaScript com dados das unidades
+   □ Estruturar territórios/regiões
+   □ Validar coordenadas (lat, lon)
+   □ Adicionar códigos IBGE
+   □ Testar estrutura de dados
+
+□ ETAPA 3: HTML BASE
+   □ Criar arquivo mapa-[nome].html
+   □ Adicionar links do Leaflet CSS/JS
+   □ Criar estrutura: container → sidebar + mapa
+   □ Adicionar elementos de UI:
+      □ Header
+      □ Cards de estatísticas
+      □ Filtros
+      □ Busca
+      □ Lista de territórios
+      □ Div do mapa (#map)
+      □ Botão de reset
+
+□ ETAPA 4: CSS
+   □ Copiar estilos base do mapa-cobertura.html
+   □ Ajustar cores do tema
+   □ Personalizar cards de estatísticas
+   □ Estilizar marcadores customizados
+   □ Estilizar popups
+   □ Adicionar responsividade
+
+□ ETAPA 5: JAVASCRIPT - INICIALIZAÇÃO
+   □ Inicializar mapa Leaflet
+   □ Adicionar tile layer (OpenStreetMap)
+   □ Definir centro e zoom inicial
+   □ Configurar limites do mapa (bounds)
+
+□ ETAPA 6: JAVASCRIPT - MARCADORES
+   □ Criar função addMarkers()
+   □ Iterar sobre unidades
+   □ Criar ícones customizados (divIcon)
+   □ Adicionar marcadores ao mapa
+   □ Criar popups informativos
+   □ Armazenar referências dos marcadores
+
+□ ETAPA 7: JAVASCRIPT - POLÍGONOS
+   □ Carregar arquivo GeoJSON via fetch()
+   □ Criar layer L.geoJSON()
+   □ Aplicar cores por território
+   □ Adicionar popups aos polígonos
+   □ Implementar hover effects
+   □ Adicionar ao mapa
+
+□ ETAPA 8: JAVASCRIPT - FILTROS
+   □ Implementar filtros por tipo
+   □ Adicionar busca por nome
+   □ Criar função applyFilters()
+   □ Conectar event listeners
+   □ Testar todas as combinações
+
+□ ETAPA 9: JAVASCRIPT - ESTATÍSTICAS
+   □ Calcular total de unidades
+   □ Contar municípios cobertos
+   □ Calcular cobertura percentual
+   □ Criar função updateStats()
+   □ Atualizar cards da sidebar
+
+□ ETAPA 10: INTEGRAÇÃO COM API
+   □ Criar API PHP (get-estatisticas-cobertura.php)
+   □ Implementar queries SQL
+   □ Testar API individualmente
+   □ Criar função buscarEstatisticasCobertura()
+   □ Integrar resposta da API
+   □ Repintar municípios visitados (verde)
+
+□ ETAPA 11: FUNCIONALIDADES EXTRAS
+   □ Reset de zoom
+   □ Destaque de território ao clicar
+   □ Legenda interativa
+   □ Tooltips informativos
+   □ Loading overlay
+   □ Tratamento de erros
+
+□ ETAPA 12: TESTES
+   □ Testar em diferentes navegadores
+   □ Validar responsividade mobile
+   □ Testar todos os filtros
+   □ Verificar performance (muitos marcadores)
+   □ Testar carregamento offline
+   □ Validar coordenadas (conferir no Google Maps)
+
+□ ETAPA 13: OTIMIZAÇÕES
+   □ Minificar GeoJSON (se muito grande)
+   □ Implementar lazy loading de marcadores
+   □ Adicionar clustering (se >100 marcadores)
+   □ Cachear dados da API
+   □ Otimizar CSS/JS
+
+□ ETAPA 14: DOCUMENTAÇÃO
+   □ Comentar código JavaScript
+   □ Documentar estrutura de dados
+   □ Criar README do mapa
+   □ Listar fontes de dados
+   □ Incluir instruções de manutenção
+
+□ ETAPA 15: DEPLOY
+   □ Commit no Git
+   □ Upload do GeoJSON
+   □ Configurar CORS (se necessário)
+   □ Testar em produção
+   □ Monitorar logs
+
+================================================================================
+10. EXEMPLOS DE CÓDIGO
+================================================================================
+
+EXEMPLO 1: MARCADOR CUSTOMIZADO COM EMOJI
+------------------------------------------
+
+function criarMarcadorCustomizado(unidade, territorio) {
+    // Escolher emoji por tipo
+    const emojis = {
+        'ESREG': '🏢',
+        'ESLOC': '🏠',
+        'SEDE': '🏛️'
+    };
+    
+    const emoji = emojis[unidade.tipo] || '📍';
+    
+    // Criar ícone
+    const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `
+            <div class="marker-container" style="
+                background: white;
+                border: 3px solid ${territorio.cor};
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            ">
+                ${emoji}
+            </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
+    });
+    
+    return icon;
+}
+
+EXEMPLO 2: POPUP RICO COM DADOS
+--------------------------------
+
+function criarPopupCompleto(unidade, territorio, formularios) {
+    return `
+        <div class="popup-rich">
+            <div class="popup-header" style="
+                background: linear-gradient(135deg, ${territorio.cor}dd 0%, ${territorio.cor}aa 100%);
+                color: white;
+                padding: 12px;
+                margin: -10px -10px 10px -10px;
+                border-radius: 8px 8px 0 0;
+            ">
+                <div style="font-size: 1.2em; font-weight: bold;">
+                    ${unidade.nome}
+                </div>
+                <div style="font-size: 0.85em; opacity: 0.9;">
+                    ${unidade.tipo} - ${unidade.municipio}
+                </div>
+            </div>
+            
+            <div class="popup-body">
+                <div class="info-row">
+                    <span class="label">🏛️ Território:</span>
+                    <span class="value">${territorio.nome}</span>
+                </div>
+                
+                ${unidade.distrito ? `
+                <div class="info-row">
+                    <span class="label">📍 Distrito:</span>
+                    <span class="value">${unidade.distrito}</span>
+                </div>
+                ` : ''}
+                
+                <div class="info-row">
+                    <span class="label">📋 Formulários:</span>
+                    <span class="value" style="color: ${formularios > 0 ? '#27ae60' : '#e74c3c'};">
+                        ${formularios || 0}
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="label">🌍 Coordenadas:</span>
+                    <span class="value">${unidade.latitude.toFixed(4)}, ${unidade.longitude.toFixed(4)}</span>
+                </div>
+                
+                ${unidade.telefone ? `
+                <div class="info-row">
+                    <span class="label">📞 Telefone:</span>
+                    <span class="value">${unidade.telefone}</span>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="popup-footer" style="
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                gap: 8px;
+            ">
+                <button onclick="verDetalhesUnidade(${unidade.id})" style="
+                    flex: 1;
+                    padding: 6px 12px;
+                    background: ${territorio.cor};
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                    Ver Detalhes
+                </button>
+                <button onclick="abrirNoGoogleMaps(${unidade.latitude}, ${unidade.longitude})" style="
+                    flex: 1;
+                    padding: 6px 12px;
+                    background: #4285f4;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                    🗺️ Google Maps
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+EXEMPLO 3: FILTRO AVANÇADO COM MÚLTIPLOS CRITÉRIOS
+---------------------------------------------------
+
+const filtros = {
+    tipo: '',
+    territorio: '',
+    temFormularios: false,
+    busca: ''
+};
+
+function aplicarFiltrosAvancados() {
+    markers.forEach(marker => {
+        const unidade = marker.unidade;
+        const territorio = marker.territorio;
+        
+        // Critério 1: Tipo
+        const passTipo = !filtros.tipo || unidade.tipo === filtros.tipo;
+        
+        // Critério 2: Território
+        const passTerritorio = !filtros.territorio || territorio.id === filtros.territorio;
+        
+        // Critério 3: Tem formulários?
+        const formularios = formulariosPorMunicipio[unidade.municipio] || 0;
+        const passFormularios = !filtros.temFormularios || formularios > 0;
+        
+        // Critério 4: Busca
+        const passBusca = !filtros.busca || 
+            unidade.nome.toLowerCase().includes(filtros.busca.toLowerCase()) ||
+            unidade.municipio.toLowerCase().includes(filtros.busca.toLowerCase());
+        
+        // Aplicar
+        if (passTipo && passTerritorio && passFormularios && passBusca) {
+            marker.addTo(map);
+            marker.getElement().style.opacity = '1';
+        } else {
+            map.removeLayer(marker);
+        }
+    });
+    
+    // Atualizar contador
+    const visiveis = markers.filter(m => map.hasLayer(m)).length;
+    document.getElementById('contador-visiveis').textContent = `${visiveis} / ${markers.length}`;
+}
+
+EXEMPLO 4: CLUSTERING (Muitos Marcadores)
+------------------------------------------
+
+// Biblioteca: Leaflet.markercluster
+// CDN: https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js
+
+const markerCluster = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    iconCreateFunction: function(cluster) {
+        const count = cluster.getChildCount();
+        
+        return L.divIcon({
+            html: `<div style="
+                background: #2a5298;
+                color: white;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 16px;
+                border: 3px solid white;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            ">${count}</div>`,
+            className: 'marker-cluster-custom',
+            iconSize: L.point(40, 40)
+        });
+    }
+});
+
+// Adicionar marcadores ao cluster
+markers.forEach(marker => {
+    markerCluster.addLayer(marker);
+});
+
+// Adicionar cluster ao mapa
+map.addLayer(markerCluster);
+
+EXEMPLO 5: HEATMAP DE FORMULÁRIOS
+----------------------------------
+
+// Biblioteca: Leaflet.heat
+// CDN: https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js
+
+function criarHeatmap() {
+    const pontosCalor = [];
+    
+    ematerData.territorios.forEach(territorio => {
+        territorio.unidades.forEach(unidade => {
+            const formularios = formulariosPorMunicipio[unidade.municipio] || 0;
+            
+            if (formularios > 0) {
+                pontosCalor.push([
+                    unidade.latitude,
+                    unidade.longitude,
+                    formularios / 10  // Intensidade (normalizar)
+                ]);
+            }
+        });
+    });
+    
+    const heatLayer = L.heatLayer(pontosCalor, {
+        radius: 25,
+        blur: 15,
+        maxZoom: 10,
+        max: 1.0,
+        gradient: {
+            0.0: 'blue',
+            0.5: 'yellow',
+            1.0: 'red'
+        }
+    });
+    
+    heatLayer.addTo(map);
+}
+
+EXEMPLO 6: EXPORTAR MAPA COMO IMAGEM
+-------------------------------------
+
+// Biblioteca: leaflet-image
+// CDN: https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js
+
+function exportarMapaComoImagem() {
+    leafletImage(map, function(err, canvas) {
+        if (err) {
+            console.error('Erro ao exportar:', err);
+            return;
+        }
+        
+        // Converter para PNG
+        const img = canvas.toDataURL('image/png');
+        
+        // Download
+        const a = document.createElement('a');
+        a.href = img;
+        a.download = `mapa_cobertura_${new Date().toISOString().split('T')[0]}.png`;
+        a.click();
+    });
+}
+
+EXEMPLO 7: ANIMAÇÃO DE MARCADORES
+----------------------------------
+
+function animarMarcadores() {
+    markers.forEach((marker, index) => {
+        setTimeout(() => {
+            // Bounce animation
+            marker.setZIndexOffset(1000);
+            
+            const element = marker.getElement();
+            element.style.animation = 'bounce 0.5s ease';
+            
+            // Abrir popup temporariamente
+            setTimeout(() => {
+                marker.openPopup();
+            }, 250);
+            
+            setTimeout(() => {
+                marker.closePopup();
+                element.style.animation = '';
+                marker.setZIndexOffset(0);
+            }, 1500);
+            
+        }, index * 100);  // Delay progressivo
+    });
+}
+
+// CSS para animação
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+EXEMPLO 8: ROTA ENTRE DOIS PONTOS
+----------------------------------
+
+// Biblioteca: Leaflet Routing Machine
+// CDN: https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js
+
+function tracarRota(pontoA, pontoB) {
+    L.Routing.control({
+        waypoints: [
+            L.latLng(pontoA.latitude, pontoA.longitude),
+            L.latLng(pontoB.latitude, pontoB.longitude)
+        ],
+        routeWhileDragging: true,
+        lineOptions: {
+            styles: [{ color: '#2a5298', weight: 4 }]
+        },
+        createMarker: function() { return null; }  // Sem marcadores extras
+    }).addTo(map);
+}
+
+================================================================================
+11. TROUBLESHOOTING
+================================================================================
+
+PROBLEMA 1: Mapa não aparece (só fundo cinza)
+----------------------------------------------
+CAUSA: Leaflet CSS não carregado ou div sem altura
+SOLUÇÃO:
+- Verificar se CSS do Leaflet foi incluído ANTES do </head>
+- Adicionar altura fixa ao #map: height: 600px;
+- Chamar map.invalidateSize() após mostrar mapa
+
+PROBLEMA 2: Marcadores não aparecem
+------------------------------------
+CAUSA: Coordenadas invertidas ou fora dos limites
+SOLUÇÃO:
+- Verificar se latitude está entre -90 e 90
+- Verificar se longitude está entre -180 e 180
+- Conferir ordem: L.marker([LATITUDE, LONGITUDE])
+- Validar dados no console: console.log(unidade)
+
+PROBLEMA 3: GeoJSON não carrega
+--------------------------------
+CAUSA: Arquivo não encontrado ou CORS
+SOLUÇÃO:
+- Verificar caminho do arquivo (relativo ou absoluto)
+- Abrir arquivo no navegador para testar
+- Configurar CORS no servidor
+- Usar servidor local (Live Server no VSCode)
+
+PROBLEMA 4: Polígonos não coloridos corretamente
+-------------------------------------------------
+CAUSA: Normalização de nomes ou códigos IBGE
+SOLUÇÃO:
+- Criar função de normalização:
+  function normalizar(str) {
+      return str.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .trim();
+  }
+- Usar código IBGE (mais confiável)
+- Logar nomes para debug
+
+PROBLEMA 5: Performance ruim (muitos marcadores)
+-------------------------------------------------
+CAUSA: Muitos marcadores renderizados simultaneamente
+SOLUÇÃO:
+- Implementar clustering (Leaflet.markercluster)
+- Lazy loading de marcadores
+- Remover marcadores fora da viewport
+- Simplificar ícones (usar CSS puro)
+
+PROBLEMA 6: Zoom muito lento
+-----------------------------
+CAUSA: Polígonos complexos ou muitas features
+SOLUÇÃO:
+- Simplificar GeoJSON (reduzir pontos)
+- Usar ferramenta: mapshaper.org
+- Adicionar debounce nos eventos
+- Desabilitar animações: { animate: false }
+
+PROBLEMA 7: API não retorna dados
+----------------------------------
+CAUSA: CORS, caminho errado ou erro no PHP
+SOLUÇÃO:
+- Testar API diretamente no navegador
+- Verificar CORS headers no PHP
+- Conferir logs do servidor (error_log)
+- Validar JSON da resposta (jsonlint.com)
+
+PROBLEMA 8: Popups cortados na tela
+------------------------------------
+CAUSA: maxWidth pequeno ou posicionamento
+SOLUÇÃO:
+- Aumentar maxWidth: { maxWidth: 400 }
+- Ajustar autoPan: { autoPan: true }
+- Usar autoPanPadding: { autoPanPadding: [50, 50] }
+
+PROBLEMA 9: Ícones não aparecem corretamente
+---------------------------------------------
+CAUSA: Caminho de imagens errado no Leaflet
+SOLUÇÃO:
+- Usar divIcon com HTML/CSS (mais confiável)
+- Configurar iconUrl com caminho absoluto
+- Verificar console para erros 404
+
+PROBLEMA 10: Mapa não responsivo em mobile
+-------------------------------------------
+CAUSA: Falta de meta viewport ou CSS inadequado
+SOLUÇÃO:
+- Adicionar: <meta name="viewport" content="width=device-width">
+- Usar CSS Grid/Flexbox responsivo
+- Testar com DevTools (modo mobile)
+- Adicionar touch handlers: { tap: true }
+
+================================================================================
+RECURSOS E REFERÊNCIAS
+================================================================================
+
+DOCUMENTAÇÃO OFICIAL:
+----------------------
+- Leaflet.js: https://leafletjs.com/reference.html
+- OpenStreetMap: https://www.openstreetmap.org/
+- GeoJSON Spec: https://geojson.org/
+
+FERRAMENTAS ÚTEIS:
+------------------
+- Mapshaper: https://mapshaper.org/ (simplificar GeoJSON)
+- GeoJSON.io: http://geojson.io/ (editor visual)
+- JSON Lint: https://jsonlint.com/ (validar JSON)
+- Leaflet Plugins: https://leafletjs.com/plugins.html
+
+DADOS GEOGRÁFICOS:
+------------------
+- IBGE: https://www.ibge.gov.br/geociencias/
+- Natural Earth: https://www.naturalearthdata.com/
+- GitHub tbrugz/geodata-br: Dados do Brasil
+
+BIBLIOTECAS EXTRAS:
+-------------------
+- Leaflet.markercluster: Agrupamento de marcadores
+- Leaflet.heat: Mapas de calor
+- Leaflet Routing Machine: Rotas
+- leaflet-image: Exportar como imagem
+
+TUTORIAIS:
+----------
+- Leaflet Quick Start: https://leafletjs.com/examples/quick-start/
+- GeoJSON with Leaflet: https://leafletjs.com/examples/geojson/
+- Custom Icons: https://leafletjs.com/examples/custom-icons/
+
+================================================================================
+NOTAS FINAIS
+================================================================================
+
+PERFORMANCE:
+------------
+- Use clustering para >100 marcadores
+- Simplifique GeoJSON (menos de 1MB)
+- Cache dados da API (localStorage)
+- Debounce em eventos de zoom/pan
+
+ACESSIBILIDADE:
+---------------
+- Adicione labels aos controles
+- Use contraste adequado nas cores
+- Implemente navegação por teclado
+- Teste com screen readers
+
+MANUTENÇÃO:
+-----------
+- Documente estrutura de dados
+- Versione arquivo GeoJSON
+- Comente código JavaScript
+- Mantenha backup dos dados
+
+BOA SORTE NA REPLICAÇÃO! 🗺️
+================================================================================

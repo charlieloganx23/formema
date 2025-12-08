@@ -1,0 +1,29 @@
+# Ignore node modules
+node_modules/
+package-lock.json
+
+# Azure Functions
+api/local.settings.json
+api/.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
