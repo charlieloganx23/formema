@@ -47,7 +47,7 @@ module.exports = async function (context, req) {
         const limite = parseInt(req.query.limite) || 100;
         const offset = parseInt(req.query.offset) || 0;
 
-        let query = 'SELECT * FROM formularios WHERE 1=1';
+        let query = 'SELECT * FROM formulario_extensionista WHERE 1=1';
         const request = pool.request();
 
         // Filtros opcionais

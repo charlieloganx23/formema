@@ -337,17 +337,17 @@ Portal Azure → Function App → Monitoring → Log stream
 
 ```sql
 -- Total de formulários
-SELECT COUNT(*) FROM formularios;
+SELECT COUNT(*) FROM formulario_extensionista;
 
--- Formulários por município
+-- Contar formulários por município
 SELECT municipio, COUNT(*) as total 
-FROM formularios 
+FROM formulario_extensionista 
 GROUP BY municipio 
 ORDER BY total DESC;
 
 -- Últimas submissões
 SELECT TOP 10 protocolo, municipio, timestamp_fim 
-FROM formularios 
+FROM formulario_extensionista 
 ORDER BY timestamp_fim DESC;
 
 -- Estatísticas gerais

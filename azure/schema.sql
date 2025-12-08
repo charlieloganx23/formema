@@ -2,8 +2,8 @@
 -- Database: db-ematech
 -- Server: srv-db-cxtce.database.windows.net
 
--- Tabela principal de formulários
-CREATE TABLE formularios (
+-- Tabela principal de formulários dos extensionistas
+CREATE TABLE formulario_extensionista (
     id INT IDENTITY(1,1) PRIMARY KEY,
     protocolo NVARCHAR(50) UNIQUE NOT NULL,
     municipio NVARCHAR(100),

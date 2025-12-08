@@ -78,8 +78,8 @@ module.exports = async function (context, req) {
 
         // Verificar se já existe
         const checkResult = await pool.request()
-            .input('protocolo', sql.NVarChar(50), protocolo)
-            .query('SELECT id FROM formularios WHERE protocolo = @protocolo');
+            .input('protocolo', sql.NVarChar, protocolo)
+            .query('SELECT protocolo FROM formulario_extensionista WHERE protocolo = @protocolo');
 
         let result;
         if (checkResult.recordset.length > 0) {
@@ -101,7 +101,7 @@ module.exports = async function (context, req) {
                 .input('respostas', sql.NVarChar(sql.MAX), JSON.stringify(respostas))
                 .input('fotos', sql.NVarChar(sql.MAX), JSON.stringify(fotos || []))
                 .query(`
-                    UPDATE formularios SET
+                    UPDATE formulario_extensionista SET
                         municipio = @municipio,
                         unidade_emater = @unidade_emater,
                         territorio = @territorio,
@@ -140,7 +140,7 @@ module.exports = async function (context, req) {
                 .input('respostas', sql.NVarChar(sql.MAX), JSON.stringify(respostas))
                 .input('fotos', sql.NVarChar(sql.MAX), JSON.stringify(fotos || []))
                 .query(`
-                    INSERT INTO formularios (
+                    INSERT INTO formulario_extensionista (
                         protocolo, municipio, unidade_emater, territorio,
                         identificador_iniciais, timestamp_inicio, timestamp_fim,
                         duracao_minutos, latitude, longitude, precisao, geo_erro,
