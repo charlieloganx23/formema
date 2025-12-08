@@ -81,11 +81,28 @@ async function salvarFormulario(dados) {
 
         request.onsuccess = async () => {
             console.log('✅ Formulário salvo no IndexedDB:', protocolo);
+            console.log('🔍 [DEBUG] Iniciando verificação de sincronização...');
+            console.log('🔍 [DEBUG] navigator.onLine:', navigator.onLine);
+            console.log('🔍 [DEBUG] CONFIG existe?', typeof CONFIG !== 'undefined');
             
             // Tentar sincronizar imediatamente com o servidor
             try {
                 if (navigator.onLine) {
                     console.log('🌐 [SAVE] Online detectado, iniciando sincronização automática...');
+                    
+                    // Verificar CONFIG
+                    if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+                        console.error('❌ [SAVE] CONFIG não encontrado! Sincronização cancelada.');
+                        resolve({ 
+                            success: true, 
+                            protocolo: protocolo, 
+                            id: request.result,
+                            sincronizado: false 
+                        });
+                        return;
+                    }
+                    
+                    console.log('🔍 [DEBUG] Chamando sincronizarFormularioComAzure...');
                     const resultadoSync = await sincronizarFormularioComAzure(formulario);
                     
                     console.log('📊 [SAVE] Resultado da sincronização:', resultadoSync);
