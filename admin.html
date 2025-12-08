@@ -839,14 +839,14 @@
                     
                     row.innerHTML = `
                         <div>
-                            <strong>${protocolo || 'N/A'}</strong><br>
+                            <strong>${protocolo || '-'}</strong><br>
                             <small>${municipio}</small>
                         </div>
                         <div>${dataFormatada}</div>
                         <div>${duracaoMinutos}min</div>
                         <div>
                             <span class="badge ${form.status === 'completo' || form.status === 'concluido' ? 'badge-success' : 'badge-warning'}">
-                                ${form.status || 'N/A'}
+                                ${form.status || '-'}
                             </span>
                         </div>
                         <div>
