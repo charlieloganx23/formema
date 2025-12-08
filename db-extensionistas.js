@@ -510,18 +510,6 @@ async function marcarComoSincronizado(protocolo) {
         };
     });
 }
-                
-                const updateRequest = objectStore.put(formulario);
-                updateRequest.onsuccess = () => resolve(true);
-                updateRequest.onerror = () => reject(updateRequest.error);
-            } else {
-                reject(new Error('Formulário não encontrado'));
-            }
-        };
-
-        request.onerror = () => reject(request.error);
-    });
-}
 
 // Sincronizar todos os formulários pendentes
 async function sincronizarTodosComAzure() {
