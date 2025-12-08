@@ -451,7 +451,7 @@ async function sincronizarTodosComAzure() {
         }
 
         // Buscar formulários não sincronizados
-        const formularios = await buscarFormulariosNaoSincronizados();
+        const formularios = await buscarNaoSincronizados();
         
         if (formularios.length === 0) {
             console.log('✅ Nenhum formulário pendente');
