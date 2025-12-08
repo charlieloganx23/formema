@@ -22,7 +22,7 @@ Sistema completo de coleta, armazenamento e análise de dados de autoavaliação
   - ✅ Barra de progresso visual
   - ✅ Todas as questões opcionais (sem validação obrigatória)
 
-### 📊 Painel Administrativo (`admin-extensionistas.html`)
+### 📊 Painel Administrativo (`admin.html`)
 - **Dashboard com Estatísticas**:
   - 📈 Total de formulários coletados
   - 🗺️ Municípios diferentes atendidos
@@ -31,10 +31,11 @@ Sistema completo de coleta, armazenamento e análise de dados de autoavaliação
 
 - **Gestão de Dados**:
   - 👁️ Visualização detalhada de cada resposta (modal completo)
-  - 🔄 Sincronização com servidor
+  - 🔄 Sincronização manual com Azure SQL
   - 📥 Exportação para JSON
   - 🗑️ Limpeza de dados (com confirmação dupla)
   - 📋 Tabela ordenada por data (mais recentes primeiro)
+  - 💾 Sistema offline-first com sync manual
 
 ### 📈 Relatórios e Análises (`relatorios-extensionistas.html`)
 - **12 Gráficos Interativos** (Chart.js 4.4.0):
@@ -56,7 +57,7 @@ Sistema completo de coleta, armazenamento e análise de dados de autoavaliação
   - 📍 Marcadores com contagem de formulários
   - 🎯 Mapa centralizado em Rondônia
 
-### 🗺️ Mapa de Cobertura (`mapa-extensionistas.html`)
+### 🗺️ Mapa de Cobertura (`mapa-cobertura.html`)
 - **Visualização Geográfica Completa**:
   - 📍 Marcadores interativos por município
   - 📊 Tamanho proporcional ao número de formulários
@@ -90,10 +91,11 @@ Sistema completo de coleta, armazenamento e análise de dados de autoavaliação
 5. Dados salvos automaticamente no navegador
 
 ### 2️⃣ Visualizar Respostas
-1. Abra **`admin-extensionistas.html`**
+1. Abra **`admin.html`**
 2. Veja estatísticas gerais no topo
 3. Clique em qualquer linha para ver detalhes completos
 4. Use botões de ação: Sincronizar, Exportar, Limpar
+5. Clique em **"🔄 Sincronizar Agora"** para enviar dados ao servidor
 
 ### 3️⃣ Analisar Dados
 1. Abra **`relatorios-extensionistas.html`**
@@ -102,7 +104,7 @@ Sistema completo de coleta, armazenamento e análise de dados de autoavaliação
 4. Clique em marcadores para detalhes por município
 
 ### 4️⃣ Visualizar Mapa de Cobertura
-1. Abra **`mapa-extensionistas.html`**
+1. Abra **`mapa-cobertura.html`**
 2. Veja distribuição geográfica dos formulários
 3. Clique nos marcadores para detalhes do município
 4. Use filtros de período (7/30 dias ou todos)
@@ -257,24 +259,17 @@ CREATE TABLE extensionistas_formularios (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-### Configurar URL da API
-
-Em `admin-extensionistas.html`, linha ~595:
-```javascript
-const API_URL = 'https://seu-servidor.com/api/sync-extensionistas.php';
-```
-
 ## 📊 Estrutura de Arquivos
 
 ```
 formema/
-├── index.html                          # Formulário principal (1930 linhas)
-├── admin-extensionistas.html           # Painel administrativo
-├── relatorios-extensionistas.html      # Dashboard de análises
-├── mapa-extensionistas.html            # Mapa de cobertura geográfica (NOVO)
-├── db-extensionistas.js                # Gerenciador IndexedDB (392 linhas)
-├── README.md                           # Documentação
-├── README_old.md                       # Backup da doc anterior
+├── index.html                          # Formulário principal (coleta de dados)
+├── admin.html                          # Painel administrativo (gestão e sync)
+├── relatorios-extensionistas.html      # Dashboard com 10 gráficos
+├── mapa-cobertura.html                 # Mapa de cobertura geográfica
+├── db-extensionistas.js                # Gerenciador IndexedDB (649 linhas)
+├── config.js                           # Configuração Azure SQL
+├── README.md                           # Documentação completa
 └── index_backup.html                   # Backup do formulário
 ```
 
@@ -366,23 +361,23 @@ Em cada HTML:
    ↓
 5. Dados salvos no IndexedDB (offline)
    ↓
-6. Acessa admin-extensionistas.html
+6. Acessa admin.html
    ↓
-7. Visualiza todas as respostas
+7. Visualiza todas as respostas em tabela
    ↓
-8. [OPCIONAL] Clica "Sincronizar com Servidor"
+8. Clica "🔄 Sincronizar Agora" (formulários pendentes)
    ↓
-9. Dados enviados para API PHP/MySQL
+9. Dados enviados para Azure SQL via Netlify Functions
    ↓
 10. Acessa relatorios-extensionistas.html
     ↓
-11. Visualiza gráficos e mapas
+11. Visualiza 10 gráficos interativos
     ↓
-12. Acessa mapa-extensionistas.html
+12. Acessa mapa-cobertura.html
     ↓
-13. Visualiza cobertura geográfica
+13. Visualiza cobertura geográfica de Rondônia
     ↓
-14. Exporta JSON para backup
+14. Exporta JSON para backup local
 ```
 
 ## 🎓 Detalhamento dos Eixos
@@ -474,15 +469,14 @@ Uso interno institucional.
 ## 🌟 Início Rápido
 
 ```bash
-# 1. Baixe os arquivos
-# 2. Abra index.html no navegador
-# 3. Preencha o formulário
-# 4. Acesse admin-extensionistas.html
-# 5. Veja os relatórios em relatorios-extensionistas.html
-# 6. Visualize o mapa em mapa-extensionistas.html
+# 1. Baixe os arquivos do GitHub
+# 2. Abra index.html no navegador (preencha formulários)
+# 3. Acesse admin.html (visualize e sincronize)
+# 4. Veja relatórios em relatorios-extensionistas.html
+# 5. Visualize mapa em mapa-cobertura.html
 ```
 
-**Sistema 100% funcional offline! Nenhuma configuração adicional necessária.**
+**Sistema offline-first com sincronização manual para Azure SQL!**
 
 ---
 
