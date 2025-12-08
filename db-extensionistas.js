@@ -152,11 +152,12 @@ async function buscarNaoSincronizados() {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([STORE_NAME], 'readonly');
         const objectStore = transaction.objectStore(STORE_NAME);
-        const index = objectStore.index('sincronizado');
-        const request = index.getAll(false);
+        const request = objectStore.getAll();
 
         request.onsuccess = () => {
-            resolve(request.result);
+            // Filtrar manualmente os não sincronizados
+            const naoSincronizados = request.result.filter(form => !form.sincronizado);
+            resolve(naoSincronizados);
         };
 
         request.onerror = () => {
