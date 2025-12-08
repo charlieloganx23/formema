@@ -571,6 +571,11 @@
         // Variável global para armazenar formulários
         let formulariosGlobal = [];
         
+        // Voltar ao formulário (definir primeiro para garantir disponibilidade)
+        function voltarFormulario() {
+            window.location.href = 'index.html';
+        }
+        
         // Inicializar painel
         document.addEventListener('DOMContentLoaded', async function() {
             await carregarDadosServidor();
@@ -1354,11 +1359,6 @@
         // Abrir página de relatórios
         function abrirRelatorios() {
             window.location.href = 'relatorios.html';
-        }
-        
-        // Voltar ao formulário
-        function voltarFormulario() {
-            window.location.href = 'index.html';
         }
         
         // Fechar modal ao clicar fora
