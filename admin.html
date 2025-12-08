@@ -780,6 +780,13 @@
                 formularios.forEach(form => {
                     const row = document.createElement('div');
                     row.className = 'data-row';
+                    row.style.cursor = 'pointer';
+                    row.onclick = function(e) {
+                        // Não abrir se clicar nos botões
+                        if (!e.target.closest('button')) {
+                            verDetalhes(form.protocolo);
+                        }
+                    };
                     
                     // Normalizar campos (suporta tanto snake_case do PHP quanto camelCase do JS)
                     const protocolo = form.protocolo;
