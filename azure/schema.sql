@@ -44,13 +44,13 @@ CREATE TABLE formulario_extensionista (
 
 -- Trigger para atualizar updated_at
 CREATE TRIGGER trg_update_timestamp
-ON formularios
+ON formulario_extensionista
 AFTER UPDATE
 AS
 BEGIN
-    UPDATE formularios
+    UPDATE formulario_extensionista
     SET updated_at = GETUTCDATE()
-    FROM formularios f
+    FROM formulario_extensionista f
     INNER JOIN inserted i ON f.id = i.id;
 END;
 
@@ -63,7 +63,7 @@ SELECT
     COUNT(DISTINCT territorio) as total_territorios,
     AVG(duracao_minutos) as media_duracao,
     MAX(timestamp_fim) as ultima_submissao
-FROM formularios;
+FROM formulario_extensionista;
 
 -- View para cobertura por município
 CREATE VIEW vw_cobertura_municipios AS
@@ -73,7 +73,7 @@ SELECT
     COUNT(*) as total_formularios,
     MAX(timestamp_fim) as ultima_visita,
     DATEDIFF(day, MAX(timestamp_fim), GETUTCDATE()) as dias_desde_ultima
-FROM formularios
+FROM formulario_extensionista
 WHERE municipio IS NOT NULL
 GROUP BY municipio, territorio;
 
@@ -85,6 +85,6 @@ SELECT
     MAX(timestamp_fim) as ultima_visita,
     MIN(timestamp_fim) as primeira_visita,
     DATEDIFF(day, MAX(timestamp_fim), GETUTCDATE()) as dias_desde_ultima
-FROM formularios
+FROM formulario_extensionista
 WHERE unidade_emater IS NOT NULL
 GROUP BY unidade_emater;
