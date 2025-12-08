@@ -43,30 +43,57 @@ exports.handler = async (event, context) => {
         // Conectar ao SQL Azure
         const pool = await sql.connect(config);
 
-        // Extrair dados (suportar ambos formatos: camelCase e snake_case)
-        const {
-            protocolo,
-            respostas,
-            fotos,
-            geolocalizacao,
-            status
-        } = formulario;
+        // Extrair protocolo
+        const protocolo = formulario.protocolo;
+        
+        // Suportar dois formatos:
+        // 1. Estruturado: {respostas: {...}, fotos: [], geolocalizacao: {}}
+        // 2. Flat: {municipio: "...", latitude: ..., ...} (dados soltos no root)
+        
+        let respostas, fotos, geolocalizacao, municipio, unidade_emater, territorio, identificador_iniciais;
+        let latitude, longitude, precisao, geo_erro, timestampInicio, timestampFim, duracaoMinutos, status;
 
-        // Timestamps - aceitar ambos os formatos
-        const timestampInicio = formulario.timestampInicio || formulario.timestamp_inicio || formulario.timestamp;
-        const timestampFim = formulario.timestampFim || formulario.timestamp_fim;
-        const duracaoMinutos = formulario.duracaoMinutos || formulario.duracao_minutos || 0;
-
-        const municipio = respostas?.municipio || null;
-        const unidade_emater = respostas?.unidade_emater || null;
-        const territorio = respostas?.territorio || null;
-        const identificador_iniciais = respostas?.identificador_iniciais || null;
-
-        const geo = geolocalizacao || {};
-        const latitude = geo.latitude || null;
-        const longitude = geo.longitude || null;
-        const precisao = geo.precisao || null;
-        const geo_erro = geo.erro || null;
+        if (formulario.respostas) {
+            // Formato estruturado
+            respostas = formulario.respostas;
+            fotos = formulario.fotos || [];
+            geolocalizacao = formulario.geolocalizacao || {};
+            status = formulario.status || 'completo';
+            
+            municipio = respostas.municipio || null;
+            unidade_emater = respostas.unidade_emater || null;
+            territorio = respostas.territorio || null;
+            identificador_iniciais = respostas.identificador_iniciais || null;
+            
+            latitude = geolocalizacao.latitude || null;
+            longitude = geolocalizacao.longitude || null;
+            precisao = geolocalizacao.precisao || null;
+            geo_erro = geolocalizacao.erro || null;
+            
+            timestampInicio = formulario.timestampInicio || formulario.timestamp_inicio;
+            timestampFim = formulario.timestampFim || formulario.timestamp_fim;
+            duracaoMinutos = formulario.duracaoMinutos || formulario.duracao_minutos || 0;
+        } else {
+            // Formato flat (IndexedDB antigo)
+            respostas = { ...formulario }; // Usar o objeto inteiro como respostas
+            fotos = [];
+            geolocalizacao = {};
+            
+            municipio = formulario.municipio || null;
+            unidade_emater = formulario.unidade_emater || formulario.escritorioLocal || null;
+            territorio = formulario.territorio || null;
+            identificador_iniciais = formulario.identificador_iniciais || formulario.nomeCompleto || null;
+            
+            latitude = formulario.latitude || null;
+            longitude = formulario.longitude || null;
+            precisao = formulario.precisao || null;
+            geo_erro = formulario.geo_erro || null;
+            
+            timestampInicio = formulario.timestamp_inicio || formulario.timestamp;
+            timestampFim = formulario.timestamp_fim;
+            duracaoMinutos = formulario.duracao_minutos || 0;
+            status = formulario.status || 'completo';
+        }
 
         // Verificar se já existe
         const checkResult = await pool.request()
