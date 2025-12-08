@@ -701,6 +701,12 @@
                 await initDB();
                 todosFormularios = await buscarTodosFormularios();
                 
+                console.log('📊 Total de formulários carregados:', todosFormularios.length);
+                if (todosFormularios.length > 0) {
+                    console.log('📝 Exemplo de formulário:', todosFormularios[0]);
+                    console.log('🔍 Estrutura respostas:', todosFormularios[0].respostas);
+                }
+                
                 if (todosFormularios.length === 0) {
                     ocultarLoading();
                     mostrarMensagemVazia();
@@ -1203,8 +1209,12 @@
 
         // Gráfico 1: Análise de Correlação - Experiência x Diversidade de Resultados
         function renderizarGraficoCorrelacao() {
+            console.log('🔍 Renderizando gráfico de correlação...');
             const ctx = document.getElementById('chartCorrelacao');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('⚠️ Elemento chartCorrelacao não encontrado!');
+                return;
+            }
 
             // Mapear tempo de atuação para valores numéricos (anos)
             const tempoMap = {
@@ -1233,9 +1243,14 @@
                 })
                 .filter(d => d !== null && d.x > 0 && d.y > 0);
 
+            console.log('📊 Dados de correlação processados:', dados.length, 'pontos');
+            
             // Calcular linha de tendência (regressão linear simples)
             const n = dados.length;
-            if (n === 0) return;
+            if (n === 0) {
+                console.warn('⚠️ Nenhum dado válido para correlação');
+                return;
+            }
 
             const sumX = dados.reduce((acc, d) => acc + d.x, 0);
             const sumY = dados.reduce((acc, d) => acc + d.y, 0);
@@ -1326,8 +1341,12 @@
 
         // Gráfico 2: Diversidade de Ações (Estratégias + Parcerias)
         function renderizarGraficoIndicadores() {
+            console.log('🎯 Renderizando gráfico de diversidade...');
             const ctx = document.getElementById('chartIndicadores');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('⚠️ Elemento chartIndicadores não encontrado!');
+                return;
+            }
 
             // Classificar extensionistas por diversidade de ações
             const perfis = {
@@ -1353,6 +1372,8 @@
             const cores = Object.values(perfis).map(p => p.cor);
             const percentuais = dados.map(d => ((d / todosFormularios.length) * 100).toFixed(1));
 
+            console.log('📊 Perfis de diversidade:', perfis);
+            
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -1394,8 +1415,12 @@
 
         // Gráfico 3: Comparação de Intensidade dos Desafios
         function renderizarGraficoDesafiosMercado() {
+            console.log('⚠️ Renderizando gráfico de desafios comparativo...');
             const ctx = document.getElementById('chartDesafiosMercado');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('⚠️ Elemento chartDesafiosMercado não encontrado!');
+                return;
+            }
 
             // Mapear os 6 desafios existentes no formulário
             const desafiosMap = {
@@ -1430,7 +1455,12 @@
                 .filter(r => r !== null)
                 .sort((a, b) => b.media - a.media);
 
-            if (resultados.length === 0) return;
+            console.log('📊 Intensidades de desafios:', resultados);
+            
+            if (resultados.length === 0) {
+                console.warn('⚠️ Nenhum resultado de desafios encontrado');
+                return;
+            }
 
             const labels = resultados.map(r => r.label);
             const dados = resultados.map(r => r.media.toFixed(2));
