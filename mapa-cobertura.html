@@ -724,6 +724,9 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- IndexedDB -->
+    <script src="db-extensionistas.js"></script>
+    
     <script>
         // Dados EMATER-RO com coordenadas corrigidas
         const ematerData = {
@@ -1635,23 +1638,74 @@
             resumo: {}
         };
 
-        // Função para buscar estatísticas de cobertura da API
+        // Função para buscar estatísticas de cobertura do IndexedDB
         async function buscarEstatisticasCobertura() {
             try {
-                const response = await fetch('./get-estatisticas-cobertura.php');
-                const data = await response.json();
+                console.log('🔄 Buscando formulários do IndexedDB...');
                 
-                if (data.success) {
-                    dadosCobertura = data;
-                    console.log('📊 Estatísticas carregadas:', data.resumo);
-                    console.log('🟢 Municípios visitados:', data.municipios.map(m => m.municipio));
-                    atualizarEstatisticasSidebar();
-                    return data;
-                }
+                // Buscar todos os formulários do IndexedDB
+                const db = await initDB();
+                const transaction = db.transaction(['formularios'], 'readonly');
+                const store = transaction.objectStore('formularios');
+                const request = store.getAll();
+                
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => {
+                        const formularios = request.result;
+                        console.log(`📊 ${formularios.length} formulários encontrados`);
+                        
+                        // Processar dados para gerar estatísticas
+                        const municipiosMap = new Map();
+                        const territoriosMap = new Map();
+                        
+                        formularios.forEach(form => {
+                            const municipio = form.respostas?.municipio || form.municipio;
+                            const territorio = form.respostas?.territorio || form.territorio || 'Não especificado';
+                            
+                            if (municipio) {
+                                if (!municipiosMap.has(municipio)) {
+                                    municipiosMap.set(municipio, {
+                                        municipio: municipio,
+                                        total_formularios: 0,
+                                        territorio: territorio
+                                    });
+                                }
+                                municipiosMap.get(municipio).total_formularios++;
+                            }
+                            
+                            if (territorio) {
+                                territoriosMap.set(territorio, (territoriosMap.get(territorio) || 0) + 1);
+                            }
+                        });
+                        
+                        // Montar dados no formato esperado
+                        dadosCobertura = {
+                            success: true,
+                            municipios: Array.from(municipiosMap.values()),
+                            resumo: {
+                                total_formularios: formularios.length,
+                                total_municipios: municipiosMap.size,
+                                total_territorios: territoriosMap.size,
+                                cobertura_percentual: ((municipiosMap.size / 52) * 100).toFixed(1)
+                            }
+                        };
+                        
+                        console.log('📊 Estatísticas processadas:', dadosCobertura.resumo);
+                        console.log('🟢 Municípios visitados:', dadosCobertura.municipios.map(m => m.municipio));
+                        
+                        atualizarEstatisticasSidebar();
+                        resolve(dadosCobertura);
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('❌ Erro ao buscar do IndexedDB');
+                        reject(request.error);
+                    };
+                });
             } catch (error) {
                 console.error('❌ Erro ao buscar estatísticas:', error);
+                return null;
             }
-            return null;
         }
 
         // Função para atualizar estatísticas na sidebar
