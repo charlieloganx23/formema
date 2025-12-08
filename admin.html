@@ -881,8 +881,25 @@
                 
                 // Extrair dados do formulário (compatível com ambos formatos)
                 const municipio = form.respostas?.municipio || form.municipio || 'N/A';
+                const identificador = form.respostas?.identificador_iniciais || form.identificador_iniciais || form.nomeCompleto || 'N/A';
+                const unidade = form.respostas?.unidade_emater || form.unidade_emater || form.escritorioLocal || null;
                 const timestampFim = form.timestampFim || form.timestamp_fim;
                 const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
+                
+                // Se respostas estiver vazio mas tiver dados no root, usar os dados do root
+                let respostasParaMostrar = form.respostas;
+                if (!respostasParaMostrar || Object.keys(respostasParaMostrar).length === 0) {
+                    // Criar objeto respostas a partir dos campos do formulário
+                    respostasParaMostrar = { ...form };
+                    // Remover campos meta
+                    delete respostasParaMostrar.id;
+                    delete respostasParaMostrar.protocolo;
+                    delete respostasParaMostrar.timestamp_inicio;
+                    delete respostasParaMostrar.timestamp_fim;
+                    delete respostasParaMostrar.sincronizado;
+                    delete respostasParaMostrar.versao_formulario;
+                    delete respostasParaMostrar.data_sincronizacao;
+                }
                 
                 // Preparar informações de GPS (suporta tanto objeto quanto campos diretos)
                 const geo = form.geolocalizacao || form;
@@ -959,16 +976,16 @@
                 body.innerHTML = `
                     <h3>Protocolo: ${form.protocolo}</h3>
                     <p><strong>Município:</strong> ${municipio}</p>
-                    <p><strong>Produtor:</strong> ${form.identificador_iniciais || form.respostas?.identificador_iniciais || 'N/A'}</p>
-                    ${form.unidade_emater ? `<p><strong>Unidade EMATER:</strong> ${form.unidade_emater}</p>` : ''}
+                    <p><strong>Produtor:</strong> ${identificador}</p>
+                    ${unidade ? `<p><strong>Unidade EMATER:</strong> ${unidade}</p>` : ''}
                     <p><strong>Data/Hora:</strong> ${timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A'}</p>
                     <p><strong>Duração:</strong> ${duracaoMinutos} minutos</p>
-                    <p><strong>Status:</strong> ${form.status === 'completo' ? 'Completo' : 'Pendente'}</p>
+                    <p><strong>Status:</strong> ${form.sincronizado ? 'Sincronizado ✅' : 'Pendente ⏳'}</p>
                     ${gpsInfo}
                     ${fotosGaleria}
                     <hr>
                     <h4>Respostas do Formulário:</h4>
-                    <pre>${JSON.stringify(form.respostas || {}, null, 2)}</pre>
+                    <pre>${JSON.stringify(respostasParaMostrar, null, 2)}</pre>
                 `;
                 
                 modal.style.display = 'flex';
