@@ -466,41 +466,41 @@
             </div>
         </div>
         
-        <!-- Resumo Estatístico -->
+        <!-- Dashboard de KPIs -->
         <div class="resumo-stats" id="resumoStats">
             <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-value" id="total-produtores">-</div>
-                <div class="stat-label">Produtores Entrevistados</div>
+                <div class="stat-icon">📝</div>
+                <div class="stat-value" id="total-formularios">-</div>
+                <div class="stat-label">Formulários Coletados</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🏘️</div>
                 <div class="stat-value" id="total-municipios">-</div>
-                <div class="stat-label">Municípios Atendidos</div>
+                <div class="stat-label">Municípios Cobertos</div>
+                <div class="stat-sublabel" id="cobertura-municipios">de 52</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🌱</div>
-                <div class="stat-value" id="taxa-adocao">-</div>
-                <div class="stat-label">Taxa de Adoção</div>
-                <div class="stat-sublabel">Práticas sustentáveis</div>
+                <div class="stat-icon">🏢</div>
+                <div class="stat-value" id="total-unidades">-</div>
+                <div class="stat-label">Unidades EMATER</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-value" id="media-satisfacao">-</div>
-                <div class="stat-label">Satisfação Média</div>
-                <div class="stat-sublabel">Escala 1-5</div>
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="taxa-completude">-</div>
+                <div class="stat-label">Taxa de Completude</div>
+                <div class="stat-sublabel">Campos preenchidos</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">⏱️</div>
                 <div class="stat-value" id="tempo-medio">-</div>
                 <div class="stat-label">Tempo Médio</div>
-                <div class="stat-sublabel">De atendimento</div>
+                <div class="stat-sublabel">De preenchimento</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📈</div>
-                <div class="stat-value" id="melhoria-renda">-</div>
-                <div class="stat-label">Melhoria de Renda</div>
-                <div class="stat-sublabel">% dos produtores</div>
+                <div class="stat-icon">☁️</div>
+                <div class="stat-value" id="taxa-sincronizacao">-</div>
+                <div class="stat-label">Sincronizados</div>
+                <div class="stat-sublabel">vs Pendentes</div>
             </div>
         </div>
         
@@ -522,124 +522,62 @@
         
         <!-- Gráficos -->
         <div class="charts-section">
-            <!-- Gráficos em Grid -->
-            <div class="charts-grid">
-                <!-- Gráfico 1: Sistemas Produtivos -->
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <div>
-                            <div class="chart-title">Sistemas Produtivos</div>
-                            <div class="chart-subtitle">Distribuição dos produtores por sistema</div>
-                        </div>
-                        <button class="chart-export" onclick="exportarGrafico('chartSistemas')">📥 Exportar</button>
-                    </div>
-                    <div class="chart-canvas">
-                        <canvas id="chartSistemas"></canvas>
-                    </div>
-                </div>
-                
-                <!-- Gráfico 2: Área Produtiva -->
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <div>
-                            <div class="chart-title">Área Produtiva</div>
-                            <div class="chart-subtitle">Distribuição por faixa de hectares</div>
-                        </div>
-                        <button class="chart-export" onclick="exportarGrafico('chartArea')">📥 Exportar</button>
-                    </div>
-                    <div class="chart-canvas">
-                        <canvas id="chartArea"></canvas>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Gráfico 3: Adoção de Práticas (Largura Total) -->
+            <!-- Gráfico de Radar: Resultados e Impactos -->
             <div class="chart-container">
                 <div class="chart-header">
                     <div>
-                        <div class="chart-title">Adoção de Práticas Sustentáveis</div>
-                        <div class="chart-subtitle">Percentual de adoção e principais práticas adotadas</div>
+                        <div class="chart-title">⭐ Resultados e Impactos Percebidos</div>
+                        <div class="chart-subtitle">Frequência de escolha vs Média de impacto (escala 1-5)</div>
                     </div>
-                    <button class="chart-export" onclick="exportarGrafico('chartPraticas')">📥 Exportar</button>
+                    <button class="chart-export" onclick="exportarGrafico('chartResultados')">📥 Exportar</button>
                 </div>
                 <div class="chart-canvas">
-                    <canvas id="chartPraticas"></canvas>
+                    <canvas id="chartResultados"></canvas>
                 </div>
             </div>
             
             <!-- Gráficos em Grid -->
             <div class="charts-grid">
-                <!-- Gráfico 4: Tempo de Atendimento -->
+                <!-- Gráfico: Principais Desafios -->
                 <div class="chart-container">
                     <div class="chart-header">
                         <div>
-                            <div class="chart-title">Tempo de Atendimento</div>
-                            <div class="chart-subtitle">Distribuição por faixa temporal</div>
+                            <div class="chart-title">🚨 Principais Desafios</div>
+                            <div class="chart-subtitle">Intensidade média (1-5)</div>
                         </div>
-                        <button class="chart-export" onclick="exportarGrafico('chartTempo')">📥 Exportar</button>
+                        <button class="chart-export" onclick="exportarGrafico('chartDesafios')">📥 Exportar</button>
                     </div>
                     <div class="chart-canvas">
-                        <canvas id="chartTempo"></canvas>
+                        <canvas id="chartDesafios"></canvas>
                     </div>
                 </div>
                 
-                <!-- Gráfico 5: Organização Coletiva -->
+                <!-- Gráfico: Cobertura por Unidade -->
                 <div class="chart-container">
                     <div class="chart-header">
                         <div>
-                            <div class="chart-title">Organização Coletiva</div>
-                            <div class="chart-subtitle">Participação em cooperativas e associações</div>
+                            <div class="chart-title">🏢 Top 10 Unidades EMATER</div>
+                            <div class="chart-subtitle">Formulários coletados</div>
                         </div>
-                        <button class="chart-export" onclick="exportarGrafico('chartOrganizacao')">📥 Exportar</button>
+                        <button class="chart-export" onclick="exportarGrafico('chartUnidades')">📥 Exportar</button>
                     </div>
                     <div class="chart-canvas">
-                        <canvas id="chartOrganizacao"></canvas>
+                        <canvas id="chartUnidades"></canvas>
                     </div>
                 </div>
             </div>
             
-            <!-- Gráfico 6: Satisfação Geral (Largura Total) -->
+            <!-- Gráfico: Distribuição por Tempo de Atuação -->
             <div class="chart-container">
                 <div class="chart-header">
                     <div>
-                        <div class="chart-title">Níveis de Satisfação</div>
-                        <div class="chart-subtitle">Média de satisfação por categoria avaliada</div>
+                        <div class="chart-title">👥 Perfil dos Extensionistas por Tempo de Atuação</div>
+                        <div class="chart-subtitle">Distribuição da experiência na EMATER-RO</div>
                     </div>
-                    <button class="chart-export" onclick="exportarGrafico('chartSatisfacao')">📥 Exportar</button>
+                    <button class="chart-export" onclick="exportarGrafico('chartTempoAtuacao')">📥 Exportar</button>
                 </div>
                 <div class="chart-canvas">
-                    <canvas id="chartSatisfacao"></canvas>
-                </div>
-            </div>
-            
-            <!-- Gráficos em Grid -->
-            <div class="charts-grid">
-                <!-- Gráfico 7: Mudanças Percebidas -->
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <div>
-                            <div class="chart-title">Mudanças Percebidas</div>
-                            <div class="chart-subtitle">Produção, qualidade e vendas</div>
-                        </div>
-                        <button class="chart-export" onclick="exportarGrafico('chartMudancas')">📥 Exportar</button>
-                    </div>
-                    <div class="chart-canvas">
-                        <canvas id="chartMudancas"></canvas>
-                    </div>
-                </div>
-                
-                <!-- Gráfico 8: Canais de Comercialização -->
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <div>
-                            <div class="chart-title">Canais de Comercialização</div>
-                            <div class="chart-subtitle">Frequência de utilização</div>
-                        </div>
-                        <button class="chart-export" onclick="exportarGrafico('chartCanais')">📥 Exportar</button>
-                    </div>
-                    <div class="chart-canvas">
-                        <canvas id="chartCanais"></canvas>
-                    </div>
+                    <canvas id="chartTempoAtuacao"></canvas>
                 </div>
             </div>
         </div>
@@ -703,22 +641,26 @@
         // Renderizar resumo estatístico
         function renderizarResumo() {
             const total = todosFormularios.length;
-            const municipios = new Set(todosFormularios.map(f => f.respostas?.municipio).filter(Boolean)).size;
+            const municipios = new Set(todosFormularios.map(f => f.respostas?.municipio || f.municipio).filter(Boolean)).size;
+            const unidades = new Set(todosFormularios.map(f => f.respostas?.escritorioLocal || f.escritorioLocal).filter(Boolean)).size;
             
-            // Taxa de adoção de práticas sustentáveis
-            const comPraticas = todosFormularios.filter(f => {
-                const praticas = f.respostas?.praticas_sustentaveis;
-                return praticas && Array.isArray(praticas) && praticas.length > 0;
-            }).length;
-            const taxaAdocao = total > 0 ? Math.round((comPraticas / total) * 100) : 0;
+            // Taxa de completude (campos obrigatórios preenchidos)
+            const camposObrigatorios = ['municipio', 'escritorioLocal', 'tempoEmater', 'resultadosRelevantes', 'desafiosEnfrentados'];
+            let totalCamposPreenchidos = 0;
+            let totalCamposEsperados = total * camposObrigatorios.length;
             
-            // Satisfação média
-            const satisfacoes = todosFormularios
-                .map(f => parseFloat(f.respostas?.satisfacao_geral))
-                .filter(s => !isNaN(s) && s > 0);
-            const mediaSatisfacao = satisfacoes.length > 0
-                ? (satisfacoes.reduce((a, b) => a + b, 0) / satisfacoes.length).toFixed(1)
-                : '-';
+            todosFormularios.forEach(f => {
+                camposObrigatorios.forEach(campo => {
+                    const valor = f.respostas?.[campo] || f[campo];
+                    if (valor && valor !== '' && valor !== null && valor !== undefined) {
+                        totalCamposPreenchidos++;
+                    }
+                });
+            });
+            
+            const taxaCompletude = totalCamposEsperados > 0 
+                ? Math.round((totalCamposPreenchidos / totalCamposEsperados) * 100) 
+                : 0;
             
             // Tempo médio
             const durações = todosFormularios
@@ -728,58 +670,193 @@
                 ? Math.round(durações.reduce((a, b) => a + b, 0) / durações.length)
                 : 0;
             
-            // Melhoria de renda
-            const comMelhoria = todosFormularios.filter(f => 
-                f.respostas?.mudanca_renda === 'melhorou' || 
-                f.respostas?.mudanca_renda === 'Melhorou'
-            ).length;
-            const taxaMelhoria = total > 0 ? Math.round((comMelhoria / total) * 100) : 0;
+            // Taxa de sincronização
+            const sincronizados = todosFormularios.filter(f => f.sincronizado).length;
+            const taxaSincronizacao = total > 0 ? Math.round((sincronizados / total) * 100) : 0;
             
             // Atualizar HTML
-            document.getElementById('total-produtores').textContent = total;
+            document.getElementById('total-formularios').textContent = total;
             document.getElementById('total-municipios').textContent = municipios;
-            document.getElementById('taxa-adocao').textContent = taxaAdocao + '%';
-            document.getElementById('media-satisfacao').textContent = mediaSatisfacao;
+            document.getElementById('cobertura-municipios').textContent = `de 52 (${Math.round((municipios/52)*100)}%)`;
+            document.getElementById('total-unidades').textContent = unidades;
+            document.getElementById('taxa-completude').textContent = taxaCompletude + '%';
             document.getElementById('tempo-medio').textContent = tempoMedio + 'min';
-            document.getElementById('melhoria-renda').textContent = taxaMelhoria + '%';
+            document.getElementById('taxa-sincronizacao').textContent = taxaSincronizacao + '%';
         }
         
         // Renderizar gráficos
         function renderizarGraficos() {
-            renderizarGraficoSistemas();
-            renderizarGraficoArea();
-            renderizarGraficoPraticas();
-            renderizarGraficoTempo();
-            renderizarGraficoOrganizacao();
-            renderizarGraficoSatisfacao();
-            renderizarGraficoMudancas();
-            renderizarGraficoCanais();
+            renderizarGraficoResultados();
+            renderizarGraficoDesafios();
+            renderizarGraficoUnidades();
+            renderizarGraficoTempoAtuacao();
         }
         
-        // Gráfico 1: Sistemas Produtivos
-        function renderizarGraficoSistemas() {
-            const sistemas = {};
+        // Gráfico 1: Radar de Resultados e Impactos
+        function renderizarGraficoResultados() {
+            const resultados = {
+                'aumento_produtividade': { label: 'Aumento de Produtividade', count: 0, impactoTotal: 0 },
+                'aumento_comercializacao': { label: 'Aumento de Comercialização', count: 0, impactoTotal: 0 },
+                'inclusao_programas': { label: 'Inclusão em Programas', count: 0, impactoTotal: 0 },
+                'implementacao_tecnologias': { label: 'Implementação de Tecnologias', count: 0, impactoTotal: 0 },
+                'fortalecimento_organizacoes': { label: 'Fortalecimento de Organizações', count: 0, impactoTotal: 0 },
+                'capacitacao_produtores': { label: 'Capacitação de Produtores', count: 0, impactoTotal: 0 },
+                'reducao_perdas': { label: 'Redução de Perdas', count: 0, impactoTotal: 0 }
+            };
+            
             todosFormularios.forEach(f => {
-                const sistema = f.respostas?.sistema_produtivo;
-                if (sistema) {
-                    sistemas[sistema] = (sistemas[sistema] || 0) + 1;
+                const respostasArray = f.respostas?.resultadosRelevantes;
+                if (Array.isArray(respostasArray)) {
+                    respostasArray.forEach(resultado => {
+                        if (resultados[resultado]) {
+                            resultados[resultado].count++;
+                            // Pegar o valor de impacto correspondente
+                            const impacto = parseInt(f.respostas?.[`impacto_${resultado}`]) || 0;
+                            if (impacto > 0) {
+                                resultados[resultado].impactoTotal += impacto;
+                            }
+                        }
+                    });
                 }
             });
             
-            const ctx = document.getElementById('chartSistemas');
+            // Calcular média de impacto
+            const labels = [];
+            const frequencies = [];
+            const avgImpacts = [];
+            
+            Object.values(resultados).forEach(r => {
+                labels.push(r.label);
+                frequencies.push(r.count);
+                avgImpacts.push(r.count > 0 ? (r.impactoTotal / r.count).toFixed(1) : 0);
+            });
+            
+            const ctx = document.getElementById('chartResultados');
             if (!ctx) return;
             
-            charts.sistemas = new Chart(ctx, {
-                type: 'bar',
+            charts.resultados = new Chart(ctx, {
+                type: 'radar',
                 data: {
-                    labels: Object.keys(sistemas),
+                    labels: labels,
                     datasets: [{
-                        label: 'Quantidade',
-                        data: Object.values(sistemas),
-                        backgroundColor: '#667eea'
+                        label: 'Frequência de Escolha',
+                        data: frequencies,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Impacto Médio (1-5)',
+                        data: avgImpacts,
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                        borderWidth: 2
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: Math.max(...frequencies, 5)
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 2: Desafios Horizontais
+        function renderizarGraficoDesafios() {
+            const desafios = {
+                'desafio_fatores_externos': 'Fatores Externos',
+                'desafio_falta_pessoal': 'Falta de Pessoal',
+                'desafio_falta_veiculos': 'Falta de Veículos',
+                'desafio_falta_orcamento': 'Falta de Orçamento',
+                'desafio_baixa_organizacao': 'Baixa Organização Coletiva',
+                'desafio_falta_dados': 'Falta de Dados/Sigater'
+            };
+            
+            const medias = {};
+            
+            Object.keys(desafios).forEach(key => {
+                const valores = todosFormularios
+                    .map(f => parseInt(f.respostas?.[key]))
+                    .filter(v => !isNaN(v) && v > 0);
+                medias[key] = valores.length > 0 
+                    ? (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1)
+                    : 0;
+            });
+            
+            // Ordenar por intensidade
+            const sorted = Object.entries(medias)
+                .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]));
+            
+            const ctx = document.getElementById('chartDesafios');
+            if (!ctx) return;
+            
+            charts.desafios = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(([key]) => desafios[key]),
+                    datasets: [{
+                        label: 'Intensidade Média (1-5)',
+                        data: sorted.map(([, value]) => parseFloat(value)),
+                        backgroundColor: sorted.map(([, value]) => {
+                            const v = parseFloat(value);
+                            if (v >= 4) return '#f44336'; // vermelho
+                            if (v >= 3) return '#ff9800'; // laranja
+                            return '#ffc107'; // amarelo
+                        })
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico 3: Top 10 Unidades EMATER
+        function renderizarGraficoUnidades() {
+            const unidades = {};
+            
+            todosFormularios.forEach(f => {
+                const unidade = f.respostas?.escritorioLocal || f.escritorioLocal;
+                if (unidade) {
+                    unidades[unidade] = (unidades[unidade] || 0) + 1;
+                }
+            });
+            
+            // Top 10
+            const sorted = Object.entries(unidades)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            const ctx = document.getElementById('chartUnidades');
+            if (!ctx) return;
+            
+            charts.unidades = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(([nome]) => nome),
+                    datasets: [{
+                        label: 'Formulários',
+                        data: sorted.map(([, count]) => count),
+                        backgroundColor: '#2e7d32'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
@@ -789,27 +866,54 @@
             });
         }
         
-        // Gráfico 2: Área Produtiva
-        function renderizarGraficoArea() {
-            const areas = {
-                'Até 10 ha': 0,
-                '10-50 ha': 0,
-                '50-100 ha': 0,
-                'Mais de 100 ha': 0
+        // Gráfico 4: Tempo de Atuação (Pizza)
+        function renderizarGraficoTempoAtuacao() {
+            const tempos = {
+                'menos5': 'Menos de 5 anos',
+                '5a9': '5-9 anos',
+                '10a14': '10-14 anos',
+                '15a19': '15-19 anos',
+                '20a24': '20-24 anos',
+                '25a29': '25-29 anos',
+                'mais30': 'Mais de 30 anos'
             };
             
+            const contagem = {};
+            Object.keys(tempos).forEach(key => contagem[key] = 0);
+            
             todosFormularios.forEach(f => {
-                const area = f.respostas?.area_produtiva;
-                if (area && areas.hasOwnProperty(area)) {
-                    areas[area]++;
+                const tempo = f.respostas?.tempoEmater || f.tempoEmater;
+                if (tempo && contagem.hasOwnProperty(tempo)) {
+                    contagem[tempo]++;
                 }
             });
             
-            const ctx = document.getElementById('chartArea');
+            const ctx = document.getElementById('chartTempoAtuacao');
             if (!ctx) return;
             
-            charts.area = new Chart(ctx, {
+            charts.tempoAtuacao = new Chart(ctx, {
                 type: 'doughnut',
+                data: {
+                    labels: Object.keys(contagem).map(key => tempos[key]),
+                    datasets: [{
+                        data: Object.values(contagem),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                            '#43e97b', '#fa709a', '#fee140'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
                 data: {
                     labels: Object.keys(areas),
                     datasets: [{
