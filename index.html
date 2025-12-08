@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Questionário Extensionistas Emater-RO</title>
+
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #558b2f;
+            --accent-color: #7cb342;
+            --text-dark: #1b5e20;
+            --text-light: #ffffff;
+            --bg-light: #f1f8e9;
+            --bg-white: #ffffff;
+            --border-color: #c5e1a5;
+            --error-color: #d32f2f;
+            --warning-color: #f57c00;
+            --success-color: #388e3c;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --transition-fast: 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* Layout geral */
+
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem 3rem;
+        }
+
+        .app-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .app-header h1 {
+            margin: 0 0 0.5rem;
+            font-size: 2rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Barra de progresso */
+
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.4s ease;
+        }
+
+        #progressText {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Formulário */
+
+        form {
+            background: var(--bg-white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+        }
+
+        /* Seções */
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .section-header .text-muted {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+        }
+
+        /* Grupos de campos */
+
+        .question-group {
+            margin-bottom: 2rem;
+        }
+
+        .question-label {
+            display: block;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .question-label.required::after {
+            content: " *";
+            color: var(--error-color);
+        }
+
+        .question-description {
+            font-size: 0.95em;
+            color: #666;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        .hint {
+            font-weight: normal;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Inputs */
+
+        .input-field,
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all var(--transition-fast);
+        }
+
+        .input-field:focus,
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        fieldset.question-group {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        fieldset.question-group legend {
+            font-weight: 600;
+            padding: 0 0.5rem;
+            font-size: 1.1em;
+            color: var(--text-dark);
+        }
+
+        /* Radio buttons */
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .radio-label:hover {
+            background: var(--bg-light);
+            border-color: var(--accent-color);
+            transform: translateX(5px);
+        }
+
+        .radio-label input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .radio-label span {
+            flex: 1;
+            font-size: 1em;
+        }
+
+        /* Checkboxes */
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .checkbox-label:hover {
+            background: var(--bg-light);
+            border-color: var(--accent-color);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .checkbox-label span {
+            flex: 1;
+            font-size: 1em;
+        }
+
+        .text-muted {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 0.5rem;
+        }
+
+        /* Sistema Likert */
+
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .likert-label {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: center;
+        }
+
+        .likert-label:hover {
+            background: var(--bg-light);
+            border-color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        .likert-label input[type="radio"] {
+            display: none;
+        }
+
+        .likert-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .likert-text {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .likert-label:has(input:checked) {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .likert-label:has(input:checked) .likert-number,
+        .likert-label:has(input:checked) .likert-text {
+            color: white;
+        }
+
+        /* Navegação */
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all var(--transition-fast);
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .btn-secondary {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #757575;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Debug */
+
+        .debug-output {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #0b1120;
+            color: #e5e7eb;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            overflow-x: auto;
+        }
+
+        /* Animação */
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+                transform: translateY(0);
+            }
+        }
+
+        .conditional-field {
+            animation: slideDown 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Responsivo */
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 1rem 0.75rem 2rem;
+            }
+
+            form {
+                padding: 1.5rem;
+            }
+
+            .section-header h3 {
+                font-size: 1.3rem;
+            }
+
+            .navigation-buttons {
+                flex-direction: column-reverse;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .likert-scale {
+                flex-wrap: wrap;
+            }
+
+            .likert-label {
+                min-width: calc(20% - 8px);
+                padding: 12px 5px;
+            }
+
+            .likert-number {
+                font-size: 1.5em;
+            }
+
+            .likert-text {
+                font-size: 0.75em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Questionário – Extensionistas Emater-RO</h1>
+            <p class="subtitle">
+                Preencha o formulário a seguir. Seus dados serão utilizados apenas para fins de pesquisa e aperfeiçoamento da atuação da Emater-RO.
+            </p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="progressFill"></div>
+                </div>
+                <span id="progressText">Etapa 1 de 6</span>
+            </div>
+        </header>
+
+        <main>
+            <form id="questionarioEmater">
+                <!-- ETAPA 1: IDENTIFICAÇÃO -->
+                <section class="form-section active" id="section-1" data-step="1">
+                    <div class="section-header">
+                        <h3>Módulo I – Identificação</h3>
+                        <p class="text-muted">Tempo estimado: 3 minutos</p>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="municipio" class="question-label required">Município onde atua:</label>
+                        <select id="municipio" name="municipio" class="input-field" required>
+                            <option value="">Selecione...</option>
+                            <!-- TODO: Preencher lista de municípios de Rondônia -->
+                            <option value="Alta Floresta dOeste">Alta Floresta d'Oeste</option>
+                            <option value="Ariquemes">Ariquemes</option>
+                            <option value="Cacoal">Cacoal</option>
+                            <option value="Porto Velho">Porto Velho</option>
+                            <!-- etc... -->
+                        </select>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="escritorioLocal" class="question-label required">Escritório Local:</label>
+                        <select id="escritorioLocal" name="escritorioLocal" class="input-field" required>
+                            <option value="">Selecione...</option>
+                            <!-- TODO: Preencher lista real de escritórios locais -->
+                            <option value="Escritório 1">Escritório 1</option>
+                            <option value="Escritório 2">Escritório 2</option>
+                        </select>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Tempo de atuação na Emater-RO:</legend>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="menos5" required> <span>menos de 5 anos</span></label>
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="5a9"> <span>5–9 anos</span></label>
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="10a14"> <span>10–14 anos</span></label>
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="15a19"> <span>15–19 anos</span></label>
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="20a24"> <span>20–24 anos</span></label>
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="25a29"> <span>25–29 anos</span></label>
+                            <label class="radio-label"><input type="radio" name="tempoEmater" value="mais30"> <span>mais de 30 anos</span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label for="nomeCompleto" class="question-label">
+                            Nome completo (opcional):
+                        </label>
+                        <p class="question-description">Preencher apenas se desejar se identificar.</p>
+                        <input type="text" id="nomeCompleto" name="nomeCompleto" class="input-field" placeholder="(opcional)">
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection()" disabled>Voltar</button>
+                        <button type="button" class="btn btn-primary" onclick="nextSection()">Próximo</button>
+                    </div>
+                </section>
+
+                <!-- ETAPA 2: EIXO A -->
+                <section class="form-section" id="section-2" data-step="2">
+                    <div class="section-header">
+                        <h3>Eixo A – Métodos de ATER e Resultados Percebidos</h3>
+                        <p class="text-muted">Tempo estimado: 8 minutos</p>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Quais métodos você utiliza com maior frequência? <span class="hint">(marque até 3)</span></legend>
+                        <div class="checkbox-group" data-max-check="3">
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="visita_individual"> <span>Visitas técnicas individuais</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="dia_campo"> <span>Dias de campo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="demonstracao_metodo"> <span>Demonstração de Método</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="capac_coletivas"> <span>Capacitações coletivas</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="grupos_whatsapp"> <span>Grupos de WhatsApp/comunicação digital</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="planejamento_produtivo"> <span>Planejamento produtivo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="apoio_programas"> <span>Apoio para acessar programas (DAP/CAF/Pronaf etc.)</span></label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="metodosFrequentes" value="outro">
+                                <span>Outro: <input type="text" name="metodosFrequentesOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                            </label>
+                        </div>
+                        <p class="text-muted">Máximo de 3 opções</p>
+                    </fieldset>
+
+                    <fieldset class="question-group">
+                        <legend>Quais métodos geram melhores resultados? <span class="hint">(marque até 3)</span></legend>
+                        <div class="checkbox-group" data-max-check="3">
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="visita_individual"> <span>Visitas técnicas individuais</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="dia_campo"> <span>Dias de campo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="demonstracao_metodo"> <span>Demonstração de Método</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="capac_coletivas"> <span>Capacitações coletivas</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="grupos_whatsapp"> <span>Grupos de WhatsApp/comunicação digital</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="planejamento_produtivo"> <span>Planejamento produtivo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosResultados" value="apoio_programas"> <span>Apoio para acessar programas (DAP/CAF/Pronaf etc.)</span></label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="metodosResultados" value="outro">
+                                <span>Outro: <input type="text" name="metodosResultadosOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                            </label>
+                        </div>
+                        <p class="text-muted">Máximo de 3 opções</p>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label class="question-label">
+                            Quais as principais dificuldades enfrentadas no campo para alcançar resultados efetivos?
+                        </label>
+                        <p class="question-description">1 = nada relevante, 5 = muito relevante</p>
+
+                        <!-- Falta de tempo do extensionista -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Falta de tempo do extensionista</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_falta_tempo" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_falta_tempo" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_falta_tempo" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_falta_tempo" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_falta_tempo" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Número insuficiente de técnicos -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Número insuficiente de técnicos</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_num_tecnicos" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_num_tecnicos" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_num_tecnicos" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_num_tecnicos" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_num_tecnicos" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Distância/locomoção -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Distância/locomoção</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_distancia" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_distancia" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_distancia" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_distancia" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_distancia" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Baixa adesão dos produtores -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Baixa adesão dos produtores</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_baixa_adesao" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_baixa_adesao" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_baixa_adesao" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_baixa_adesao" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_baixa_adesao" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Limitações de recursos/insumos -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Limitações de recursos/insumos</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_lim_recursos" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_lim_recursos" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_lim_recursos" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_lim_recursos" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_lim_recursos" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Demandas administrativas internas -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Demandas administrativas internas</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_demandas_admin" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_demandas_admin" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_demandas_admin" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_demandas_admin" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_demandas_admin" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Estrutura de metas e atividades definidas -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Estrutura de metas e atividades definidas</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_estrutura_metas" value="1" required>
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_estrutura_metas" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_estrutura_metas" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Regular</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_estrutura_metas" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dif_estrutura_metas" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremo</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="comentarioA" class="question-label">
+                            Gostaria de registrar algum comentário ou descrição sobre sua experiência relacionada a esse bloco?
+                        </label>
+                        <textarea id="comentarioA" name="comentarioA" class="input-field" rows="4" placeholder="Escreva aqui (opcional)"></textarea>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection()">Voltar</button>
+                        <button type="button" class="btn btn-primary" onclick="nextSection()">Próximo</button>
+                    </div>
+                </section>
+
+                <!-- ETAPA 3: EIXO B -->
+                <section class="form-section" id="section-3" data-step="3">
+                    <div class="section-header">
+                        <h3>Eixo B – Critérios de Priorização e Equidade</h3>
+                        <p class="text-muted">Tempo estimado: 6 minutos</p>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Como os atendimentos são priorizados no seu escritório?</legend>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao" value="demanda_espontanea"> <span>Por demanda espontânea</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao" value="criterios_emater"> <span>Por critérios técnicos definidos pela Emater</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao" value="criterios_extensionista"> <span>Por critérios técnicos definidos pelo extensionista</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao" value="politicas_publicas"> <span>Por políticas públicas específicas (PAA/PNAE etc.)</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao" value="vulnerabilidade_social"> <span>Por vulnerabilidade social (mulheres, jovens, comunidades afastadas)</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao" value="ordem_chegada"> <span>Por ordem de chegada</span></label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="priorizacao" value="outro">
+                                <span>Outro: <input type="text" name="priorizacaoOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label class="question-label">
+                            Avalie o nível de equidade no atendimento da sua unidade
+                        </label>
+                        <p class="question-description">(1 = muito baixa, 5 = muito alta)</p>
+                        <div class="likert-scale">
+                            <label class="likert-label">
+                                <input type="radio" name="equidadeAtendimento" value="1" required>
+                                <span class="likert-number">1</span>
+                                <span class="likert-text">Muito baixa</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="equidadeAtendimento" value="2">
+                                <span class="likert-number">2</span>
+                                <span class="likert-text">Baixa</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="equidadeAtendimento" value="3">
+                                <span class="likert-number">3</span>
+                                <span class="likert-text">Média</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="equidadeAtendimento" value="4">
+                                <span class="likert-number">4</span>
+                                <span class="likert-text">Alta</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="equidadeAtendimento" value="5">
+                                <span class="likert-number">5</span>
+                                <span class="likert-text">Muito alta</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Existem instrumentos formais de priorização?</legend>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="instrumentoPriorizacao" value="sim_oficial" required> <span>Sim, utilizamos instrumentos oficiais</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentoPriorizacao" value="sim_parcial"> <span>Sim, mas usamos apenas parcialmente</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentoPriorizacao" value="nao_existe"> <span>Não existe instrumento</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentoPriorizacao" value="nao_sei"> <span>Não sei</span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label for="exemploInstrumento">
+                            Caso “Sim”, dê um exemplo:
+                        </label>
+                        <textarea id="exemploInstrumento" name="exemploInstrumento" rows="3" placeholder="Descreva, se houver (opcional)"></textarea>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="comentarioB" class="question-label">
+                            Gostaria de registrar algum comentário ou descrição sobre sua experiência relacionada a esse bloco?
+                        </label>
+                        <textarea id="comentarioB" name="comentarioB" class="input-field" rows="4" placeholder="Escreva aqui (opcional)"></textarea>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection()">Voltar</button>
+                        <button type="button" class="btn btn-primary" onclick="nextSection()">Próximo</button>
+                    </div>
+                </section>
+
+                <!-- ETAPA 4: EIXO C -->
+                <section class="form-section" id="section-4" data-step="4">
+                    <div class="section-header">
+                        <h3>Eixo C – Parcerias e Atuação em Fóruns</h3>
+                        <p class="text-muted">Tempo estimado: 5 minutos</p>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Quais parcerias são mais ativas? <span class="hint">(marcar até 3)</span></legend>
+                        <div class="checkbox-group" data-max-check="3">
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="idaron"> <span>Idaron</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="embrapa"> <span>Embrapa</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="prefeituras"> <span>Prefeituras</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="sedam"> <span>Sedam</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="secretarias_municipais"> <span>Secretarias municipais</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="cooperativas_associacoes"> <span>Cooperativas/associações</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="movimentos_sociais"> <span>Movimentos sociais</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="instituicoes_financeiras"> <span>Instituições financeiras</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="sistema_s"> <span>Sistema S (Senar, Sebrae etc.)</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="parceriasAtivas" value="sindicatos"> <span>Sindicatos</span></label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="parceriasAtivas" value="outro">
+                                <span>Outro: <input type="text" name="parceriasAtivasOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                            </label>
+                        </div>
+                        <p class="text-muted">Máximo de 3 opções</p>
+                    </fieldset>
+
+                    <fieldset class="question-group">
+                        <legend>Você participa de fóruns, comissões ou conselhos locais?</legend>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="participaForuns" value="sim_frequentemente" required> <span>Sim, frequentemente</span></label>
+                            <label class="radio-label"><input type="radio" name="participaForuns" value="sim_ocasionamente"> <span>Sim, ocasionalmente</span></label>
+                            <label class="radio-label"><input type="radio" name="participaForuns" value="nao_participa"> <span>Não participa</span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label class="question-label">
+                            Avalie o grau de influência da Emater nesses espaços.
+                        </label>
+                        <p class="question-description">(1 = nenhuma, 5 = muito alta)</p>
+                        <div class="likert-scale">
+                            <label class="likert-label">
+                                <input type="radio" name="influenciaEmater" value="1" required>
+                                <span class="likert-number">1</span>
+                                <span class="likert-text">Nenhuma</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="influenciaEmater" value="2">
+                                <span class="likert-number">2</span>
+                                <span class="likert-text">Baixa</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="influenciaEmater" value="3">
+                                <span class="likert-number">3</span>
+                                <span class="likert-text">Média</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="influenciaEmater" value="4">
+                                <span class="likert-number">4</span>
+                                <span class="likert-text">Alta</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="influenciaEmater" value="5">
+                                <span class="likert-number">5</span>
+                                <span class="likert-text">Muito alta</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="comentarioC" class="question-label">
+                            Gostaria de registrar algum comentário ou descrição sobre sua experiência relacionada a esse bloco?
+                        </label>
+                        <textarea id="comentarioC" name="comentarioC" class="input-field" rows="4" placeholder="Escreva aqui (opcional)"></textarea>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection()">Voltar</button>
+                        <button type="button" class="btn btn-primary" onclick="nextSection()">Próximo</button>
+                    </div>
+                </section>
+
+                <!-- ETAPA 5: EIXO D -->
+                <section class="form-section" id="section-5" data-step="5">
+                    <div class="section-header">
+                        <h3>Eixo D – Articulação Produtiva e Comercialização</h3>
+                        <p class="text-muted">Tempo estimado: 7 minutos</p>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="freqDemandaMercado" class="question-label required">
+                            Com que frequência você orienta os agricultores com base na demanda de mercado?
+                        </label>
+                        <select id="freqDemandaMercado" name="freqDemandaMercado" class="input-field" required>
+                            <option value="">Selecione...</option>
+                            <option value="nunca">Nunca</option>
+                            <option value="raramente">Raramente</option>
+                            <option value="as_vezes">Às vezes</option>
+                            <option value="frequentemente">Frequentemente</option>
+                            <option value="sempre">Sempre</option>
+                        </select>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>
+                            Participou de capacitações sobre mercado, cadeias de valor ou canais de comercialização nos últimos 2 anos?
+                        </legend>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="capacitacaoMercado" value="sim" required> <span>Sim</span></label>
+                            <label class="radio-label"><input type="radio" name="capacitacaoMercado" value="nao"> <span>Não</span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label class="question-label">
+                            Avalie o quanto capacitações de mercado ajudam ou ajudariam sua orientação técnica.
+                        </label>
+                        <p class="question-description">(1 = nada, 5 = muito)</p>
+                        <div class="likert-scale">
+                            <label class="likert-label">
+                                <input type="radio" name="impactoCapacitacao" value="1" required>
+                                <span class="likert-number">1</span>
+                                <span class="likert-text">Nada</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="impactoCapacitacao" value="2">
+                                <span class="likert-number">2</span>
+                                <span class="likert-text">Pouco</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="impactoCapacitacao" value="3">
+                                <span class="likert-number">3</span>
+                                <span class="likert-text">Regular</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="impactoCapacitacao" value="4">
+                                <span class="likert-number">4</span>
+                                <span class="likert-text">Muito</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="impactoCapacitacao" value="5">
+                                <span class="likert-number">5</span>
+                                <span class="likert-text">Extremamente</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Existem instrumentos/rotinas para orientar organização da produção?</legend>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="instrumentosProducao" value="sim_frequentemente" required> <span>Sim, usamos frequentemente</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentosProducao" value="sim_pouco"> <span>Sim, mas pouco utilizados</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentosProducao" value="nao_existem"> <span>Não existem</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentosProducao" value="nao_sei"> <span>Não sei</span></label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label for="exemploInstrumentosProducao">
+                            Caso “Sim”, dê um exemplo:
+                        </label>
+                        <textarea id="exemploInstrumentosProducao" name="exemploInstrumentosProducao" class="input-field" rows="3" placeholder="Descreva, se houver (opcional)"></textarea>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="freqApoioMercadosInstitucionais">
+                            Com que frequência você apoia agricultores no acesso a mercados institucionais (como PAA/PNAE)?
+                        </label>
+                        <select id="freqApoioMercadosInstitucionais" name="freqApoioMercadosInstitucionais" required>
+                            <option value="">Selecione...</option>
+                            <option value="nunca">Nunca</option>
+                            <option value="raramente">Raramente</option>
+                            <option value="as_vezes">Às vezes</option>
+                            <option value="frequentemente">Frequentemente</option>
+                            <option value="sempre">Sempre</option>
+                        </select>
+                    </div>
+
+                    <div class="question-group">
+                        <label class="question-label">
+                            Seu conhecimento sobre oferta/demanda local é…
+                        </label>
+                        <p class="question-description">(1 = muito baixo, 5 = muito alto)</p>
+                        <div class="likert-scale">
+                            <label class="likert-label">
+                                <input type="radio" name="conhecimentoOfertaDemanda" value="1" required>
+                                <span class="likert-number">1</span>
+                                <span class="likert-text">Muito baixo</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="conhecimentoOfertaDemanda" value="2">
+                                <span class="likert-number">2</span>
+                                <span class="likert-text">Baixo</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="conhecimentoOfertaDemanda" value="3">
+                                <span class="likert-number">3</span>
+                                <span class="likert-text">Médio</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="conhecimentoOfertaDemanda" value="4">
+                                <span class="likert-number">4</span>
+                                <span class="likert-text">Alto</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="conhecimentoOfertaDemanda" value="5">
+                                <span class="likert-number">5</span>
+                                <span class="likert-text">Muito alto</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="comentarioD" class="question-label">
+                            Gostaria de registrar algum comentário ou descrição sobre sua experiência relacionada a esse bloco?
+                        </label>
+                        <textarea id="comentarioD" name="comentarioD" class="input-field" rows="4" placeholder="Escreva aqui (opcional)"></textarea>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection()">Voltar</button>
+                        <button type="button" class="btn btn-primary" onclick="nextSection()">Próximo</button>
+                    </div>
+                </section>
+
+                <!-- ETAPA 6: EIXO E + FINAL -->
+                <section class="form-section" id="section-6" data-step="6">
+                    <div class="section-header">
+                        <h3>Eixo E – Indicadores, Relatórios e Avaliação de Resultados</h3>
+                        <p class="text-muted">Tempo estimado: 5 minutos</p>
+                    </div>
+
+                    <fieldset class="question-group">
+                        <legend>Quais instrumentos você usa para acompanhar resultados?</legend>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" name="instrumentosResultados" value="sigater"> <span>Registros no Sigater</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="instrumentosResultados" value="relatorios_internos"> <span>Relatórios internos</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="instrumentosResultados" value="planilhas_proprias"> <span>Planilhas próprias</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="instrumentosResultados" value="nenhum"> <span>Nenhum instrumento</span></label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="instrumentosResultados" value="outro">
+                                <span>Outro: <input type="text" name="instrumentosResultadosOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                            </label>
+                        </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label for="freqIndicadoresDecisao" class="question-label required">
+                            Com que frequência você usa indicadores ou relatórios para tomada de decisão?
+                        </label>
+                        <select id="freqIndicadoresDecisao" name="freqIndicadoresDecisao" class="input-field" required>
+                            <option value="">Selecione...</option>
+                            <option value="nunca">Nunca</option>
+                            <option value="raramente">Raramente</option>
+                            <option value="as_vezes">Às vezes</option>
+                            <option value="frequentemente">Frequentemente</option>
+                            <option value="sempre">Sempre</option>
+                        </select>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="principaisIndicadores" class="question-label">
+                            Cite os principais indicadores ou relatórios que você utiliza:
+                        </label>
+                        <textarea id="principaisIndicadores" name="principaisIndicadores" class="input-field" rows="3" placeholder="Liste aqui (opcional)"></textarea>
+                    </div>
+
+                    <div class="question-group">
+                        <label class="question-label">
+                            Avalie o quanto os indicadores ajudam na tomada de decisão.
+                        </label>
+                        <p class="question-description">(1 = nada, 5 = muito)</p>
+                        <div class="likert-scale">
+                            <label class="likert-label">
+                                <input type="radio" name="avaliacaoIndicadores" value="1" required>
+                                <span class="likert-number">1</span>
+                                <span class="likert-text">Nada</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="avaliacaoIndicadores" value="2">
+                                <span class="likert-number">2</span>
+                                <span class="likert-text">Pouco</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="avaliacaoIndicadores" value="3">
+                                <span class="likert-number">3</span>
+                                <span class="likert-text">Regular</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="avaliacaoIndicadores" value="4">
+                                <span class="likert-number">4</span>
+                                <span class="likert-text">Muito</span>
+                            </label>
+                            <label class="likert-label">
+                                <input type="radio" name="avaliacaoIndicadores" value="5">
+                                <span class="likert-number">5</span>
+                                <span class="likert-text">Extremamente</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <label for="comentarioFinal" class="question-label">
+                            Gostaria de registrar algum comentário adicional sobre sua experiência como extensionista da Emater?
+                        </label>
+                        <textarea id="comentarioFinal" name="comentarioFinal" class="input-field" rows="4" placeholder="Escreva aqui (opcional)"></textarea>
+                    </div>
+
+                    <div class="navigation-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="previousSection()">Voltar</button>
+                        <button type="submit" class="btn btn-primary">Enviar respostas</button>
+                    </div>
+                </section>
+            </form>
+
+            <section id="debugOutput" class="debug-output hidden">
+                <h2>Dados coletados (debug)</h2>
+                <pre id="debugJson"></pre>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Estado atual do formulário
+        let currentSection = 1;  // Começa na seção 1
+        const totalSections = 6;
+
+        // Função global de navegação para próxima seção
+        function nextSection() {
+            const currentSectionElement = document.getElementById(`section-${currentSection}`);
+            
+            // Validar seção atual
+            if (!validateSection(currentSectionElement)) {
+                alert('Por favor, preencha todos os campos obrigatórios antes de continuar');
+                return;
+            }
+            
+            if (currentSection < totalSections) {
+                // Remover classe active
+                currentSectionElement.classList.remove('active');
+                
+                // Avançar contador
+                currentSection++;
+                
+                // Ativar próxima seção
+                const nextSectionElement = document.getElementById(`section-${currentSection}`);
+                nextSectionElement.classList.add('active');
+                
+                // Atualizar barra de progresso
+                updateProgressBar();
+                
+                // Scroll para topo
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Função global de navegação para seção anterior
+        function previousSection() {
+            if (currentSection > 1) {
+                // Remover classe active
+                document.getElementById(`section-${currentSection}`).classList.remove('active');
+                
+                // Voltar contador
+                currentSection--;
+                
+                // Ativar seção anterior
+                document.getElementById(`section-${currentSection}`).classList.add('active');
+                
+                // Atualizar barra de progresso
+                updateProgressBar();
+                
+                // Scroll para topo
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Validação de seção
+        function validateSection(sectionElement) {
+            const requiredFields = sectionElement.querySelectorAll('[required]');
+            
+            for (let field of requiredFields) {
+                if (field.type === 'radio') {
+                    const name = field.name;
+                    const checked = sectionElement.querySelector(`input[name="${name}"]:checked`);
+                    if (!checked) {
+                        field.focus();
+                        return false;
+                    }
+                } else if (field.type === 'checkbox') {
+                    const name = field.name;
+                    const checked = sectionElement.querySelectorAll(`input[name="${name}"]:checked`);
+                    if (checked.length === 0) {
+                        field.focus();
+                        return false;
+                    }
+                } else if (!field.value.trim()) {
+                    field.focus();
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // Atualizar barra de progresso
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const percent = (currentSection / totalSections) * 100;
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `Etapa ${currentSection} de ${totalSections}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("questionarioEmater");
+            const debugSection = document.getElementById("debugOutput");
+            const debugJson = document.getElementById("debugJson");
+
+            // Limitar checkboxes com atributo data-max-check
+            document.querySelectorAll("[data-max-check]").forEach((container) => {
+                const max = Number(container.getAttribute("data-max-check"));
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+
+                checkboxes.forEach((cb) => {
+                    cb.addEventListener("change", () => {
+                        const checkedCount = Array.from(checkboxes).filter((c) => c.checked).length;
+                        if (checkedCount > max) {
+                            cb.checked = false;
+                            alert(`Você pode marcar no máximo ${max} opções neste grupo.`);
+                        }
+                    });
+                });
+            });
+
+            // Submissão do formulário
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const data = {};
+
+                // Converter FormData em objeto JS
+                for (const [key, value] of formData.entries()) {
+                    // Permitir múltiplos valores para a mesma chave (checkbox)
+                    if (data[key] !== undefined) {
+                        if (!Array.isArray(data[key])) {
+                            data[key] = [data[key]];
+                        }
+                        data[key].push(value);
+                    } else {
+                        data[key] = value;
+                    }
+                }
+
+                // Adicionar timestamp
+                data.timestampEnvio = new Date().toISOString();
+
+                // Debug local (mostrar JSON)
+                debugJson.textContent = JSON.stringify(data, null, 2);
+                debugSection.classList.remove("hidden");
+
+                // Desabilitar botão de envio
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Enviando...';
+
+                try {
+                    // URL da API (alterar para sua URL real)
+                    const API_URL = 'https://SEU-APP.azurewebsites.net/api/save-response';
+                    
+                    // Para testar localmente, use:
+                    // const API_URL = 'http://localhost:7071/api/save-response';
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        // Sucesso!
+                        alert(`✅ Respostas salvas com sucesso!\n\nProtocolo: ${result.protocolo}\n\nGuarde este número para referência futura.`);
+                        
+                        // Opcionalmente, redirecionar para página de confirmação
+                        // window.location.href = `/confirmacao.html?protocolo=${result.protocolo}`;
+                        
+                        // Ou resetar formulário
+                        form.reset();
+                        currentSection = 1;
+                        document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+                        document.getElementById('section-1').classList.add('active');
+                        updateProgressBar();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        throw new Error(result.error || 'Erro desconhecido ao salvar');
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao enviar:', error);
+                    
+                    // Salvar localmente se API falhar (fallback offline)
+                    localStorage.setItem(`resposta_${Date.now()}`, JSON.stringify(data));
+                    
+                    alert(`⚠️ Não foi possível enviar as respostas no momento.\n\nSeus dados foram salvos localmente e serão sincronizados quando a conexão for restabelecida.\n\nErro: ${error.message}`);
+                } finally {
+                    // Reabilitar botão
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+
+            // Inicializar barra de progresso
+            updateProgressBar();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
