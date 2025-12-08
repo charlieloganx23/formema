@@ -973,6 +973,131 @@
                     `;
                 }
                 
+                // Formatar respostas de forma legível
+                const formatarRespostas = (respostas) => {
+                    const labels = {
+                        municipio: 'Município',
+                        escritorioLocal: 'Escritório Local',
+                        tempoEmater: 'Tempo na EMATER',
+                        nomeCompleto: 'Nome Completo',
+                        resultadosRelevantes: 'Resultados Relevantes',
+                        impacto_aumento_produtividade: 'Impacto - Aumento de Produtividade',
+                        impacto_aumento_comercializacao: 'Impacto - Aumento de Comercialização',
+                        impacto_inclusao_programas: 'Impacto - Inclusão em Programas',
+                        impacto_implementacao_tecnologias: 'Impacto - Implementação de Tecnologias',
+                        impacto_fortalecimento_organizacoes: 'Impacto - Fortalecimento de Organizações',
+                        impacto_capacitacao_produtores: 'Impacto - Capacitação de Produtores',
+                        impacto_reducao_perdas: 'Impacto - Redução de Perdas',
+                        desafio_fatores_externos: 'Desafio - Fatores Externos',
+                        desafio_falta_pessoal: 'Desafio - Falta de Pessoal',
+                        desafio_falta_veiculos: 'Desafio - Falta de Veículos',
+                        desafio_falta_orcamento: 'Desafio - Falta de Orçamento',
+                        desafio_baixa_organizacao: 'Desafio - Baixa Organização',
+                        desafio_falta_dados: 'Desafio - Falta de Dados',
+                        desafio_resistencia_produtores: 'Desafio - Resistência dos Produtores',
+                        desafio_burocracia: 'Desafio - Burocracia',
+                        estrategias: 'Estratégias Utilizadas',
+                        estrategiaMaisEfetiva: 'Estratégia Mais Efetiva',
+                        criteriosPriorizacao: 'Critérios de Priorização',
+                        documentoFormalCriterios: 'Documento Formal de Critérios',
+                        instrumentosPriorizacao: 'Instrumentos de Priorização',
+                        parceriasAtivas: 'Parcerias Ativas',
+                        participaForuns: 'Participa de Fóruns',
+                        influenciaEmater: 'Influência da EMATER',
+                        freqDemandaMercado: 'Frequência de Demanda de Mercado',
+                        capacitacaoMercado: 'Capacitação para Mercado',
+                        impactoCapacitacao: 'Impacto da Capacitação',
+                        instrumentosProducao: 'Instrumentos de Produção',
+                        freqApoioMercadosInstitucionais: 'Frequência de Apoio a Mercados Institucionais',
+                        conhecimentoOfertaDemanda: 'Conhecimento de Oferta/Demanda',
+                        indicadoresDesempenho: 'Indicadores de Desempenho',
+                        indicadoresFormalizados: 'Indicadores Formalizados',
+                        indicadoresEfetividade: 'Indicadores de Efetividade',
+                        frequenciaInfluencia: 'Frequência de Influência',
+                        capacidadeAcompanhamento: 'Capacidade de Acompanhamento'
+                    };
+                    
+                    const formatarValor = (chave, valor) => {
+                        if (valor === null || valor === undefined || valor === '') return '<em style="color: #999;">Não informado</em>';
+                        
+                        // Arrays
+                        if (Array.isArray(valor)) {
+                            if (valor.length === 0) return '<em style="color: #999;">Nenhum</em>';
+                            return valor.map(v => `<span style="background: #e3f2fd; padding: 3px 8px; border-radius: 4px; display: inline-block; margin: 2px;">${v}</span>`).join(' ');
+                        }
+                        
+                        // Escala de 1-5
+                        if (chave.includes('impacto_') || chave.includes('desafio_') || chave.includes('influencia') || chave.includes('conhecimento') || chave.includes('capacidade') || chave === 'documentoFormalCriterios') {
+                            const num = parseInt(valor);
+                            if (!isNaN(num) && num >= 1 && num <= 5) {
+                                const cor = num >= 4 ? '#4caf50' : num >= 3 ? '#ff9800' : '#f44336';
+                                return `<span style="color: ${cor}; font-weight: bold; font-size: 1.1em;">${'★'.repeat(num)}${'☆'.repeat(5-num)}</span> <span style="color: #666;">(${num}/5)</span>`;
+                            }
+                        }
+                        
+                        // Sim/Não
+                        if (valor === 'sim' || valor === 'nao') {
+                            return valor === 'sim' ? '<span style="color: #4caf50; font-weight: bold;">✓ Sim</span>' : '<span style="color: #f44336;">✗ Não</span>';
+                        }
+                        
+                        // Tempo EMATER
+                        if (chave === 'tempoEmater') {
+                            const tempos = {
+                                'menos5': 'Menos de 5 anos',
+                                '5-10': '5 a 10 anos',
+                                '10-20': '10 a 20 anos',
+                                'mais20': 'Mais de 20 anos'
+                            };
+                            return tempos[valor] || valor;
+                        }
+                        
+                        // Comentários longos
+                        if (chave.includes('comentario') || chave.includes('exemplo') || chave.includes('limitacoes') || chave.includes('Quais')) {
+                            return `<div style="background: #f5f5f5; padding: 8px; border-radius: 4px; margin-top: 4px; font-style: italic;">${valor}</div>`;
+                        }
+                        
+                        return valor;
+                    };
+                    
+                    let html = '<div style="max-height: 400px; overflow-y: auto;">';
+                    
+                    // Agrupar por categoria
+                    const categorias = {
+                        'Informações Básicas': ['municipio', 'escritorioLocal', 'tempoEmater', 'nomeCompleto'],
+                        'Resultados e Impactos': ['resultadosRelevantes', 'impacto_aumento_produtividade', 'impacto_aumento_comercializacao', 'impacto_inclusao_programas', 'impacto_implementacao_tecnologias', 'impacto_fortalecimento_organizacoes', 'impacto_capacitacao_produtores', 'impacto_reducao_perdas'],
+                        'Desafios': ['desafio_fatores_externos', 'desafio_falta_pessoal', 'desafio_falta_veiculos', 'desafio_falta_orcamento', 'desafio_baixa_organizacao', 'desafio_falta_dados', 'desafio_resistencia_produtores', 'desafio_burocracia'],
+                        'Estratégias e Priorização': ['estrategias', 'estrategiaMaisEfetiva', 'criteriosPriorizacao', 'documentoFormalCriterios', 'instrumentosPriorizacao', 'exemploInstrumento'],
+                        'Parcerias e Participação': ['parceriasAtivas', 'participaForuns', 'influenciaEmater'],
+                        'Mercado e Comercialização': ['freqDemandaMercado', 'capacitacaoMercado', 'impactoCapacitacao', 'instrumentosProducao', 'exemploInstrumentosProducao', 'freqApoioMercadosInstitucionais', 'conhecimentoOfertaDemanda'],
+                        'Indicadores e Monitoramento': ['indicadoresDesempenho', 'indicadoresFormalizados', 'indicadoresEfetividade', 'indicadoresEfetividadeQuais', 'frequenciaInfluencia', 'capacidadeAcompanhamento', 'limitacoesAcompanhamento'],
+                        'Comentários': ['comentarioB', 'comentarioC', 'comentarioD']
+                    };
+                    
+                    for (const [categoria, campos] of Object.entries(categorias)) {
+                        const camposPresentes = campos.filter(c => respostas[c] !== undefined);
+                        if (camposPresentes.length > 0) {
+                            html += `<h5 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 4px; margin: 16px 0 8px 0;">${categoria}</h5>`;
+                            html += '<table style="width: 100%; border-collapse: collapse;">';
+                            
+                            for (const campo of camposPresentes) {
+                                const label = labels[campo] || campo;
+                                const valor = formatarValor(campo, respostas[campo]);
+                                html += `
+                                    <tr style="border-bottom: 1px solid #eee;">
+                                        <td style="padding: 8px; font-weight: 600; color: #555; width: 40%; vertical-align: top;">${label}:</td>
+                                        <td style="padding: 8px; color: #333;">${valor}</td>
+                                    </tr>
+                                `;
+                            }
+                            
+                            html += '</table>';
+                        }
+                    }
+                    
+                    html += '</div>';
+                    return html;
+                };
+                
                 body.innerHTML = `
                     <h3>Protocolo: ${form.protocolo}</h3>
                     <p><strong>Município:</strong> ${municipio}</p>
@@ -985,7 +1110,7 @@
                     ${fotosGaleria}
                     <hr>
                     <h4>Respostas do Formulário:</h4>
-                    <pre>${JSON.stringify(respostasParaMostrar, null, 2)}</pre>
+                    ${formatarRespostas(respostasParaMostrar)}
                 `;
                 
                 modal.style.display = 'flex';
