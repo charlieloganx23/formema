@@ -41,6 +41,7 @@ CREATE TABLE formulario_extensionista (
     INDEX idx_timestamp (timestamp_fim),
     INDEX idx_created (created_at)
 );
+GO
 
 -- Trigger para atualizar updated_at
 CREATE TRIGGER trg_update_timestamp
@@ -53,6 +54,7 @@ BEGIN
     FROM formulario_extensionista f
     INNER JOIN inserted i ON f.id = i.id;
 END;
+GO
 
 -- View para estatísticas rápidas
 CREATE VIEW vw_estatisticas AS
@@ -64,6 +66,7 @@ SELECT
     AVG(duracao_minutos) as media_duracao,
     MAX(timestamp_fim) as ultima_submissao
 FROM formulario_extensionista;
+GO
 
 -- View para cobertura por município
 CREATE VIEW vw_cobertura_municipios AS
@@ -76,6 +79,7 @@ SELECT
 FROM formulario_extensionista
 WHERE municipio IS NOT NULL
 GROUP BY municipio, territorio;
+GO
 
 -- View para cobertura por unidade EMATER
 CREATE VIEW vw_cobertura_unidades AS
