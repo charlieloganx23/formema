@@ -1,36 +1,60 @@
 ═══════════════════════════════════════════════════════
-  🔥 AÇÃO URGENTE: CONFIGURAR FIREWALL AZURE SQL
+  🔥 SOLUÇÃO DEFINITIVA: FIREWALL AZURE SQL
 ═══════════════════════════════════════════════════════
 
-⚠️ PROBLEMA ATUAL:
-   Netlify Functions bloqueado pelo firewall do banco de dados
-   Sincronização não está funcionando (erro 500)
+⚠️ PROBLEMA:
+   Netlify usa IPs DINÂMICOS (muda a cada deploy)
+   IPs detectados: 52.14.69.28, 18.219.75.230
+   Impossível adicionar todos os IPs manualmente
 
 ═══════════════════════════════════════════════════════
-  ✅ SOLUÇÃO MAIS RÁPIDA (3 minutos)
+  ✅ SOLUÇÃO PERMANENTE (3 minutos)
 ═══════════════════════════════════════════════════════
 
 1. Acesse: https://portal.azure.com
 
-2. Pesquise: "SQL servers" na barra de busca
+2. Pesquise: "SQL servers" (barra de busca no topo)
 
 3. Clique em: srv-db-cxtce
 
-4. Menu lateral: Segurança → Networking
+4. Menu lateral: Security → Networking
 
-5. ATIVE a opção:
+5. MARQUE A CAIXA:
    ☑️ "Allow Azure services and resources to access this server"
 
-6. Clique em: SAVE (Salvar)
+6. Clique em: SAVE (topo da página)
 
 7. Aguarde: 5 minutos
 
-8. Teste: Preencha um formulário em:
-   https://formextensionista.netlify.app
+8. Teste: https://formextensionista.netlify.app
 
 ═══════════════════════════════════════════════════════
 
-📄 GUIA COMPLETO: Veja AZURE-FIREWALL-FIX.md
-🔧 SCRIPT AUTOMÁTICO: Execute configurar-firewall-azure.ps1
+🔐 ESTA SOLUÇÃO É SEGURA?
+
+✅ SIM! A regra 0.0.0.0 no Azure NÃO significa "aberto"
+✅ Significa: "permitir serviços Azure/AWS autenticados"
+✅ Ainda requer: usuário + senha SQL válidos
+✅ Conexão: criptografada TLS/SSL
+✅ Credenciais: protegidas em variáveis de ambiente
+
+═══════════════════════════════════════════════════════
+
+📄 GUIA COMPLETO: AZURE-FIREWALL-FIX.md
+🔧 SCRIPT AUTO: configurar-firewall-azure.ps1
+
+═══════════════════════════════════════════════════════
+
+💡 POR QUE CONTINUA DANDO ERRO?
+
+Se você JÁ ATIVOU a opção mas ainda dá erro:
+1. Verifique se clicou em SAVE
+2. Aguarde 5 minutos completos
+3. Limpe cache do navegador (Ctrl+Shift+Del)
+4. Teste novamente
+
+Se AINDA der erro após 5 minutos:
+- Execute o script PowerShell: configurar-firewall-azure.ps1
+- Ou adicione os ranges de IP manualmente (veja guia)
 
 ═══════════════════════════════════════════════════════

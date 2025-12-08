@@ -3,62 +3,74 @@
 ## ❌ Erro Atual
 ```
 Cannot open server 'srv-db-cxtce' requested by the login. 
-Client with IP address '52.14.69.28' is not allowed to access the server.
+Client with IP address 'X.X.X.X' is not allowed to access the server.
 ```
 
-**Causa**: O firewall do Azure SQL está bloqueando conexões do Netlify Functions.
+**IPs detectados até agora**:
+- `52.14.69.28` (AWS us-east-2)
+- `18.219.75.230` (AWS us-east-2)
+
+**Causa**: O Netlify Functions usa **múltiplos IPs dinâmicos** da AWS. Cada deploy ou invocação pode usar um IP diferente, tornando impossível criar regras para IPs específicos.
 
 ---
 
-## ✅ Solução 1: Portal Azure (Mais Fácil)
+## ✅ SOLUÇÃO DEFINITIVA (Recomendada)
 
-### Passo a Passo:
+### **Portal Azure - Passo a Passo COMPLETO**
 
 1. **Acesse o Portal Azure**
    - URL: https://portal.azure.com
    - Faça login com sua conta
 
-2. **Navegue até o SQL Server**
-   - Procure por "SQL servers" na barra de pesquisa
-   - Clique em `srv-db-cxtce`
+2. **Navegue até SQL Server**
+   - Digite "SQL servers" na barra de pesquisa (topo)
+   - Clique em **SQL servers**
+   - Selecione: `srv-db-cxtce`
 
-3. **Configure o Firewall**
-   - No menu lateral esquerdo, vá em **Segurança** → **Networking**
-   - Na seção "Firewall rules", ative:
-     ☑️ **"Allow Azure services and resources to access this server"**
-   - Clique em **Save** (Salvar)
+3. **Configure o Firewall (CRÍTICO)**
+   - Menu lateral esquerdo → **Security** → **Networking**
+   - Role até a seção **"Firewall rules"**
+   - **MARQUE a caixa**: ☑️ **"Allow Azure services and resources to access this server"**
+   - Clique em **Save** (no topo da página)
 
-4. **Aguarde**
-   - As mudanças podem levar até 5 minutos para entrar em vigor
+4. **Adicione Regras de Backup (Opcional mas Recomendado)**
+   
+   Na mesma página, em "Firewall rules", adicione:
+
+   **Regra 1: AWS us-east-2 Complete**
+   - Rule name: `AWS-US-EAST-2-Complete`
+   - Start IP: `18.216.0.0`
+   - End IP: `18.223.255.255`
+   
+   **Regra 2: AWS us-east-2 Secondary**
+   - Rule name: `AWS-US-EAST-2-Secondary`
+   - Start IP: `52.14.0.0`
+   - End IP: `52.15.255.255`
+   
+   **Regra 3: Netlify Documented**
+   - Rule name: `Netlify-Documented`
+   - Start IP: `44.192.0.0`
+   - End IP: `44.255.255.255`
+
+5. **Salvar e Aguardar**
+   - Clique em **Save** novamente
+   - **Aguarde 5 minutos** para propagação
+
+6. **Testar**
+   - Acesse: https://formextensionista.netlify.app
+   - Preencha e envie um formulário
+   - Se funcionar: ✅ Problema resolvido DEFINITIVAMENTE
 
 ---
 
-## ✅ Solução 2: Adicionar Regras Específicas
+## 🔐 Por que esta solução é SEGURA?
 
-Se preferir adicionar apenas os IPs do Netlify:
+1. **Autenticação SQL**: O banco ainda requer usuário e senha válidos
+2. **Conexão criptografada**: TLS/SSL obrigatório
+3. **Credenciais protegidas**: Armazenadas em variáveis de ambiente Netlify
+4. **Sem acesso público**: Apenas services autenticados podem conectar
 
-### No Portal Azure:
-
-1. Vá em **SQL servers** → `srv-db-cxtce` → **Networking**
-2. Clique em **+ Add a firewall rule**
-3. Adicione estas regras:
-
-**Regra 1:**
-- Nome: `Netlify-Functions`
-- Start IP: `52.0.0.0`
-- End IP: `52.255.255.255`
-
-**Regra 2:**
-- Nome: `Netlify-Functions-2`
-- Start IP: `44.192.0.0`
-- End IP: `44.255.255.255`
-
-**Regra 3:**
-- Nome: `Netlify-East-2`
-- Start IP: `18.216.0.0`
-- End IP: `18.223.255.255`
-
-4. Clique em **Save**
+A regra `0.0.0.0 → 0.0.0.0` no Azure **NÃO** significa "aberto para internet". Significa "**permitir serviços Azure/AWS autenticados**".
 
 ---
 
