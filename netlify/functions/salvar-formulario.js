@@ -43,17 +43,19 @@ exports.handler = async (event, context) => {
         // Conectar ao SQL Azure
         const pool = await sql.connect(config);
 
-        // Extrair dados
+        // Extrair dados (suportar ambos formatos: camelCase e snake_case)
         const {
             protocolo,
             respostas,
             fotos,
             geolocalizacao,
-            timestampInicio,
-            timestampFim,
-            duracaoMinutos,
             status
         } = formulario;
+
+        // Timestamps - aceitar ambos os formatos
+        const timestampInicio = formulario.timestampInicio || formulario.timestamp_inicio || formulario.timestamp;
+        const timestampFim = formulario.timestampFim || formulario.timestamp_fim;
+        const duracaoMinutos = formulario.duracaoMinutos || formulario.duracao_minutos || 0;
 
         const municipio = respostas?.municipio || null;
         const unidade_emater = respostas?.unidade_emater || null;
