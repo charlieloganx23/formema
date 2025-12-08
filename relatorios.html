@@ -715,11 +715,43 @@
             });
         }
         
+        // Helper para obter respostas parseadas
+        function getRespostas(formulario) {
+            if (!formulario) return null;
+            
+            let respostas = formulario.respostas;
+            
+            // Se respostas for string, fazer parse
+            if (typeof respostas === 'string') {
+                try {
+                    respostas = JSON.parse(respostas);
+                } catch (e) {
+                    console.warn('⚠️ Erro ao parsear respostas:', e);
+                    return null;
+                }
+            }
+            
+            return respostas || formulario; // Fallback para raiz se não tiver respostas
+        }
+        
         // Renderizar resumo estatístico
         function renderizarResumo() {
             const total = todosFormularios.length;
-            const municipios = new Set(todosFormularios.map(f => f.respostas?.municipio || f.municipio).filter(Boolean)).size;
-            const unidades = new Set(todosFormularios.map(f => f.respostas?.escritorioLocal || f.escritorioLocal).filter(Boolean)).size;
+            
+            // Extrair municípios e unidades com parse de JSON se necessário
+            const municipiosSet = new Set();
+            const unidadesSet = new Set();
+            
+            todosFormularios.forEach(f => {
+                const respostas = getRespostas(f);
+                if (respostas) {
+                    if (respostas.municipio) municipiosSet.add(respostas.municipio);
+                    if (respostas.escritorioLocal) unidadesSet.add(respostas.escritorioLocal);
+                }
+            });
+            
+            const municipios = municipiosSet.size;
+            const unidades = unidadesSet.size;
             
             // Taxa de completude (campos obrigatórios preenchidos)
             const camposObrigatorios = ['municipio', 'escritorioLocal', 'tempoEmater', 'resultadosRelevantes', 'desafiosEnfrentados'];
@@ -727,8 +759,10 @@
             let totalCamposEsperados = total * camposObrigatorios.length;
             
             todosFormularios.forEach(f => {
+                const respostas = getRespostas(f);
+                
                 camposObrigatorios.forEach(campo => {
-                    const valor = f.respostas?.[campo] || f[campo];
+                    const valor = respostas?.[campo];
                     if (valor && valor !== '' && valor !== null && valor !== undefined) {
                         totalCamposPreenchidos++;
                     }
@@ -1793,13 +1827,29 @@
             const municipios = new Set();
             const unidades = new Set();
             
-            todosFormularios.forEach(f => {
-                const municipio = f.respostas?.municipio;
-                const unidade = f.respostas?.escritorioLocal;
+            console.log('🔍 Populando filtros com', todosFormularios.length, 'formulários');
+            
+            todosFormularios.forEach((f, index) => {
+                const respostas = getRespostas(f);
                 
-                if (municipio) municipios.add(municipio);
-                if (unidade) unidades.add(unidade);
+                if (index === 0) {
+                    console.log('📝 Exemplo estrutura formulário:', {
+                        temRespostas: !!f.respostas,
+                        tipoRespostas: typeof f.respostas,
+                        respostasParsed: respostas,
+                        municipioEncontrado: respostas?.municipio,
+                        unidadeEncontrada: respostas?.escritorioLocal
+                    });
+                }
+                
+                if (respostas) {
+                    if (respostas.municipio) municipios.add(respostas.municipio);
+                    if (respostas.escritorioLocal) unidades.add(respostas.escritorioLocal);
+                }
             });
+            
+            console.log('📍 Municípios encontrados:', Array.from(municipios).sort());
+            console.log('🏢 Unidades encontradas:', Array.from(unidades).sort());
             
             // Popular select de municípios
             const selectMunicipio = document.getElementById('filtro-municipio');
@@ -1842,16 +1892,18 @@
             
             // Filtro por município
             if (municipio) {
-                formulariosFiltrados = formulariosFiltrados.filter(f => 
-                    f.respostas?.municipio === municipio
-                );
+                formulariosFiltrados = formulariosFiltrados.filter(f => {
+                    const respostas = getRespostas(f);
+                    return respostas?.municipio === municipio;
+                });
             }
             
             // Filtro por unidade
             if (unidade) {
-                formulariosFiltrados = formulariosFiltrados.filter(f => 
-                    f.respostas?.escritorioLocal === unidade
-                );
+                formulariosFiltrados = formulariosFiltrados.filter(f => {
+                    const respostas = getRespostas(f);
+                    return respostas?.escritorioLocal === unidade;
+                });
             }
             
             // Filtro por período
