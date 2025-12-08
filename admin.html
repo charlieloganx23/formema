@@ -571,19 +571,15 @@
         // Variável global para armazenar formulários
         let formulariosGlobal = [];
         
-        // Voltar ao formulário (definir primeiro para garantir disponibilidade)
-        function voltarFormulario() {
-            window.location.href = 'index.html';
-        }
+        // ==================== FUNÇÕES GLOBAIS (disponíveis para onclick) ====================
         
-        // Inicializar painel
-        document.addEventListener('DOMContentLoaded', async function() {
-            await carregarDadosServidor();
-            await carregarFormulariosPendentes();
-        });
+        // Voltar ao formulário
+        window.voltarFormulario = function() {
+            window.location.href = 'index.html';
+        };
         
         // Atualizar página com hard refresh (limpa cache)
-        function atualizarPagina() {
+        window.atualizarPagina = function() {
             console.log('🔄 Atualizando página com hard refresh...');
             
             // Adicionar parâmetro de timestamp para forçar bypass do cache
@@ -592,7 +588,13 @@
             
             // Recarregar com novo URL (força download de recursos)
             window.location.href = url.toString();
-        }
+        };
+        
+        // Inicializar painel quando DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', async function() {
+            await carregarDadosServidor();
+            await carregarFormulariosPendentes();
+        });
         
         // Carregar dados do IndexedDB local
         async function carregarDadosServidor() {
@@ -829,7 +831,7 @@
         }
         
         // Ver detalhes do formulário
-        async function verDetalhes(protocolo) {
+        window.verDetalhes = async function(protocolo) {
             try {
                 // Buscar formulário no array global
                 const form = formulariosGlobal.find(f => f.protocolo === protocolo);
@@ -937,7 +939,7 @@
         }
         
         // Abrir foto em modal
-        async function abrirFotoModal(protocolo, fotoIndex) {
+        window.abrirFotoModal = async function(protocolo, fotoIndex) {
             try {
                 // Buscar formulário no array global
                 const form = formulariosGlobal.find(f => f.protocolo === protocolo);
@@ -992,22 +994,22 @@
         }
         
         // Baixar foto individual
-        function baixarFoto(dataUrl, nomeArquivo) {
+        window.baixarFoto = function(dataUrl, nomeArquivo) {
             const a = document.createElement('a');
             a.href = dataUrl;
             a.download = nomeArquivo;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }
+        };
         
         // Fechar modal
-        function fecharModal() {
+        window.fecharModal = function() {
             document.getElementById('modalDetalhes').style.display = 'none';
-        }
+        };
         
         // Exportar todos os dados (JSON) - MODIFICADO: buscar do servidor
-        async function exportarTodos() {
+        window.exportarTodos = async function() {
             try {
                 // Usar dados globais em vez de IndexedDB
                 const dados = {
@@ -1033,19 +1035,19 @@
                 console.error('Erro ao exportar:', error);
                 alert('Erro ao exportar dados.');
             }
-        }
+        };
         
         // Sincronizar todos - Recarregar do IndexedDB
-        async function sincronizarTodos() {
+        window.sincronizarTodos = async function() {
             if (confirm('Deseja recarregar os dados do IndexedDB?')) {
                 await carregarDadosServidor();
                 await carregarFormulariosPendentes();
                 alert('Dados atualizados!');
             }
-        }
+        };
         
         // Limpar dados locais do IndexedDB (apenas deste dispositivo)
-        async function limparDadosLocais() {
+        window.limparDadosLocais = async function() {
             const confirmacao1 = confirm(
                 '⚠️ ATENÇÃO: Limpar Dados Locais\n\n' +
                 'Esta ação irá APAGAR todos os formulários armazenados LOCALMENTE neste dispositivo.\n\n' +
@@ -1106,7 +1108,7 @@
         }
         
         // Exportar formulário individual para Excel
-        async function exportarExcel(protocolo) {
+        window.exportarExcel = async function(protocolo) {
             try {
                 // Buscar formulário no array global
                 const form = formulariosGlobal.find(f => f.protocolo === protocolo);
@@ -1233,7 +1235,7 @@
         }
         
         // Exportar todos os formulários para Excel em um único arquivo
-        async function exportarTodosExcel() {
+        window.exportarTodosExcel = async function() {
             try {
                 // Usar dados globais do servidor
                 const formularios = formulariosGlobal;
@@ -1357,12 +1359,12 @@
         }
         
         // Abrir página de relatórios
-        function abrirRelatorios() {
+        window.abrirRelatorios = function() {
             window.location.href = 'relatorios.html';
-        }
+        };
         
         // Sincronizar manualmente formulários pendentes
-        async function sincronizarManual() {
+        window.sincronizarManual = async function() {
             const btn = document.getElementById('btn-sync-manual');
             if (btn) {
                 btn.disabled = true;
