@@ -626,6 +626,54 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ===== PRIORIDADE BAIXA: ANÁLISES AVANÇADAS ===== -->
+            <div class="section">
+                <h2 class="section-title">📈 Análises Avançadas</h2>
+                <div class="charts-grid">
+                    <!-- Gráfico: Correlação Experiência x Resultados -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <div class="chart-title">🔍 Correlação: Experiência vs Diversidade de Resultados</div>
+                                <div class="chart-subtitle">Cada ponto representa um extensionista</div>
+                            </div>
+                            <button class="chart-export" onclick="exportarGrafico('chartCorrelacao')">📥 Exportar</button>
+                        </div>
+                        <div class="chart-canvas">
+                            <canvas id="chartCorrelacao"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico: Perfil de Diversidade de Ações -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <div class="chart-title">🎯 Perfil de Diversidade de Ações</div>
+                                <div class="chart-subtitle">Combinação de estratégias e parcerias adotadas</div>
+                            </div>
+                            <button class="chart-export" onclick="exportarGrafico('chartIndicadores')">📥 Exportar</button>
+                        </div>
+                        <div class="chart-canvas">
+                            <canvas id="chartIndicadores"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico: Análise Comparativa de Desafios -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <div class="chart-title">⚠️ Análise Comparativa de Desafios</div>
+                                <div class="chart-subtitle">Intensidade média percebida (1-5)</div>
+                            </div>
+                            <button class="chart-export" onclick="exportarGrafico('chartDesafiosMercado')">📥 Exportar</button>
+                        </div>
+                        <div class="chart-canvas">
+                            <canvas id="chartDesafiosMercado"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         </div>
     </div>
