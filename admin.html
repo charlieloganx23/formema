@@ -1891,6 +1891,7 @@
         };
         
         // Sincronizar manualmente formulários pendentes
+        // Sincronizar manualmente formulários pendentes
         window.sincronizarManual = async function() {
             const btn = document.getElementById('btn-sync-manual');
             if (btn) {
@@ -1899,12 +1900,52 @@
             }
             
             try {
-                showSyncModal('Sincronizando Pendentes', 'Enviando formulários para o servidor...', 'Preparando envio...');
-                updateSyncModal('Processando formulários...', 50);
+                console.log('🔄 Iniciando sincronização manual...');
                 
-                await sincronizarTodos();
+                showSyncModal('Sincronizando Pendentes', 'Enviando formulários para o servidor...', 'Preparando envio...');
+                updateSyncModal('Buscando formulários pendentes...', 20);
+                
+                // Buscar formulários pendentes
+                const pendentes = await buscarNaoSincronizados();
+                console.log(`📤 Encontrados ${pendentes.length} formulário(s) pendente(s)`);
+                
+                if (pendentes.length === 0) {
+                    hideSyncModal();
+                    showToast('info', 'Nenhum Pendente', 'Todos os formulários já estão sincronizados!');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '✅ Tudo Sincronizado';
+                    }
+                    return;
+                }
+                
+                updateSyncModal(`Sincronizando ${pendentes.length} formulário(s)...`, 40);
+                
+                // Sincronizar cada formulário
+                let sucessos = 0;
+                let erros = 0;
+                
+                for (let i = 0; i < pendentes.length; i++) {
+                    const form = pendentes[i];
+                    console.log(`📤 Sincronizando ${i + 1}/${pendentes.length}: ${form.protocolo}`);
+                    
+                    const progresso = 40 + ((i + 1) / pendentes.length) * 50;
+                    updateSyncModal(`Sincronizando ${i + 1}/${pendentes.length}...`, progresso);
+                    
+                    const resultado = await sincronizarFormularioComAzure(form);
+                    
+                    if (resultado.success) {
+                        sucessos++;
+                        console.log(`✅ Sincronizado: ${form.protocolo}`);
+                    } else {
+                        erros++;
+                        console.error(`❌ Falha: ${form.protocolo} - ${resultado.error}`);
+                    }
+                }
                 
                 updateSyncModal('Concluído!', 100);
+                
+                console.log(`📊 Resultado: ${sucessos} sucesso(s), ${erros} erro(s)`);
                 
                 if (btn) {
                     btn.innerHTML = '✅ Sincronizado!';
@@ -1912,13 +1953,23 @@
                 
                 setTimeout(() => {
                     hideSyncModal();
-                    showToast('success', 'Sincronização Manual Concluída', 'Formulários pendentes foram enviados com sucesso!');
-                    setTimeout(() => location.reload(), 1500);
+                    
+                    if (erros > 0) {
+                        showToast('warning', 'Sincronização Parcial', `${sucessos} sincronizado(s), ${erros} com erro. Verifique os logs.`);
+                    } else {
+                        showToast('success', 'Sincronização Completa', `${sucessos} formulário(s) sincronizado(s) com sucesso!`);
+                    }
+                    
+                    // Recarregar dados
+                    setTimeout(async () => {
+                        await carregarDadosServidor();
+                        await carregarFormulariosPendentes();
+                    }, 500);
                 }, 500);
             } catch (error) {
                 console.error('❌ Erro na sincronização manual:', error);
                 hideSyncModal();
-                showToast('error', 'Erro na Sincronização', 'Não foi possível sincronizar. Verifique sua conexão e tente novamente.');
+                showToast('error', 'Erro na Sincronização', `Não foi possível sincronizar: ${error.message}`);
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = '❌ Erro - Tentar Novamente';
