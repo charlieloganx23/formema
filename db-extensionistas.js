@@ -85,11 +85,13 @@ async function salvarFormulario(dados) {
             // Tentar sincronizar imediatamente com o servidor
             try {
                 if (navigator.onLine) {
-                    console.log('🔄 Sincronizando automaticamente com o servidor...');
+                    console.log('🌐 [SAVE] Online detectado, iniciando sincronização automática...');
                     const resultadoSync = await sincronizarFormularioComAzure(formulario);
                     
+                    console.log('📊 [SAVE] Resultado da sincronização:', resultadoSync);
+                    
                     if (resultadoSync.success) {
-                        console.log('✅ Formulário sincronizado automaticamente!');
+                        console.log('✅ [SAVE] Formulário sincronizado automaticamente!');
                         resolve({ 
                             success: true, 
                             protocolo: protocolo, 
@@ -97,7 +99,8 @@ async function salvarFormulario(dados) {
                             sincronizado: true 
                         });
                     } else {
-                        console.log('⚠️ Salvo localmente, sincronização pendente');
+                        console.warn('⚠️ [SAVE] Sincronização falhou:', resultadoSync.error);
+                        console.log('💾 [SAVE] Salvo localmente, sincronização pendente');
                         resolve({ 
                             success: true, 
                             protocolo: protocolo, 
@@ -106,7 +109,7 @@ async function salvarFormulario(dados) {
                         });
                     }
                 } else {
-                    console.log('⚠️ Offline - formulário será sincronizado quando houver conexão');
+                    console.log('📴 [SAVE] Offline - formulário será sincronizado quando houver conexão');
                     resolve({ 
                         success: true, 
                         protocolo: protocolo, 
@@ -115,7 +118,8 @@ async function salvarFormulario(dados) {
                     });
                 }
             } catch (error) {
-                console.error('⚠️ Erro na sincronização automática:', error);
+                console.error('❌ [SAVE] Erro na sincronização automática:', error);
+                console.error('❌ [SAVE] Stack:', error.stack);
                 // Mesmo com erro na sync, o salvamento local foi bem-sucedido
                 resolve({ 
                     success: true, 
@@ -417,12 +421,17 @@ async function sincronizarComServidor(urlAPI) {
 // Sincronizar um formulário específico com o servidor
 async function sincronizarFormularioComAzure(formulario) {
     try {
+        console.log('🔄 [SYNC] Iniciando sincronização:', formulario.protocolo);
+        
         // Verificar se config existe
         if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+            console.error('❌ [SYNC] CONFIG não encontrado!');
             throw new Error('Configuração da API não encontrada');
         }
 
         const url = CONFIG.API_URL + CONFIG.ENDPOINTS.SAVE;
+        console.log('📤 [SYNC] URL:', url);
+        console.log('📦 [SYNC] Enviando dados do formulário...');
         
         const response = await fetch(url, {
             method: 'POST',
@@ -433,22 +442,30 @@ async function sincronizarFormularioComAzure(formulario) {
             signal: AbortSignal.timeout(CONFIG.TIMEOUT || 30000)
         });
 
+        console.log('📥 [SYNC] Status da resposta:', response.status, response.statusText);
+
         if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ [SYNC] Erro HTTP:', errorText);
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const result = await response.json();
+        console.log('📋 [SYNC] Resultado da API:', result);
         
         if (result.success) {
             // Marcar como sincronizado no IndexedDB
+            console.log('✅ [SYNC] API retornou sucesso, marcando como sincronizado...');
             await marcarComoSincronizado(formulario.protocolo);
-            console.log(`✅ Formulário ${formulario.protocolo} sincronizado com Azure`);
+            console.log(`✅ [SYNC] Formulário ${formulario.protocolo} sincronizado com Azure`);
             return { success: true, protocolo: formulario.protocolo };
         } else {
+            console.error('❌ [SYNC] API retornou erro:', result.error);
             throw new Error(result.error || 'Erro desconhecido');
         }
     } catch (error) {
-        console.error(`❌ Erro ao sincronizar ${formulario.protocolo}:`, error.message);
+        console.error(`❌ [SYNC] Erro ao sincronizar ${formulario.protocolo}:`, error.message);
+        console.error('❌ [SYNC] Stack:', error.stack);
         return { success: false, protocolo: formulario.protocolo, error: error.message };
     }
 }
@@ -456,6 +473,8 @@ async function sincronizarFormularioComAzure(formulario) {
 // Marcar formulário como sincronizado
 async function marcarComoSincronizado(protocolo) {
     if (!db) await initDB();
+    
+    console.log('🏷️ [MARK] Marcando como sincronizado:', protocolo);
     
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([STORE_NAME], 'readwrite');
@@ -466,8 +485,31 @@ async function marcarComoSincronizado(protocolo) {
         request.onsuccess = () => {
             const formulario = request.result;
             if (formulario) {
+                console.log('📝 [MARK] Formulário encontrado, atualizando status...');
                 formulario.sincronizado = true;
                 formulario.data_sincronizacao = new Date().toISOString();
+                
+                const updateRequest = objectStore.put(formulario);
+                updateRequest.onsuccess = () => {
+                    console.log('✅ [MARK] Status atualizado com sucesso!');
+                    resolve(true);
+                };
+                updateRequest.onerror = () => {
+                    console.error('❌ [MARK] Erro ao atualizar:', updateRequest.error);
+                    reject(updateRequest.error);
+                };
+            } else {
+                console.error('❌ [MARK] Formulário não encontrado:', protocolo);
+                reject(new Error('Formulário não encontrado'));
+            }
+        };
+
+        request.onerror = () => {
+            console.error('❌ [MARK] Erro ao buscar formulário:', request.error);
+            reject(request.error);
+        };
+    });
+}
                 
                 const updateRequest = objectStore.put(formulario);
                 updateRequest.onsuccess = () => resolve(true);
