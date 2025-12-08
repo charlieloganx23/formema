@@ -245,7 +245,7 @@
             padding: 18px 25px;
             border-bottom: 1px solid #e2e8f0;
             display: grid;
-            grid-template-columns: 2fr 1.2fr 0.8fr 1fr 1.2fr auto;
+            grid-template-columns: 2fr 1.2fr 0.8fr 1.2fr auto;
             gap: 20px;
             align-items: center;
             transition: all 0.2s ease;
@@ -543,12 +543,11 @@
                 <div class="table-header">
                     📋 Formulários Coletados
                 </div>
-                <div style="padding: 15px 25px; background: #f7fafc; display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 1fr 1.2fr auto; gap: 20px; font-weight: 600; color: #4a5568; border-bottom: 2px solid #e2e8f0; font-size: 0.9em;">
+                <div style="padding: 15px 25px; background: #f7fafc; display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 1.2fr auto; gap: 20px; font-weight: 600; color: #4a5568; border-bottom: 2px solid #e2e8f0; font-size: 0.9em;">
                     <div>Protocolo/Município</div>
                     <div>Data/Hora</div>
                     <div>Duração</div>
-                    <div>Status Sinc.</div>
-                    <div>Preenchimento</div>
+                    <div>Status</div>
                     <div>Ações</div>
                 </div>
                 <div class="table-content" id="tableContent">
@@ -844,11 +843,6 @@
                         </div>
                         <div>${dataFormatada}</div>
                         <div>${duracaoMinutos}min</div>
-                        <div>
-                            <span class="badge ${form.status === 'completo' || form.status === 'concluido' ? 'badge-success' : 'badge-warning'}">
-                                ${form.status || '-'}
-                            </span>
-                        </div>
                         <div>
                             <span class="badge ${badgeClass}">
                                 ${statusCompleto}
