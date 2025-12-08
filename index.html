@@ -2291,27 +2291,40 @@
                 );
 
                 try {
-                    // Etapa 1: Salvar localmente
-                    updateSyncModal('Salvando dados localmente...', 50);
-                    await new Promise(resolve => setTimeout(resolve, 500)); // UX delay
+                    // Etapa 1: Salvar localmente e sincronizar
+                    updateSyncModal('Salvando dados localmente...', 30);
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     
+                    updateSyncModal('Enviando para o servidor...', 60);
                     const resultado = await salvarFormulario(data);
                     
                     if (resultado.success) {
-                        // Etapa 2: Sucesso local
-                        updateSyncModal('Dados salvos com sucesso! ✅', 100);
-                        await new Promise(resolve => setTimeout(resolve, 800));
-                        
-                        // Esconder modal
-                        hideSyncModal();
-                        
-                        // Mostrar notificação de sucesso
-                        showToast(
-                            'success',
-                            'Formulário Salvo!',
-                            `Protocolo: ${resultado.protocolo}. Seus dados foram salvos localmente e serão sincronizados automaticamente.`,
-                            6000
-                        );
+                        // Verificar se foi sincronizado
+                        if (resultado.sincronizado) {
+                            updateSyncModal('Sincronizado com sucesso! ✅', 100);
+                            await new Promise(resolve => setTimeout(resolve, 800));
+                            
+                            hideSyncModal();
+                            
+                            showToast(
+                                'success',
+                                'Formulário Sincronizado!',
+                                `Protocolo: ${resultado.protocolo}. Seus dados foram salvos e sincronizados com o servidor.`,
+                                6000
+                            );
+                        } else {
+                            updateSyncModal('Salvo localmente ⚠️', 100);
+                            await new Promise(resolve => setTimeout(resolve, 800));
+                            
+                            hideSyncModal();
+                            
+                            showToast(
+                                'warning',
+                                'Formulário Salvo Localmente',
+                                `Protocolo: ${resultado.protocolo}. Dados salvos localmente. Sincronização pendente - será tentada automaticamente.`,
+                                6000
+                            );
+                        }
                         
                         // Resetar formulário
                         form.reset();

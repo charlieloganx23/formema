@@ -61,7 +61,7 @@ async function salvarFormulario(dados) {
         await initDB();
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const transaction = db.transaction([STORE_NAME], 'readwrite');
         const objectStore = transaction.objectStore(STORE_NAME);
 
@@ -79,9 +79,51 @@ async function salvarFormulario(dados) {
 
         const request = objectStore.add(formulario);
 
-        request.onsuccess = () => {
+        request.onsuccess = async () => {
             console.log('✅ Formulário salvo no IndexedDB:', protocolo);
-            resolve({ success: true, protocolo: protocolo, id: request.result });
+            
+            // Tentar sincronizar imediatamente com o servidor
+            try {
+                if (navigator.onLine) {
+                    console.log('🔄 Sincronizando automaticamente com o servidor...');
+                    const resultadoSync = await sincronizarFormularioComAzure(formulario);
+                    
+                    if (resultadoSync.success) {
+                        console.log('✅ Formulário sincronizado automaticamente!');
+                        resolve({ 
+                            success: true, 
+                            protocolo: protocolo, 
+                            id: request.result,
+                            sincronizado: true 
+                        });
+                    } else {
+                        console.log('⚠️ Salvo localmente, sincronização pendente');
+                        resolve({ 
+                            success: true, 
+                            protocolo: protocolo, 
+                            id: request.result,
+                            sincronizado: false 
+                        });
+                    }
+                } else {
+                    console.log('⚠️ Offline - formulário será sincronizado quando houver conexão');
+                    resolve({ 
+                        success: true, 
+                        protocolo: protocolo, 
+                        id: request.result,
+                        sincronizado: false 
+                    });
+                }
+            } catch (error) {
+                console.error('⚠️ Erro na sincronização automática:', error);
+                // Mesmo com erro na sync, o salvamento local foi bem-sucedido
+                resolve({ 
+                    success: true, 
+                    protocolo: protocolo, 
+                    id: request.result,
+                    sincronizado: false 
+                });
+            }
         };
 
         request.onerror = () => {
