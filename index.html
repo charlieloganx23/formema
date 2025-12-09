@@ -47,13 +47,94 @@
             margin-bottom: 2rem;
             text-align: center;
             position: relative;
+            background: linear-gradient(135deg, #2e7d32 0%, #388e3c 50%, #4caf50 100%);
+            padding: 2.5rem 2rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(46, 125, 50, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: white;
         }
 
         .app-header h1 {
             margin: 0 0 0.5rem;
             font-size: 2rem;
-            color: var(--primary-color);
+            color: white;
             font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-header .subtitle {
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Container de Ações do Cabeçalho */
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Botões de Cache */
+        .cache-btn {
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .cache-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        }
+
+        .cache-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Variante Laranja - Atualizar */
+        .cache-btn-warning {
+            background: linear-gradient(135deg, #ff9800, #fb8c00);
+            color: white;
+        }
+
+        .cache-btn-warning:hover {
+            background: linear-gradient(135deg, #fb8c00, #f57c00);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Variante Vermelha - Limpar */
+        .cache-btn-danger {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            color: white;
+        }
+
+        .cache-btn-danger:hover {
+            background: linear-gradient(135deg, #e53935, #d32f2f);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Animação Pulse para botão de atualização */
+        @keyframes pulse-update {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(255, 152, 0, 0.6);
+            }
+        }
+
+        .cache-btn-warning {
+            animation: pulse-update 3s infinite;
         }
 
         /* Menu Administrativo */
@@ -158,25 +239,27 @@
         .progress-bar {
             width: 100%;
             height: 10px;
-            background: #e0e0e0;
+            background: rgba(255, 255, 255, 0.25);
             border-radius: 999px;
             overflow: hidden;
             margin-bottom: 0.5rem;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         .progress-bar-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.9));
             transition: width 0.4s ease;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
         #progressText {
             font-size: 0.9rem;
-            color: #666;
+            color: rgba(255, 255, 255, 0.95);
             text-align: center;
             font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
         /* Formulário */
@@ -570,6 +653,24 @@
             .likert-text {
                 font-size: 0.75em;
             }
+
+            .app-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .app-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-actions {
+                gap: 8px;
+            }
+
+            .cache-btn {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+                gap: 6px;
+            }
         }
         
         /* ========================================
@@ -821,6 +922,22 @@
                     <div class="progress-bar-fill" id="progressFill"></div>
                 </div>
                 <span id="progressText">Etapa 1 de 6</span>
+            </div>
+
+            <!-- Botões de Gestão de Cache -->
+            <div class="header-actions">
+                <button type="button" 
+                        class="cache-btn cache-btn-warning" 
+                        onclick="forceHardRefresh()" 
+                        title="Forçar atualização completa do sistema (limpa cache e recarrega)">
+                    🔄 Atualizar Sistema
+                </button>
+                <button type="button" 
+                        class="cache-btn cache-btn-danger" 
+                        onclick="limparCacheCompleto()" 
+                        title="Limpeza emergencial completa (preserva formulários salvos)">
+                    🗑️ Limpar Cache
+                </button>
             </div>
         </header>
 
@@ -2071,6 +2188,138 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
+
+        // ==========================================
+        // GESTÃO DE CACHE E ATUALIZAÇÃO
+        // ==========================================
+
+        /**
+         * Força atualização completa do sistema (hard refresh)
+         * - Limpa todos os caches
+         * - Atualiza Service Worker
+         * - Recarrega página sem cache
+         */
+        async function forceHardRefresh() {
+            console.log('🔄 Iniciando hard refresh do sistema...');
+
+            // Feedback visual
+            showToast('info', '🔄 Atualizando sistema...', 'Aguarde enquanto limpamos o cache');
+
+            try {
+                // Limpar todos os caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    console.log('🗑️ Caches encontrados:', cacheNames);
+                    
+                    await Promise.all(
+                        cacheNames.map(cacheName => {
+                            console.log('  - Deletando cache:', cacheName);
+                            return caches.delete(cacheName);
+                        })
+                    );
+                    console.log('✅ Todos os caches limpos');
+                }
+
+                // Atualizar Service Worker
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        await registration.update();
+                        console.log('✅ Service Worker atualizado');
+                        
+                        // Enviar mensagem para SW pular espera
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({ 
+                                type: 'SKIP_WAITING' 
+                            });
+                        }
+                    }
+                }
+
+                // Limpar sessionStorage
+                sessionStorage.clear();
+                console.log('✅ SessionStorage limpo');
+
+            } catch (error) {
+                console.error('❌ Erro ao limpar cache:', error);
+            } finally {
+                // Sempre recarregar (mesmo se houver erro)
+                setTimeout(() => {
+                    console.log('🔄 Recarregando página...');
+                    window.location.reload(true);
+                }, 800);
+            }
+        }
+
+        /**
+         * Limpeza emergencial completa do cache
+         * - Pede confirmação
+         * - Remove todos os caches
+         * - Desregistra Service Workers
+         * - PRESERVA IndexedDB (formulários)
+         */
+        async function limparCacheCompleto() {
+            // Confirmar com usuário
+            const confirmacao = confirm(
+                '⚠️ ATENÇÃO: Limpeza Emergencial de Cache\n\n' +
+                'Esta ação irá:\n' +
+                '🗑️ Limpar TODO o cache do sistema\n' +
+                '🗑️ Desregistrar Service Worker\n' +
+                '🗑️ Remover arquivos temporários\n\n' +
+                '✅ PRESERVAR:\n' +
+                '📋 Formulários salvos (IndexedDB)\n' +
+                '💾 Dados pendentes de sincronização\n\n' +
+                'Use apenas se o sistema estiver com problemas graves.\n\n' +
+                'Deseja continuar?'
+            );
+
+            if (!confirmacao) {
+                console.log('❌ Limpeza cancelada pelo usuário');
+                return;
+            }
+
+            console.log('🗑️ Iniciando limpeza completa de cache...');
+            showToast('warning', '🗑️ Limpando cache...', 'Preservando seus formulários');
+
+            try {
+                // Limpar sessionStorage
+                sessionStorage.clear();
+                console.log('✅ SessionStorage limpo');
+
+                // Desregistrar Service Workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        console.log('✅ Service Worker desregistrado:', registration.scope);
+                    }
+                }
+
+                // Deletar todos os caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                    console.log('✅ Todos os caches deletados');
+                }
+
+                showToast('success', '✅ Cache limpo!', 'Recarregando sistema...');
+
+            } catch (error) {
+                console.error('❌ Erro na limpeza:', error);
+                showToast('error', '❌ Erro', 'Falha ao limpar cache');
+            } finally {
+                // Recarregar com parâmetro nocache
+                setTimeout(() => {
+                    window.location.href = window.location.href.split('?')[0] + '?nocache=' + Date.now();
+                }, 1000);
+            }
+        }
+
+        // ==========================================
+        // MENU ADMINISTRATIVO
+        // ==========================================
 
         // Menu Administrativo
         function toggleAdminMenu() {
