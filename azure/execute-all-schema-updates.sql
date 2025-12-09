@@ -454,15 +454,7 @@ BEGIN TRY
     PRINT 'CRIANDO ÍNDICES DE PERFORMANCE...';
     PRINT '';
 
-    -- Índices Eixo A
-    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_metodos_frequentes' AND object_id = OBJECT_ID('formulario_extensionista'))
-    BEGIN
-        CREATE INDEX idx_metodos_frequentes ON formulario_extensionista(metodos_frequentes(255)) 
-        INCLUDE (municipio, unidade_emater);
-        PRINT '  ✓ Índice idx_metodos_frequentes criado';
-    END
-    ELSE PRINT '  - Índice idx_metodos_frequentes já existe';
-
+    -- Índices Eixo A (campos numéricos apenas - NVARCHAR(MAX) não suporta índices)
     IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_dificuldade_falta_tempo' AND object_id = OBJECT_ID('formulario_extensionista'))
     BEGIN
         CREATE INDEX idx_dificuldade_falta_tempo ON formulario_extensionista(dificuldade_falta_tempo) 
@@ -506,7 +498,7 @@ BEGIN TRY
     ELSE PRINT '  - Índice idx_avaliacao_ajuda_indicadores já existe';
 
     PRINT '';
-    PRINT 'ÍNDICES: Concluídos (6 índices)';
+    PRINT 'ÍNDICES: Concluídos (5 índices)';
     PRINT '';
 
     -- ========================================
@@ -535,7 +527,7 @@ BEGIN TRY
     PRINT '  TOTAL: 25 novos campos';
     PRINT '';
     PRINT 'VIEWS ANALÍTICAS: 9 views criadas';
-    PRINT 'ÍNDICES: 6 índices de performance criados';
+    PRINT 'ÍNDICES: 5 índices de performance criados';
     PRINT '';
     PRINT '========================================';
     PRINT 'ATUALIZAÇÃO CONCLUÍDA COM SUCESSO!';
