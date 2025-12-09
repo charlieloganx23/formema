@@ -39,9 +39,12 @@ exports.handler = async (event, context) => {
 
     try {
         const formulario = JSON.parse(event.body);
+        console.log('📝 Recebido formulário:', formulario.protocolo);
         
         // Conectar ao SQL Azure
+        console.log('🔌 Conectando ao SQL Azure...');
         const pool = await sql.connect(config);
+        console.log('✅ Conectado ao SQL Azure');
 
         // Extrair protocolo
         const protocolo = formulario.protocolo;
@@ -170,14 +173,16 @@ exports.handler = async (event, context) => {
             comentarioEixoE = formulario.comentario_eixo_e || null;
             comentarioFinal = formulario.comentario_final || null;
         }
-        }
 
+        console.log('🔍 Verificando se formulário já existe:', protocolo);
+        
         // Verificar se já existe
         const checkResult = await pool.request()
             .input('protocolo', sql.NVarChar, protocolo)
             .query('SELECT protocolo FROM formulario_extensionista WHERE protocolo = @protocolo');
 
         if (checkResult.recordset.length > 0) {
+            console.log('🔄 Atualizando formulário existente');
             // Atualizar
             await pool.request()
                 .input('protocolo', sql.NVarChar(50), protocolo)
@@ -264,7 +269,9 @@ exports.handler = async (event, context) => {
                         updated_at = GETUTCDATE()
                     WHERE protocolo = @protocolo
                 `);
+            console.log('✅ Formulário atualizado com sucesso');
         } else {
+            console.log('➕ Inserindo novo formulário');
             // Inserir
             await pool.request()
                 .input('protocolo', sql.NVarChar(50), protocolo)
@@ -344,8 +351,10 @@ exports.handler = async (event, context) => {
                         @avaliacao_ajuda_indicadores, @comentario_eixo_e, @comentario_final
                     )
                 `);
+            console.log('✅ Formulário inserido com sucesso');
         }
 
+        console.log('🔒 Fechando conexão SQL');
         await pool.close();
 
         return {
@@ -359,13 +368,26 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('❌ Erro detalhado:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            code: error.code,
+            number: error.number,
+            state: error.state,
+            class: error.class,
+            serverName: error.serverName,
+            procName: error.procName,
+            lineNumber: error.lineNumber
+        });
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({
                 success: false,
-                error: error.message
+                error: error.message,
+                details: error.code || error.number || 'Erro desconhecido',
+                timestamp: new Date().toISOString()
             })
         };
     }
