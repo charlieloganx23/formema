@@ -66,6 +66,14 @@ exports.handler = async (event, context) => {
         let priorizacaoAtendimentos, priorizacaoAtendimentosOutro, nivelEquidade;
         let instrumentosFormais, exemploInstrumentoFormal, comentarioEixoB;
         
+        // Novos campos do Eixo C - Parcerias e Fóruns
+        let parceriasAtivas, parceriasAtivasOutro, participaForuns, influenciaEmater, comentarioC;
+        
+        // Novos campos do Eixo D - Articulação Produtiva e Comercialização
+        let freqDemandaMercado, capacitacaoMercado, impactoCapacitacao;
+        let instrumentosProducao, exemploInstrumentosProducao;
+        let freqApoioMercadosInstitucionais, conhecimentoOfertaDemanda, comentarioD;
+        
         // Novos campos do Eixo E - Indicadores e Avaliação
         let instrumentosAcompanhamento, instrumentosAcompanhamentoOutro, freqUsoIndicadores;
         let principaisIndicadores, avaliacaoAjudaIndicadores, comentarioEixoE, comentarioFinal;
@@ -114,6 +122,25 @@ exports.handler = async (event, context) => {
             instrumentosFormais = respostas.instrumentos_formais || null;
             exemploInstrumentoFormal = respostas.exemplo_instrumento_formal || null;
             comentarioEixoB = respostas.comentario_eixo_b || null;
+            
+            // Extrair campos do Eixo C
+            parceriasAtivas = respostas.parcerias_ativas ? 
+                (Array.isArray(respostas.parcerias_ativas) ? JSON.stringify(respostas.parcerias_ativas) : respostas.parcerias_ativas) : null;
+            parceriasAtivasOutro = respostas.parcerias_ativas_outro || null;
+            participaForuns = respostas.participa_foruns || null;
+            influenciaEmater = respostas.influencia_emater ? parseInt(respostas.influencia_emater) : null;
+            comentarioC = respostas.comentario_eixo_c || null;
+            
+            // Extrair campos do Eixo D
+            freqDemandaMercado = respostas.freq_demanda_mercado || null;
+            capacitacaoMercado = respostas.capacitacao_mercado || null;
+            impactoCapacitacao = respostas.impacto_capacitacao ? parseInt(respostas.impacto_capacitacao) : null;
+            instrumentosProducao = respostas.instrumentos_producao ? 
+                (Array.isArray(respostas.instrumentos_producao) ? JSON.stringify(respostas.instrumentos_producao) : respostas.instrumentos_producao) : null;
+            exemploInstrumentosProducao = respostas.exemplo_instrumentos_producao || null;
+            freqApoioMercadosInstitucionais = respostas.freq_apoio_mercados_institucionais || null;
+            conhecimentoOfertaDemanda = respostas.conhecimento_oferta_demanda || null;
+            comentarioD = respostas.comentario_eixo_d || null;
             
             // Extrair novos campos do Eixo E
             instrumentosAcompanhamento = respostas.instrumentos_acompanhamento ? 
@@ -167,6 +194,25 @@ exports.handler = async (event, context) => {
             instrumentosFormais = formulario.instrumentos_formais || null;
             exemploInstrumentoFormal = formulario.exemplo_instrumento_formal || null;
             comentarioEixoB = formulario.comentario_eixo_b || null;
+            
+            // Extrair campos do Eixo C (formato flat)
+            parceriasAtivas = formulario.parcerias_ativas ? 
+                (Array.isArray(formulario.parcerias_ativas) ? JSON.stringify(formulario.parcerias_ativas) : formulario.parcerias_ativas) : null;
+            parceriasAtivasOutro = formulario.parcerias_ativas_outro || null;
+            participaForuns = formulario.participa_foruns || null;
+            influenciaEmater = formulario.influencia_emater ? parseInt(formulario.influencia_emater) : null;
+            comentarioC = formulario.comentario_eixo_c || null;
+            
+            // Extrair campos do Eixo D (formato flat)
+            freqDemandaMercado = formulario.freq_demanda_mercado || null;
+            capacitacaoMercado = formulario.capacitacao_mercado || null;
+            impactoCapacitacao = formulario.impacto_capacitacao ? parseInt(formulario.impacto_capacitacao) : null;
+            instrumentosProducao = formulario.instrumentos_producao ? 
+                (Array.isArray(formulario.instrumentos_producao) ? JSON.stringify(formulario.instrumentos_producao) : formulario.instrumentos_producao) : null;
+            exemploInstrumentosProducao = formulario.exemplo_instrumentos_producao || null;
+            freqApoioMercadosInstitucionais = formulario.freq_apoio_mercados_institucionais || null;
+            conhecimentoOfertaDemanda = formulario.conhecimento_oferta_demanda || null;
+            comentarioD = formulario.comentario_eixo_d || null;
             
             // Extrair novos campos do Eixo E (formato flat)
             instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? 
@@ -223,6 +269,19 @@ exports.handler = async (event, context) => {
                 .input('instrumentos_formais', sql.NVarChar(100), instrumentosFormais)
                 .input('exemplo_instrumento_formal', sql.NVarChar(sql.MAX), exemploInstrumentoFormal)
                 .input('comentario_eixo_b', sql.NVarChar(sql.MAX), comentarioEixoB)
+                .input('parcerias_ativas', sql.NVarChar(sql.MAX), parceriasAtivas)
+                .input('parcerias_ativas_outro', sql.NVarChar(500), parceriasAtivasOutro)
+                .input('participa_foruns', sql.NVarChar(100), participaForuns)
+                .input('influencia_emater', sql.Int, influenciaEmater)
+                .input('comentario_eixo_c', sql.NVarChar(sql.MAX), comentarioC)
+                .input('freq_demanda_mercado', sql.NVarChar(50), freqDemandaMercado)
+                .input('capacitacao_mercado', sql.NVarChar(100), capacitacaoMercado)
+                .input('impacto_capacitacao', sql.Int, impactoCapacitacao)
+                .input('instrumentos_producao', sql.NVarChar(sql.MAX), instrumentosProducao)
+                .input('exemplo_instrumentos_producao', sql.NVarChar(sql.MAX), exemploInstrumentosProducao)
+                .input('freq_apoio_mercados_institucionais', sql.NVarChar(50), freqApoioMercadosInstitucionais)
+                .input('conhecimento_oferta_demanda', sql.NVarChar(100), conhecimentoOfertaDemanda)
+                .input('comentario_eixo_d', sql.NVarChar(sql.MAX), comentarioD)
                 .input('instrumentos_acompanhamento', sql.NVarChar(sql.MAX), instrumentosAcompanhamento)
                 .input('instrumentos_acompanhamento_outro', sql.NVarChar(500), instrumentosAcompanhamentoOutro)
                 .input('freq_uso_indicadores', sql.NVarChar(50), freqUsoIndicadores)
@@ -264,6 +323,19 @@ exports.handler = async (event, context) => {
                         instrumentos_formais = @instrumentos_formais,
                         exemplo_instrumento_formal = @exemplo_instrumento_formal,
                         comentario_eixo_b = @comentario_eixo_b,
+                        parcerias_ativas = @parcerias_ativas,
+                        parcerias_ativas_outro = @parcerias_ativas_outro,
+                        participa_foruns = @participa_foruns,
+                        influencia_emater = @influencia_emater,
+                        comentario_eixo_c = @comentario_eixo_c,
+                        freq_demanda_mercado = @freq_demanda_mercado,
+                        capacitacao_mercado = @capacitacao_mercado,
+                        impacto_capacitacao = @impacto_capacitacao,
+                        instrumentos_producao = @instrumentos_producao,
+                        exemplo_instrumentos_producao = @exemplo_instrumentos_producao,
+                        freq_apoio_mercados_institucionais = @freq_apoio_mercados_institucionais,
+                        conhecimento_oferta_demanda = @conhecimento_oferta_demanda,
+                        comentario_eixo_d = @comentario_eixo_d,
                         instrumentos_acompanhamento = @instrumentos_acompanhamento,
                         instrumentos_acompanhamento_outro = @instrumentos_acompanhamento_outro,
                         freq_uso_indicadores = @freq_uso_indicadores,
@@ -312,6 +384,19 @@ exports.handler = async (event, context) => {
                 .input('instrumentos_formais', sql.NVarChar(100), instrumentosFormais)
                 .input('exemplo_instrumento_formal', sql.NVarChar(sql.MAX), exemploInstrumentoFormal)
                 .input('comentario_eixo_b', sql.NVarChar(sql.MAX), comentarioEixoB)
+                .input('parcerias_ativas', sql.NVarChar(sql.MAX), parceriasAtivas)
+                .input('parcerias_ativas_outro', sql.NVarChar(500), parceriasAtivasOutro)
+                .input('participa_foruns', sql.NVarChar(100), participaForuns)
+                .input('influencia_emater', sql.Int, influenciaEmater)
+                .input('comentario_eixo_c', sql.NVarChar(sql.MAX), comentarioC)
+                .input('freq_demanda_mercado', sql.NVarChar(50), freqDemandaMercado)
+                .input('capacitacao_mercado', sql.NVarChar(100), capacitacaoMercado)
+                .input('impacto_capacitacao', sql.Int, impactoCapacitacao)
+                .input('instrumentos_producao', sql.NVarChar(sql.MAX), instrumentosProducao)
+                .input('exemplo_instrumentos_producao', sql.NVarChar(sql.MAX), exemploInstrumentosProducao)
+                .input('freq_apoio_mercados_institucionais', sql.NVarChar(50), freqApoioMercadosInstitucionais)
+                .input('conhecimento_oferta_demanda', sql.NVarChar(100), conhecimentoOfertaDemanda)
+                .input('comentario_eixo_d', sql.NVarChar(sql.MAX), comentarioD)
                 .input('instrumentos_acompanhamento', sql.NVarChar(sql.MAX), instrumentosAcompanhamento)
                 .input('instrumentos_acompanhamento_outro', sql.NVarChar(500), instrumentosAcompanhamentoOutro)
                 .input('freq_uso_indicadores', sql.NVarChar(50), freqUsoIndicadores)
@@ -334,6 +419,12 @@ exports.handler = async (event, context) => {
                         priorizacao_atendimentos, priorizacao_atendimentos_outro,
                         nivel_equidade, instrumentos_formais,
                         exemplo_instrumento_formal, comentario_eixo_b,
+                        parcerias_ativas, parcerias_ativas_outro, participa_foruns,
+                        influencia_emater, comentario_eixo_c,
+                        freq_demanda_mercado, capacitacao_mercado, impacto_capacitacao,
+                        instrumentos_producao, exemplo_instrumentos_producao,
+                        freq_apoio_mercados_institucionais, conhecimento_oferta_demanda,
+                        comentario_eixo_d,
                         instrumentos_acompanhamento, instrumentos_acompanhamento_outro,
                         freq_uso_indicadores, principais_indicadores,
                         avaliacao_ajuda_indicadores, comentario_eixo_e, comentario_final
@@ -351,6 +442,12 @@ exports.handler = async (event, context) => {
                         @priorizacao_atendimentos, @priorizacao_atendimentos_outro,
                         @nivel_equidade, @instrumentos_formais,
                         @exemplo_instrumento_formal, @comentario_eixo_b,
+                        @parcerias_ativas, @parcerias_ativas_outro, @participa_foruns,
+                        @influencia_emater, @comentario_eixo_c,
+                        @freq_demanda_mercado, @capacitacao_mercado, @impacto_capacitacao,
+                        @instrumentos_producao, @exemplo_instrumentos_producao,
+                        @freq_apoio_mercados_institucionais, @conhecimento_oferta_demanda,
+                        @comentario_eixo_d,
                         @instrumentos_acompanhamento, @instrumentos_acompanhamento_outro,
                         @freq_uso_indicadores, @principais_indicadores,
                         @avaliacao_ajuda_indicadores, @comentario_eixo_e, @comentario_final
