@@ -61,6 +61,10 @@ exports.handler = async (event, context) => {
         // Novos campos do Eixo B - Critérios de Priorização e Equidade
         let priorizacaoAtendimentos, priorizacaoAtendimentosOutro, nivelEquidade;
         let instrumentosFormais, exemploInstrumentoFormal, comentarioEixoB;
+        
+        // Novos campos do Eixo E - Indicadores e Avaliação
+        let instrumentosAcompanhamento, instrumentosAcompanhamentoOutro, freqUsoIndicadores;
+        let principaisIndicadores, avaliacaoAjudaIndicadores, comentarioEixoE, comentarioFinal;
 
 
         if (formulario.respostas) {
@@ -105,6 +109,15 @@ exports.handler = async (event, context) => {
             instrumentosFormais = respostas.instrumentos_formais || null;
             exemploInstrumentoFormal = respostas.exemplo_instrumento_formal || null;
             comentarioEixoB = respostas.comentario_eixo_b || null;
+            
+            // Extrair novos campos do Eixo E
+            instrumentosAcompanhamento = respostas.instrumentos_acompanhamento ? JSON.stringify(respostas.instrumentos_acompanhamento) : null;
+            instrumentosAcompanhamentoOutro = respostas.instrumentos_acompanhamento_outro || null;
+            freqUsoIndicadores = respostas.freq_uso_indicadores || null;
+            principaisIndicadores = respostas.principais_indicadores || null;
+            avaliacaoAjudaIndicadores = respostas.avaliacao_ajuda_indicadores ? parseInt(respostas.avaliacao_ajuda_indicadores) : null;
+            comentarioEixoE = respostas.comentario_eixo_e || null;
+            comentarioFinal = respostas.comentario_final || null;
         } else {
             // Formato flat (IndexedDB antigo)
             respostas = { ...formulario }; // Usar o objeto inteiro como respostas
@@ -147,6 +160,24 @@ exports.handler = async (event, context) => {
             instrumentosFormais = formulario.instrumentos_formais || null;
             exemploInstrumentoFormal = formulario.exemplo_instrumento_formal || null;
             comentarioEixoB = formulario.comentario_eixo_b || null;
+            
+            // Extrair novos campos do Eixo E (formato flat)
+            instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? JSON.stringify(formulario.instrumentos_acompanhamento) : null;
+            instrumentosAcompanhamentoOutro = formulario.instrumentos_acompanhamento_outro || null;
+            freqUsoIndicadores = formulario.freq_uso_indicadores || null;
+            principaisIndicadores = formulario.principais_indicadores || null;
+            avaliacaoAjudaIndicadores = formulario.avaliacao_ajuda_indicadores ? parseInt(formulario.avaliacao_ajuda_indicadores) : null;
+            comentarioEixoE = formulario.comentario_eixo_e || null;
+            comentarioFinal = formulario.comentario_final || null;
+        }
+            // Extrair novos campos do Eixo E (formato flat)
+            instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? JSON.stringify(formulario.instrumentos_acompanhamento) : null;
+            instrumentosAcompanhamentoOutro = formulario.instrumentos_acompanhamento_outro || null;
+            freqUsoIndicadores = formulario.freq_uso_indicadores || null;
+            principaisIndicadores = formulario.principais_indicadores || null;
+            avaliacaoAjudaIndicadores = formulario.avaliacao_ajuda_indicadores ? parseInt(formulario.avaliacao_ajuda_indicadores) : null;
+            comentarioEixoE = formulario.comentario_eixo_e || null;
+            comentarioFinal = formulario.comentario_final || null;
         }
 
         // Verificar se já existe
@@ -190,6 +221,13 @@ exports.handler = async (event, context) => {
                 .input('instrumentos_formais', sql.NVarChar(100), instrumentosFormais)
                 .input('exemplo_instrumento_formal', sql.NVarChar(sql.MAX), exemploInstrumentoFormal)
                 .input('comentario_eixo_b', sql.NVarChar(sql.MAX), comentarioEixoB)
+                .input('instrumentos_acompanhamento', sql.NVarChar(sql.MAX), instrumentosAcompanhamento)
+                .input('instrumentos_acompanhamento_outro', sql.NVarChar(500), instrumentosAcompanhamentoOutro)
+                .input('freq_uso_indicadores', sql.NVarChar(50), freqUsoIndicadores)
+                .input('principais_indicadores', sql.NVarChar(sql.MAX), principaisIndicadores)
+                .input('avaliacao_ajuda_indicadores', sql.Int, avaliacaoAjudaIndicadores)
+                .input('comentario_eixo_e', sql.NVarChar(sql.MAX), comentarioEixoE)
+                .input('comentario_final', sql.NVarChar(sql.MAX), comentarioFinal)
                 .query(`
                     UPDATE formulario_extensionista SET
                         municipio = @municipio,
@@ -224,6 +262,13 @@ exports.handler = async (event, context) => {
                         instrumentos_formais = @instrumentos_formais,
                         exemplo_instrumento_formal = @exemplo_instrumento_formal,
                         comentario_eixo_b = @comentario_eixo_b,
+                        instrumentos_acompanhamento = @instrumentos_acompanhamento,
+                        instrumentos_acompanhamento_outro = @instrumentos_acompanhamento_outro,
+                        freq_uso_indicadores = @freq_uso_indicadores,
+                        principais_indicadores = @principais_indicadores,
+                        avaliacao_ajuda_indicadores = @avaliacao_ajuda_indicadores,
+                        comentario_eixo_e = @comentario_eixo_e,
+                        comentario_final = @comentario_final,
                         updated_at = GETUTCDATE()
                     WHERE protocolo = @protocolo
                 `);
@@ -263,6 +308,13 @@ exports.handler = async (event, context) => {
                 .input('instrumentos_formais', sql.NVarChar(100), instrumentosFormais)
                 .input('exemplo_instrumento_formal', sql.NVarChar(sql.MAX), exemploInstrumentoFormal)
                 .input('comentario_eixo_b', sql.NVarChar(sql.MAX), comentarioEixoB)
+                .input('instrumentos_acompanhamento', sql.NVarChar(sql.MAX), instrumentosAcompanhamento)
+                .input('instrumentos_acompanhamento_outro', sql.NVarChar(500), instrumentosAcompanhamentoOutro)
+                .input('freq_uso_indicadores', sql.NVarChar(50), freqUsoIndicadores)
+                .input('principais_indicadores', sql.NVarChar(sql.MAX), principaisIndicadores)
+                .input('avaliacao_ajuda_indicadores', sql.Int, avaliacaoAjudaIndicadores)
+                .input('comentario_eixo_e', sql.NVarChar(sql.MAX), comentarioEixoE)
+                .input('comentario_final', sql.NVarChar(sql.MAX), comentarioFinal)
                 .query(`
                     INSERT INTO formulario_extensionista (
                         protocolo, municipio, unidade_emater, territorio,
@@ -277,7 +329,10 @@ exports.handler = async (event, context) => {
                         dificuldade_metas, comentario_eixo_a,
                         priorizacao_atendimentos, priorizacao_atendimentos_outro,
                         nivel_equidade, instrumentos_formais,
-                        exemplo_instrumento_formal, comentario_eixo_b
+                        exemplo_instrumento_formal, comentario_eixo_b,
+                        instrumentos_acompanhamento, instrumentos_acompanhamento_outro,
+                        freq_uso_indicadores, principais_indicadores,
+                        avaliacao_ajuda_indicadores, comentario_eixo_e, comentario_final
                     ) VALUES (
                         @protocolo, @municipio, @unidade_emater, @territorio,
                         @identificador_iniciais, @timestamp_inicio, @timestamp_fim,
@@ -291,7 +346,10 @@ exports.handler = async (event, context) => {
                         @dificuldade_metas, @comentario_eixo_a,
                         @priorizacao_atendimentos, @priorizacao_atendimentos_outro,
                         @nivel_equidade, @instrumentos_formais,
-                        @exemplo_instrumento_formal, @comentario_eixo_b
+                        @exemplo_instrumento_formal, @comentario_eixo_b,
+                        @instrumentos_acompanhamento, @instrumentos_acompanhamento_outro,
+                        @freq_uso_indicadores, @principais_indicadores,
+                        @avaliacao_ajuda_indicadores, @comentario_eixo_e, @comentario_final
                     )
                 `);
         }
