@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formulários Ematech - EMATER-RO</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+    
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #388e3c;
+            --accent-color: #4caf50;
+            --text-dark: #1b5e20;
+            --text-light: #ffffff;
+            --bg-light: #f1f8e9;
+            --bg-white: #ffffff;
+            --border-color: #c5e1a5;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --transition: 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, #2e7d32 0%, #388e3c 50%, #4caf50 100%);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: var(--text-light);
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .app-header p {
+            margin: 0.5rem 0 0;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 400;
+        }
+
+        /* Container principal */
+        .menu-container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .menu-intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .menu-intro h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin: 0 0 1rem;
+            font-weight: 600;
+        }
+
+        .menu-intro p {
+            font-size: 1.1rem;
+            color: #555;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Cards de seleção */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+            cursor: pointer;
+            border: 3px solid transparent;
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transform: scaleX(0);
+            transition: transform var(--transition);
+        }
+
+        .form-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-color);
+        }
+
+        .form-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0 0 1rem;
+            text-align: center;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            color: #666;
+            margin: 0 0 1.5rem;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .card-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem;
+        }
+
+        .card-features li {
+            padding: 0.5rem 0;
+            color: #555;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-features li::before {
+            content: '✓';
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .card-button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-align: center;
+        }
+
+        .form-card:hover .card-button {
+            background: var(--secondary-color);
+            transform: scale(1.02);
+        }
+
+        /* Botão admin */
+        .admin-link {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: var(--text-light);
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+
+        .admin-link:hover {
+            background: var(--secondary-color);
+            box-shadow: var(--shadow-hover);
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        .app-footer {
+            background: var(--primary-color);
+            color: var(--text-light);
+            text-align: center;
+            padding: 1.5rem 2rem;
+            margin-top: auto;
+        }
+
+        .app-footer p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .app-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .app-header p {
+                font-size: 1rem;
+            }
+
+            .menu-container {
+                padding: 2rem 1rem;
+            }
+
+            .menu-intro h2 {
+                font-size: 1.5rem;
+            }
+
+            .menu-intro p {
+                font-size: 1rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .form-card {
+                padding: 2rem;
+            }
+
+            .card-icon {
+                font-size: 3rem;
+            }
+
+            .card-title {
+                font-size: 1.4rem;
+            }
+
+            .admin-link {
+                bottom: 1rem;
+                right: 1rem;
+                padding: 0.8rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                padding: 2rem 1rem;
+            }
+
+            .app-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .menu-container {
+                padding: 1.5rem 1rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .card-button {
+                padding: 0.9rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <h1>📋 Sistema Ematech</h1>
+        <p>Escolha o formulário que deseja preencher</p>
+    </header>
+
+    <!-- Menu Principal -->
+    <main class="menu-container">
+        <div class="menu-intro">
+            <h2>Bem-vindo ao Sistema de Coleta de Dados</h2>
+            <p>Selecione abaixo o tipo de formulário correspondente ao seu perfil profissional</p>
+        </div>
+
+        <div class="cards-grid">
+            <!-- Card Extensionistas -->
+            <a href="extensionistas.html" class="form-card">
+                <span class="card-icon">🌾</span>
+                <h3 class="card-title">Extensionistas</h3>
+                <p class="card-description">
+                    Formulário para técnicos de campo e agentes de extensão rural
+                </p>
+                <ul class="card-features">
+                    <li>Coleta de dados territoriais</li>
+                    <li>Registro de atividades práticas</li>
+                    <li>Avaliação de escritórios locais</li>
+                    <li>Sincronização automática</li>
+                </ul>
+                <div class="card-button">
+                    Acessar Formulário →
+                </div>
+            </a>
+
+            <!-- Card Gerentes -->
+            <a href="gerentes.html" class="form-card">
+                <span class="card-icon">👔</span>
+                <h3 class="card-title">Gerentes Locais</h3>
+                <p class="card-description">
+                    Formulário para gestores e coordenadores de escritórios
+                </p>
+                <ul class="card-features">
+                    <li>Gestão administrativa</li>
+                    <li>Indicadores de performance</li>
+                    <li>Planejamento estratégico</li>
+                    <li>Relatórios gerenciais</li>
+                </ul>
+                <div class="card-button">
+                    Acessar Formulário →
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <!-- Botão Admin -->
+    <a href="admin.html" class="admin-link" title="Painel Administrativo">
+        <span>⚙️</span>
+        <span>Admin</span>
+    </a>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>© 2024 EMATER-RO | Sistema Ematech | Todos os direitos reservados</p>
+    </footer>
+</body>
+</html>
