@@ -863,7 +863,16 @@
         // Verificar e executar sincronização automática ao carregar
         async function verificarSincronizacaoAutomatica() {
             try {
-                // Verificar se há pendentes
+                // PASSO 1: Baixar dados do servidor para todos verem os mesmos dados
+                console.log('🔄 [AUTO-SYNC] Passo 1: Baixando dados do Azure...');
+                const resultadoDownload = await sincronizarDadosDoServidor();
+                
+                if (resultadoDownload.success && (resultadoDownload.novos > 0 || resultadoDownload.atualizados > 0)) {
+                    console.log(`✅ [AUTO-SYNC] ${resultadoDownload.novos} novos, ${resultadoDownload.atualizados} atualizados`);
+                }
+                
+                // PASSO 2: Enviar pendentes locais para o servidor
+                console.log('🔄 [AUTO-SYNC] Passo 2: Verificando pendentes locais...');
                 const pendentes = await buscarNaoSincronizados();
                 
                 if (pendentes.length > 0) {
@@ -991,6 +1000,120 @@
         }
         
         // Carregar dados do IndexedDB local
+        // ==========================================
+        // SINCRONIZAÇÃO BIDIRECIONAL COM AZURE
+        // ==========================================
+        
+        // Baixar TODOS os dados do Azure e mesclar com locais
+        async function sincronizarDadosDoServidor() {
+            try {
+                console.log('🔄 [DOWNLOAD] Baixando todos os dados do Azure SQL...');
+                mostrarIndicadorSync('Baixando dados do servidor...', 'loading');
+                
+                // Verificar conexão
+                if (!navigator.onLine) {
+                    console.log('📴 [DOWNLOAD] Offline - usando dados locais');
+                    esconderIndicadorSync(0);
+                    return { success: false, error: 'Offline' };
+                }
+                
+                // Buscar do Azure
+                const resultado = await buscarFormulariosDoAzure({ limite: 10000 });
+                
+                if (!resultado.success || !resultado.formularios) {
+                    console.error('❌ [DOWNLOAD] Falha ao buscar do Azure:', resultado.error);
+                    mostrarIndicadorSync('⚠️ Erro ao baixar dados do servidor', 'error');
+                    esconderIndicadorSync(4000);
+                    return resultado;
+                }
+                
+                const formulariosServidor = resultado.formularios;
+                console.log(`📥 [DOWNLOAD] ${formulariosServidor.length} formulários encontrados no servidor`);
+                
+                if (formulariosServidor.length === 0) {
+                    console.log('ℹ️ [DOWNLOAD] Nenhum formulário no servidor');
+                    esconderIndicadorSync(0);
+                    return { success: true, novos: 0, atualizados: 0 };
+                }
+                
+                // Buscar formulários locais
+                const formulariosLocais = await buscarTodosFormularios();
+                const protocolosLocais = new Set(formulariosLocais.map(f => f.protocolo));
+                
+                let novos = 0;
+                let atualizados = 0;
+                
+                // Abrir transação para inserir/atualizar
+                const db = await initDB();
+                const transaction = db.transaction(['formularios'], 'readwrite');
+                const store = transaction.objectStore('formularios');
+                
+                // Processar cada formulário do servidor
+                for (const formServidor of formulariosServidor) {
+                    try {
+                        // Marcar como sincronizado (veio do servidor)
+                        formServidor.sincronizado = true;
+                        formServidor.data_sincronizacao = new Date().toISOString();
+                        
+                        if (protocolosLocais.has(formServidor.protocolo)) {
+                            // Já existe localmente - atualizar
+                            const index = store.index('protocolo');
+                            const getRequest = index.get(formServidor.protocolo);
+                            
+                            await new Promise((resolve, reject) => {
+                                getRequest.onsuccess = () => {
+                                    const localForm = getRequest.result;
+                                    if (localForm) {
+                                        // Manter o ID local, atualizar resto
+                                        formServidor.id = localForm.id;
+                                        const updateRequest = store.put(formServidor);
+                                        updateRequest.onsuccess = () => {
+                                            atualizados++;
+                                            resolve();
+                                        };
+                                        updateRequest.onerror = reject;
+                                    } else {
+                                        resolve();
+                                    }
+                                };
+                                getRequest.onerror = reject;
+                            });
+                        } else {
+                            // Não existe localmente - inserir novo
+                            delete formServidor.id; // Deixar auto-increment criar novo ID
+                            await new Promise((resolve, reject) => {
+                                const addRequest = store.add(formServidor);
+                                addRequest.onsuccess = () => {
+                                    novos++;
+                                    resolve();
+                                };
+                                addRequest.onerror = reject;
+                            });
+                        }
+                    } catch (error) {
+                        console.error(`⚠️ [DOWNLOAD] Erro ao processar ${formServidor.protocolo}:`, error);
+                    }
+                }
+                
+                console.log(`✅ [DOWNLOAD] Concluído: ${novos} novos, ${atualizados} atualizados`);
+                
+                if (novos > 0 || atualizados > 0) {
+                    mostrarIndicadorSync(`✅ ${novos} novos, ${atualizados} atualizados do servidor!`, 'success');
+                    esconderIndicadorSync(5000);
+                } else {
+                    mostrarIndicadorSync('✅ Dados já atualizados', 'success');
+                    esconderIndicadorSync(3000);
+                }
+                
+                return { success: true, novos, atualizados, total: formulariosServidor.length };
+            } catch (error) {
+                console.error('❌ [DOWNLOAD] Erro ao sincronizar do servidor:', error);
+                mostrarIndicadorSync('❌ Erro ao baixar dados', 'error');
+                esconderIndicadorSync(4000);
+                return { success: false, error: error.message };
+            }
+        }
+        
         // ==========================================
         // HELPER PARA OBTER RESPOSTAS
         // ==========================================

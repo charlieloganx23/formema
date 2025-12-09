@@ -1638,6 +1638,45 @@
             resumo: {}
         };
 
+        // Sincronizar dados do Azure SQL silenciosamente
+        async function sincronizarDadosDoServidorSilencioso() {
+            try {
+                if (!navigator.onLine) return;
+                
+                console.log('🔄 [MAPA] Sincronizando com servidor...');
+                const resultado = await buscarFormulariosDoAzure({ limite: 10000 });
+                
+                if (resultado.success && resultado.formularios) {
+                    const formulariosServidor = resultado.formularios;
+                    const formulariosLocais = await buscarTodosFormularios();
+                    const protocolosLocais = new Set(formulariosLocais.map(f => f.protocolo));
+                    
+                    const db = await initDB();
+                    const transaction = db.transaction(['formularios'], 'readwrite');
+                    const store = transaction.objectStore('formularios');
+                    
+                    let novos = 0;
+                    for (const formServidor of formulariosServidor) {
+                        if (!protocolosLocais.has(formServidor.protocolo)) {
+                            formServidor.sincronizado = true;
+                            delete formServidor.id;
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    const req = store.add(formServidor);
+                                    req.onsuccess = () => { novos++; resolve(); };
+                                    req.onerror = reject;
+                                });
+                            } catch (e) {}
+                        }
+                    }
+                    
+                    if (novos > 0) console.log(`✅ [MAPA] ${novos} novos formulários`);
+                }
+            } catch (error) {
+                console.log('⚠️ [MAPA] Erro ao sincronizar:', error.message);
+            }
+        }
+
         // Helper para obter respostas parseadas (compatibilidade de estrutura)
         function getRespostas(formulario) {
             if (!formulario) return null;
@@ -1662,6 +1701,9 @@
         // Função para buscar estatísticas de cobertura do IndexedDB
         async function buscarEstatisticasCobertura() {
             try {
+                // Sincronizar dados do servidor primeiro (silencioso)
+                await sincronizarDadosDoServidorSilencioso();
+                
                 console.log('🔄 Buscando formulários do IndexedDB...');
                 
                 // Buscar todos os formulários do IndexedDB

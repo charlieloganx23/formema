@@ -667,8 +667,58 @@
         
         // Inicializar
         document.addEventListener('DOMContentLoaded', async () => {
+            // Sincronizar dados do servidor primeiro
+            await sincronizarDadosDoServidorSilencioso();
             await carregarDados();
         });
+        
+        // Sincronizar dados do Azure SQL silenciosamente (sem indicadores visuais)
+        async function sincronizarDadosDoServidorSilencioso() {
+            try {
+                if (!navigator.onLine) {
+                    console.log('📴 Offline - usando dados locais');
+                    return;
+                }
+                
+                console.log('🔄 Baixando dados do servidor...');
+                const resultado = await buscarFormulariosDoAzure({ limite: 10000 });
+                
+                if (resultado.success && resultado.formularios) {
+                    const formulariosServidor = resultado.formularios;
+                    console.log(`📥 ${formulariosServidor.length} formulários do servidor`);
+                    
+                    const formulariosLocais = await buscarTodosFormularios();
+                    const protocolosLocais = new Set(formulariosLocais.map(f => f.protocolo));
+                    
+                    const db = await initDB();
+                    const transaction = db.transaction(['formularios'], 'readwrite');
+                    const store = transaction.objectStore('formularios');
+                    
+                    let novos = 0;
+                    for (const formServidor of formulariosServidor) {
+                        if (!protocolosLocais.has(formServidor.protocolo)) {
+                            formServidor.sincronizado = true;
+                            delete formServidor.id;
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    const req = store.add(formServidor);
+                                    req.onsuccess = () => { novos++; resolve(); };
+                                    req.onerror = reject;
+                                });
+                            } catch (e) {
+                                console.warn('Erro ao adicionar:', formServidor.protocolo);
+                            }
+                        }
+                    }
+                    
+                    if (novos > 0) {
+                        console.log(`✅ ${novos} novos formulários baixados do servidor`);
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Erro ao sincronizar (modo silencioso):', error.message);
+            }
+        }
         
         // Carregar dados do IndexedDB
         async function carregarDados() {
