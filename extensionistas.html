@@ -1052,555 +1052,292 @@
                 <!-- ETAPA 2: EIXO A -->
                 <section class="form-section" id="section-2" data-step="2">
                     <div class="section-header">
-                        <h3>Eixo A – Visão dos Resultados e Desafios</h3>
-                        <p class="text-muted">Tempo estimado: 8 minutos</p>
+                        <h3>Eixo A – Métodos de ATER e Resultados Percebidos</h3>
+                        <p class="text-muted">Tempo estimado: 5 minutos</p>
                     </div>
 
-                    <!-- QUESTÃO 1: Resultados mais relevantes -->
+                    <!-- QUESTÃO 1: Métodos utilizados com maior frequência -->
                     <fieldset class="question-group">
-                        <legend>1) Indique os resultados que sua unidade considera mais relevantes (2023–2025): <span class="hint">(marque até 5)</span></legend>
-                        <div class="checkbox-group" data-max-check="5">
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="aumento_produtividade"> <span>Aumento de produtividade dos beneficiários</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="aumento_comercializacao"> <span>Aumento de comercialização/novos mercados</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="inclusao_programas"> <span>Inclusão em programas públicos (PAA/PNAE/PRONAF)</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="implementacao_tecnologias"> <span>Implementação de tecnologias/boas práticas</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="fortalecimento_organizacoes"> <span>Fortalecimento de organizações coletivas (cooperativas)</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="capacitacao_produtores"> <span>Capacitação/treinamento de produtores</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="resultadosRelevantes" value="reducao_perdas"> <span>Redução de perdas pós-colheita</span></label>
+                        <legend>1) Quais métodos você utiliza com maior frequência? <span class="hint">(marque até 3)</span></legend>
+                        <div class="checkbox-group" data-max-check="3">
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="visitas_tecnicas"> <span>Visitas técnicas individuais</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="dias_campo"> <span>Dias de campo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="demonstracao_metodo"> <span>Demonstração de Método</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="capacitacoes_coletivas"> <span>Capacitações coletivas</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="whatsapp_digital"> <span>Grupos de WhatsApp/comunicação digital</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="planejamento_produtivo"> <span>Planejamento produtivo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosFrequentes" value="apoio_programas"> <span>Apoio para acessar programas (DAP/CAF/Pronaf etc.)</span></label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="resultadosRelevantes" value="outro">
-                                <span>Outro: <input type="text" name="resultadosRelevantesOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                                <input type="checkbox" name="metodosFrequentes" value="outro">
+                                <span>Outro: <input type="text" name="metodosFrequentesOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
                             </label>
                         </div>
-                        <p class="text-muted">Máximo de 5 opções</p>
+                        <p class="text-muted">Máximo de 3 opções</p>
                     </fieldset>
 
-                    <!-- SUBQUESTÃO 1: Nível de impacto de cada resultado -->
-                    <div class="question-group">
-                        <label class="question-label">
-                            Para cada item marcado acima, indique o nível de impacto percebido:
-                        </label>
-                        <p class="question-description">1 = muito baixa, 5 = muito alta</p>
-
-                        <!-- Aumento de produtividade -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Aumento de produtividade dos beneficiários</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_produtividade" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_produtividade" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_produtividade" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_produtividade" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_produtividade" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Aumento de comercialização -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Aumento de comercialização/novos mercados</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_comercializacao" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_comercializacao" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_comercializacao" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_comercializacao" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_aumento_comercializacao" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Inclusão em programas -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Inclusão em programas públicos (PAA/PNAE/PRONAF)</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_inclusao_programas" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_inclusao_programas" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_inclusao_programas" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_inclusao_programas" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_inclusao_programas" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Implementação de tecnologias -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Implementação de tecnologias/boas práticas</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_implementacao_tecnologias" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_implementacao_tecnologias" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_implementacao_tecnologias" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_implementacao_tecnologias" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_implementacao_tecnologias" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Fortalecimento de organizações -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Fortalecimento de organizações coletivas (cooperativas)</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_fortalecimento_organizacoes" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_fortalecimento_organizacoes" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_fortalecimento_organizacoes" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_fortalecimento_organizacoes" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_fortalecimento_organizacoes" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Capacitação de produtores -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Capacitação/treinamento de produtores</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_capacitacao_produtores" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_capacitacao_produtores" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_capacitacao_produtores" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_capacitacao_produtores" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_capacitacao_produtores" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Redução de perdas -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">Redução de perdas pós-colheita</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_reducao_perdas" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_reducao_perdas" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Baixa</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_reducao_perdas" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Média</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_reducao_perdas" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alta</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="impacto_reducao_perdas" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alta</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- QUESTÃO 2: Desafios -->
-                    <div class="question-group">
-                        <label class="question-label">
-                            2) Avalie o impacto dos seguintes desafios na sua unidade:
-                        </label>
-                        <p class="question-description">1 = muito pouco, 5 = muito alto</p>
-
-                        <!-- Fatores externos -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">a) Fatores externos ou não controláveis</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_fatores_externos" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_fatores_externos" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_fatores_externos" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_fatores_externos" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_fatores_externos" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Falta de pessoal -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">b) Falta de pessoal técnico</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_pessoal" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_pessoal" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_pessoal" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_pessoal" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_pessoal" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Falta de veículos -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">c) Falta de veículos/recursos logísticos</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_veiculos" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_veiculos" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_veiculos" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_veiculos" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_veiculos" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Falta de orçamento -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">d) Falta de orçamento para insumos/atividades</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_orcamento" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_orcamento" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_orcamento" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_orcamento" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_orcamento" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Baixa organização coletiva -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">e) Baixa organização coletiva dos produtores</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_baixa_organizacao" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_baixa_organizacao" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_baixa_organizacao" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_baixa_organizacao" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_baixa_organizacao" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Falta de dados/Sigater -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">f) Falta de dados ou sistema atualizado (Sigater)</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_dados" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_dados" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_dados" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_dados" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_falta_dados" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Resistência dos produtores -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">g) Resistência dos produtores a novas técnicas</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_resistencia_produtores" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_resistencia_produtores" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_resistencia_produtores" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_resistencia_produtores" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_resistencia_produtores" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Burocracia interna -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <p style="font-weight: 500; margin-bottom: 0.5rem;">h) Burocracia interna</p>
-                            <div class="likert-scale">
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_burocracia" value="1">
-                                    <span class="likert-number">1</span>
-                                    <span class="likert-text">Muito pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_burocracia" value="2">
-                                    <span class="likert-number">2</span>
-                                    <span class="likert-text">Pouco</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_burocracia" value="3">
-                                    <span class="likert-number">3</span>
-                                    <span class="likert-text">Médio</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_burocracia" value="4">
-                                    <span class="likert-number">4</span>
-                                    <span class="likert-text">Alto</span>
-                                </label>
-                                <label class="likert-label">
-                                    <input type="radio" name="desafio_burocracia" value="5">
-                                    <span class="likert-number">5</span>
-                                    <span class="likert-text">Muito alto</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- QUESTÃO 3: Estratégias utilizadas -->
+                    <!-- QUESTÃO 2: Métodos que geram melhores resultados -->
                     <fieldset class="question-group">
-                        <legend>3) Quais estratégias sua unidade tem utilizado: <span class="hint">(marcar todas que se aplicam)</span></legend>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label"><input type="checkbox" name="estrategias" value="realocacao_tecnicos"> <span>Realocação de técnicos entre municípios</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="estrategias" value="parcerias"> <span>Parcerias com prefeituras/ONGs</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="estrategias" value="oficinas_capacitacoes"> <span>Oficinas e capacitações locais</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="estrategias" value="ferramentas_digitais"> <span>Uso de ferramentas digitais (WhatsApp, apps)</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="estrategias" value="recursos_convenios"> <span>Mobilização de recursos via convênios</span></label>
+                        <legend>2) Quais métodos geram melhores resultados? <span class="hint">(marque até 3)</span></legend>
+                        <div class="checkbox-group" data-max-check="3">
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="visitas_tecnicas"> <span>Visitas técnicas individuais</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="dias_campo"> <span>Dias de campo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="demonstracao_metodo"> <span>Demonstração de Método</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="capacitacoes_coletivas"> <span>Capacitações coletivas</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="whatsapp_digital"> <span>Grupos de WhatsApp/comunicação digital</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="planejamento_produtivo"> <span>Planejamento produtivo</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="metodosMelhoresResultados" value="apoio_programas"> <span>Apoio para acessar programas (DAP/CAF/Pronaf etc.)</span></label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="estrategias" value="outro">
-                                <span>Outro: <input type="text" name="estrategiasOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                                <input type="checkbox" name="metodosMelhoresResultados" value="outro">
+                                <span>Outro: <input type="text" name="metodosMelhoresResultadosOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
                             </label>
                         </div>
+                        <p class="text-muted">Máximo de 3 opções</p>
                     </fieldset>
 
-                    <!-- SUBQUESTÃO 3: Estratégia mais efetiva -->
+                    <!-- QUESTÃO 3: Principais dificuldades -->
                     <div class="question-group">
-                        <label for="estrategiaMaisEfetiva" class="question-label">
-                            Qual estratégia considera mais efetiva?
+                        <label class="question-label">
+                            3) Quais as principais dificuldades enfrentadas no campo para alcançar resultados efetivos?
                         </label>
-                        <p class="question-description">Escolha uma das opções marcadas anteriormente</p>
-                        <div class="radio-group">
-                            <label class="radio-label"><input type="radio" name="estrategiaMaisEfetiva" value="realocacao_tecnicos"> <span>Realocação de técnicos entre municípios</span></label>
-                            <label class="radio-label"><input type="radio" name="estrategiaMaisEfetiva" value="parcerias"> <span>Parcerias com prefeituras/ONGs</span></label>
-                            <label class="radio-label"><input type="radio" name="estrategiaMaisEfetiva" value="oficinas_capacitacoes"> <span>Oficinas e capacitações locais</span></label>
-                            <label class="radio-label"><input type="radio" name="estrategiaMaisEfetiva" value="ferramentas_digitais"> <span>Uso de ferramentas digitais (WhatsApp, apps)</span></label>
-                            <label class="radio-label"><input type="radio" name="estrategiaMaisEfetiva" value="recursos_convenios"> <span>Mobilização de recursos via convênios</span></label>
-                            <label class="radio-label"><input type="radio" name="estrategiaMaisEfetiva" value="outro"> <span>Outro</span></label>
+                        <p class="question-description">1 = nada relevante, 5 = muito relevante</p>
+
+                        <!-- Falta de tempo do extensionista -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">a) Falta de tempo do extensionista</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_falta_tempo" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_falta_tempo" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_falta_tempo" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_falta_tempo" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_falta_tempo" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
                         </div>
+
+                        <!-- Número insuficiente de técnicos -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">b) Número insuficiente de técnicos</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_num_tecnicos" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_num_tecnicos" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_num_tecnicos" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_num_tecnicos" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_num_tecnicos" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Distância/locomoção -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">c) Distância/locomoção</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_distancia" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_distancia" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_distancia" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_distancia" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_distancia" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Baixa adesão dos produtores -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">d) Baixa adesão dos produtores</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_baixa_adesao" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_baixa_adesao" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_baixa_adesao" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_baixa_adesao" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_baixa_adesao" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Limitações de recursos/insumos -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">e) Limitações de recursos/insumos</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_recursos" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_recursos" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_recursos" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_recursos" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_recursos" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Demandas administrativas internas -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">f) Demandas administrativas internas</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_demandas_admin" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_demandas_admin" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_demandas_admin" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_demandas_admin" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_demandas_admin" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Estrutura de metas e atividades definidas -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <p style="font-weight: 500; margin-bottom: 0.5rem;">g) Estrutura de metas e atividades definidas</p>
+                            <div class="likert-scale">
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_metas" value="1">
+                                    <span class="likert-number">1</span>
+                                    <span class="likert-text">Nada relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_metas" value="2">
+                                    <span class="likert-number">2</span>
+                                    <span class="likert-text">Pouco relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_metas" value="3">
+                                    <span class="likert-number">3</span>
+                                    <span class="likert-text">Relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_metas" value="4">
+                                    <span class="likert-number">4</span>
+                                    <span class="likert-text">Muito relevante</span>
+                                </label>
+                                <label class="likert-label">
+                                    <input type="radio" name="dificuldade_metas" value="5">
+                                    <span class="likert-number">5</span>
+                                    <span class="likert-text">Extremamente relevante</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campo de comentário aberto -->
+                    <div class="question-group">
+                        <label for="comentario_eixo_a" class="question-label">
+                            Gostaria de registrar algum comentário ou descrições sobre sua experiência relacionado a esse bloco?
+                        </label>
+                        <textarea 
+                            id="comentario_eixo_a" 
+                            name="comentario_eixo_a" 
+                            class="input-field" 
+                            rows="4" 
+                            placeholder="Digite aqui seus comentários (opcional)"
+                            style="width: 100%; resize: vertical; font-family: inherit; padding: 0.75rem;"></textarea>
                     </div>
 
                     <div class="navigation-buttons">

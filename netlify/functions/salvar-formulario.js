@@ -52,6 +52,11 @@ exports.handler = async (event, context) => {
         
         let respostas, fotos, geolocalizacao, municipio, unidade_emater, territorio, identificador_iniciais;
         let latitude, longitude, precisao, geo_erro, timestampInicio, timestampFim, duracaoMinutos, status;
+        
+        // Novos campos do Eixo A - Métodos de ATER
+        let metodosFrequentes, metodosFrequentesOutro, metodosMelhoresResultados, metodosMelhoresResultadosOutro;
+        let dificuldadeFaltaTempo, dificuldadeNumTecnicos, dificuldadeDistancia, dificuldadeBaixaAdesao;
+        let dificuldadeRecursos, dificuldadeDemandasAdmin, dificuldadeMetas, comentarioEixoA;
 
         if (formulario.respostas) {
             // Formato estruturado
@@ -73,6 +78,20 @@ exports.handler = async (event, context) => {
             timestampInicio = formulario.timestampInicio || formulario.timestamp_inicio;
             timestampFim = formulario.timestampFim || formulario.timestamp_fim;
             duracaoMinutos = formulario.duracaoMinutos || formulario.duracao_minutos || 0;
+            
+            // Extrair novos campos do Eixo A
+            metodosFrequentes = respostas.metodosFrequentes ? JSON.stringify(respostas.metodosFrequentes) : null;
+            metodosFrequentesOutro = respostas.metodosFrequentesOutro || null;
+            metodosMelhoresResultados = respostas.metodosMelhoresResultados ? JSON.stringify(respostas.metodosMelhoresResultados) : null;
+            metodosMelhoresResultadosOutro = respostas.metodosMelhoresResultadosOutro || null;
+            dificuldadeFaltaTempo = respostas.dificuldade_falta_tempo ? parseInt(respostas.dificuldade_falta_tempo) : null;
+            dificuldadeNumTecnicos = respostas.dificuldade_num_tecnicos ? parseInt(respostas.dificuldade_num_tecnicos) : null;
+            dificuldadeDistancia = respostas.dificuldade_distancia ? parseInt(respostas.dificuldade_distancia) : null;
+            dificuldadeBaixaAdesao = respostas.dificuldade_baixa_adesao ? parseInt(respostas.dificuldade_baixa_adesao) : null;
+            dificuldadeRecursos = respostas.dificuldade_recursos ? parseInt(respostas.dificuldade_recursos) : null;
+            dificuldadeDemandasAdmin = respostas.dificuldade_demandas_admin ? parseInt(respostas.dificuldade_demandas_admin) : null;
+            dificuldadeMetas = respostas.dificuldade_metas ? parseInt(respostas.dificuldade_metas) : null;
+            comentarioEixoA = respostas.comentario_eixo_a || null;
         } else {
             // Formato flat (IndexedDB antigo)
             respostas = { ...formulario }; // Usar o objeto inteiro como respostas
@@ -93,6 +112,20 @@ exports.handler = async (event, context) => {
             timestampFim = formulario.timestamp_fim;
             duracaoMinutos = formulario.duracao_minutos || 0;
             status = formulario.status || 'completo';
+            
+            // Extrair novos campos do Eixo A (formato flat)
+            metodosFrequentes = formulario.metodosFrequentes ? JSON.stringify(formulario.metodosFrequentes) : null;
+            metodosFrequentesOutro = formulario.metodosFrequentesOutro || null;
+            metodosMelhoresResultados = formulario.metodosMelhoresResultados ? JSON.stringify(formulario.metodosMelhoresResultados) : null;
+            metodosMelhoresResultadosOutro = formulario.metodosMelhoresResultadosOutro || null;
+            dificuldadeFaltaTempo = formulario.dificuldade_falta_tempo ? parseInt(formulario.dificuldade_falta_tempo) : null;
+            dificuldadeNumTecnicos = formulario.dificuldade_num_tecnicos ? parseInt(formulario.dificuldade_num_tecnicos) : null;
+            dificuldadeDistancia = formulario.dificuldade_distancia ? parseInt(formulario.dificuldade_distancia) : null;
+            dificuldadeBaixaAdesao = formulario.dificuldade_baixa_adesao ? parseInt(formulario.dificuldade_baixa_adesao) : null;
+            dificuldadeRecursos = formulario.dificuldade_recursos ? parseInt(formulario.dificuldade_recursos) : null;
+            dificuldadeDemandasAdmin = formulario.dificuldade_demandas_admin ? parseInt(formulario.dificuldade_demandas_admin) : null;
+            dificuldadeMetas = formulario.dificuldade_metas ? parseInt(formulario.dificuldade_metas) : null;
+            comentarioEixoA = formulario.comentario_eixo_a || null;
         }
 
         // Verificar se já existe
@@ -118,6 +151,18 @@ exports.handler = async (event, context) => {
                 .input('status', sql.NVarChar(20), status || 'completo')
                 .input('respostas', sql.NVarChar(sql.MAX), JSON.stringify(respostas))
                 .input('fotos', sql.NVarChar(sql.MAX), JSON.stringify(fotos || []))
+                .input('metodos_frequentes', sql.NVarChar(sql.MAX), metodosFrequentes)
+                .input('metodos_frequentes_outro', sql.NVarChar(500), metodosFrequentesOutro)
+                .input('metodos_melhores_resultados', sql.NVarChar(sql.MAX), metodosMelhoresResultados)
+                .input('metodos_melhores_resultados_outro', sql.NVarChar(500), metodosMelhoresResultadosOutro)
+                .input('dificuldade_falta_tempo', sql.Int, dificuldadeFaltaTempo)
+                .input('dificuldade_num_tecnicos', sql.Int, dificuldadeNumTecnicos)
+                .input('dificuldade_distancia', sql.Int, dificuldadeDistancia)
+                .input('dificuldade_baixa_adesao', sql.Int, dificuldadeBaixaAdesao)
+                .input('dificuldade_recursos', sql.Int, dificuldadeRecursos)
+                .input('dificuldade_demandas_admin', sql.Int, dificuldadeDemandasAdmin)
+                .input('dificuldade_metas', sql.Int, dificuldadeMetas)
+                .input('comentario_eixo_a', sql.NVarChar(sql.MAX), comentarioEixoA)
                 .query(`
                     UPDATE formulario_extensionista SET
                         municipio = @municipio,
@@ -134,6 +179,18 @@ exports.handler = async (event, context) => {
                         status = @status,
                         respostas = @respostas,
                         fotos = @fotos,
+                        metodos_frequentes = @metodos_frequentes,
+                        metodos_frequentes_outro = @metodos_frequentes_outro,
+                        metodos_melhores_resultados = @metodos_melhores_resultados,
+                        metodos_melhores_resultados_outro = @metodos_melhores_resultados_outro,
+                        dificuldade_falta_tempo = @dificuldade_falta_tempo,
+                        dificuldade_num_tecnicos = @dificuldade_num_tecnicos,
+                        dificuldade_distancia = @dificuldade_distancia,
+                        dificuldade_baixa_adesao = @dificuldade_baixa_adesao,
+                        dificuldade_recursos = @dificuldade_recursos,
+                        dificuldade_demandas_admin = @dificuldade_demandas_admin,
+                        dificuldade_metas = @dificuldade_metas,
+                        comentario_eixo_a = @comentario_eixo_a,
                         updated_at = GETUTCDATE()
                     WHERE protocolo = @protocolo
                 `);
@@ -155,17 +212,41 @@ exports.handler = async (event, context) => {
                 .input('status', sql.NVarChar(20), status || 'completo')
                 .input('respostas', sql.NVarChar(sql.MAX), JSON.stringify(respostas))
                 .input('fotos', sql.NVarChar(sql.MAX), JSON.stringify(fotos || []))
+                .input('metodos_frequentes', sql.NVarChar(sql.MAX), metodosFrequentes)
+                .input('metodos_frequentes_outro', sql.NVarChar(500), metodosFrequentesOutro)
+                .input('metodos_melhores_resultados', sql.NVarChar(sql.MAX), metodosMelhoresResultados)
+                .input('metodos_melhores_resultados_outro', sql.NVarChar(500), metodosMelhoresResultadosOutro)
+                .input('dificuldade_falta_tempo', sql.Int, dificuldadeFaltaTempo)
+                .input('dificuldade_num_tecnicos', sql.Int, dificuldadeNumTecnicos)
+                .input('dificuldade_distancia', sql.Int, dificuldadeDistancia)
+                .input('dificuldade_baixa_adesao', sql.Int, dificuldadeBaixaAdesao)
+                .input('dificuldade_recursos', sql.Int, dificuldadeRecursos)
+                .input('dificuldade_demandas_admin', sql.Int, dificuldadeDemandasAdmin)
+                .input('dificuldade_metas', sql.Int, dificuldadeMetas)
+                .input('comentario_eixo_a', sql.NVarChar(sql.MAX), comentarioEixoA)
                 .query(`
                     INSERT INTO formulario_extensionista (
                         protocolo, municipio, unidade_emater, territorio,
                         identificador_iniciais, timestamp_inicio, timestamp_fim,
                         duracao_minutos, latitude, longitude, precisao, geo_erro,
-                        status, respostas, fotos
+                        status, respostas, fotos,
+                        metodos_frequentes, metodos_frequentes_outro,
+                        metodos_melhores_resultados, metodos_melhores_resultados_outro,
+                        dificuldade_falta_tempo, dificuldade_num_tecnicos,
+                        dificuldade_distancia, dificuldade_baixa_adesao,
+                        dificuldade_recursos, dificuldade_demandas_admin,
+                        dificuldade_metas, comentario_eixo_a
                     ) VALUES (
                         @protocolo, @municipio, @unidade_emater, @territorio,
                         @identificador_iniciais, @timestamp_inicio, @timestamp_fim,
                         @duracao_minutos, @latitude, @longitude, @precisao, @geo_erro,
-                        @status, @respostas, @fotos
+                        @status, @respostas, @fotos,
+                        @metodos_frequentes, @metodos_frequentes_outro,
+                        @metodos_melhores_resultados, @metodos_melhores_resultados_outro,
+                        @dificuldade_falta_tempo, @dificuldade_num_tecnicos,
+                        @dificuldade_distancia, @dificuldade_baixa_adesao,
+                        @dificuldade_recursos, @dificuldade_demandas_admin,
+                        @dificuldade_metas, @comentario_eixo_a
                     )
                 `);
         }
