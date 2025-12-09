@@ -255,6 +255,57 @@ async function contarFormularios() {
 }
 
 // ==================================================
+// DELETAR FORMULÁRIO POR ID (Seguro)
+// ==================================================
+
+async function deletarFormularioLocal(id) {
+    if (!db) {
+        await initDB();
+    }
+
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const objectStore = transaction.objectStore(STORE_NAME);
+        
+        // Primeiro buscar o formulário para log
+        const getRequest = objectStore.get(id);
+        
+        getRequest.onsuccess = () => {
+            const formulario = getRequest.result;
+            
+            if (!formulario) {
+                resolve({ success: false, error: 'Formulário não encontrado' });
+                return;
+            }
+            
+            // Verificar se é seguro deletar (deve estar sincronizado)
+            if (!formulario.sincronizado) {
+                console.warn(`⚠️ BLOQUEADO: Tentativa de deletar formulário NÃO sincronizado: ${formulario.protocolo}`);
+                resolve({ success: false, error: 'Formulário não sincronizado - não pode ser deletado', protocolo: formulario.protocolo });
+                return;
+            }
+            
+            // Deletar
+            const deleteRequest = objectStore.delete(id);
+            
+            deleteRequest.onsuccess = () => {
+                console.log(`🗑️ Formulário deletado: ${formulario.protocolo} (ID: ${id})`);
+                resolve({ success: true, protocolo: formulario.protocolo, id: id });
+            };
+            
+            deleteRequest.onerror = () => {
+                console.error(`❌ Erro ao deletar formulário ${id}:`, deleteRequest.error);
+                reject(deleteRequest.error);
+            };
+        };
+        
+        getRequest.onerror = () => {
+            reject(getRequest.error);
+        };
+    });
+}
+
+// ==================================================
 // LIMPAR TODOS OS DADOS (cuidado!)
 // ==================================================
 
@@ -690,6 +741,7 @@ window.buscarPorProtocolo = buscarPorProtocolo;
 window.buscarNaoSincronizados = buscarNaoSincronizados;
 window.marcarComoSincronizado = marcarComoSincronizado;
 window.contarFormularios = contarFormularios;
+window.deletarFormularioLocal = deletarFormularioLocal;
 window.limparTodosDados = limparTodosDados;
 window.exportarParaJSON = exportarParaJSON;
 window.gerarProtocolo = gerarProtocolo;

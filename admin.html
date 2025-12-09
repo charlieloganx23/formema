@@ -1033,15 +1033,61 @@
                 if (formulariosServidor.length === 0) {
                     console.log('ℹ️ [DOWNLOAD] Nenhum formulário no servidor');
                     esconderIndicadorSync(0);
-                    return { success: true, novos: 0, atualizados: 0 };
+                    return { success: true, novos: 0, atualizados: 0, deletados: 0 };
                 }
                 
                 // Buscar formulários locais
                 const formulariosLocais = await buscarTodosFormularios();
                 const protocolosLocais = new Set(formulariosLocais.map(f => f.protocolo));
+                const protocolosServidor = new Set(formulariosServidor.map(f => f.protocolo));
                 
                 let novos = 0;
                 let atualizados = 0;
+                let deletados = 0;
+                
+                // ====================================================
+                // PASSO 1: DETECTAR E DELETAR FORMULÁRIOS OBSOLETOS
+                // (Sincronização Bidirecional - Opção 2 Modificada)
+                // ====================================================
+                console.log('🔍 [SYNC] Verificando formulários obsoletos...');
+                
+                const candidatosExclusao = formulariosLocais.filter(formLocal => {
+                    // ✅ PROTEÇÃO 1: Só considerar sincronizados
+                    const estaSincronizado = formLocal.sincronizado === true;
+                    
+                    // ✅ PROTEÇÃO 2: Não está mais no servidor
+                    const naoEstaNoServidor = !protocolosServidor.has(formLocal.protocolo);
+                    
+                    // REGRA DE OURO: Deletar SOMENTE se sincronizado E ausente no servidor
+                    return estaSincronizado && naoEstaNoServidor;
+                });
+                
+                if (candidatosExclusao.length > 0) {
+                    console.log(`🗑️ [SYNC] ${candidatosExclusao.length} formulário(s) obsoleto(s) detectado(s)`);
+                    
+                    for (const formObsoleto of candidatosExclusao) {
+                        try {
+                            const resultadoDelete = await deletarFormularioLocal(formObsoleto.id);
+                            
+                            if (resultadoDelete.success) {
+                                deletados++;
+                                console.log(`✅ [SYNC] Deletado: ${formObsoleto.protocolo} (ID: ${formObsoleto.id}) - removido do servidor`);
+                            } else {
+                                console.warn(`⚠️ [SYNC] Não foi possível deletar: ${formObsoleto.protocolo} - ${resultadoDelete.error}`);
+                            }
+                        } catch (error) {
+                            console.error(`❌ [SYNC] Erro ao deletar ${formObsoleto.protocolo}:`, error);
+                        }
+                    }
+                    
+                    console.log(`✅ [SYNC] ${deletados} formulário(s) obsoleto(s) removido(s) do IndexedDB local`);
+                } else {
+                    console.log('✅ [SYNC] Nenhum formulário obsoleto detectado');
+                }
+                
+                // ====================================================
+                // PASSO 2: ADICIONAR/ATUALIZAR FORMULÁRIOS DO SERVIDOR
+                // ====================================================
                 
                 // Abrir transação para inserir/atualizar
                 const db = await initDB();
@@ -1095,17 +1141,23 @@
                     }
                 }
                 
-                console.log(`✅ [DOWNLOAD] Concluído: ${novos} novos, ${atualizados} atualizados`);
+                console.log(`✅ [DOWNLOAD] Concluído: ${novos} novos, ${atualizados} atualizados, ${deletados} deletados`);
                 
-                if (novos > 0 || atualizados > 0) {
-                    mostrarIndicadorSync(`✅ ${novos} novos, ${atualizados} atualizados do servidor!`, 'success');
+                if (novos > 0 || atualizados > 0 || deletados > 0) {
+                    let mensagem = '✅ ';
+                    if (novos > 0) mensagem += `${novos} novos `;
+                    if (atualizados > 0) mensagem += `${atualizados} atualizados `;
+                    if (deletados > 0) mensagem += `${deletados} deletados `;
+                    mensagem += 'do servidor!';
+                    
+                    mostrarIndicadorSync(mensagem, 'success');
                     esconderIndicadorSync(5000);
                 } else {
                     mostrarIndicadorSync('✅ Dados já atualizados', 'success');
                     esconderIndicadorSync(3000);
                 }
                 
-                return { success: true, novos, atualizados, total: formulariosServidor.length };
+                return { success: true, novos, atualizados, deletados, total: formulariosServidor.length };
             } catch (error) {
                 console.error('❌ [DOWNLOAD] Erro ao sincronizar do servidor:', error);
                 mostrarIndicadorSync('❌ Erro ao baixar dados', 'error');

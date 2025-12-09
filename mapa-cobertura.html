@@ -1840,11 +1840,41 @@
                     const formulariosServidor = resultado.formularios;
                     const formulariosLocais = await buscarTodosFormularios();
                     const protocolosLocais = new Set(formulariosLocais.map(f => f.protocolo));
+                    const protocolosServidor = new Set(formulariosServidor.map(f => f.protocolo));
                     
                     const db = await initDB();
                     const transaction = db.transaction(['formularios'], 'readwrite');
                     const store = transaction.objectStore('formularios');
                     
+                    // ====================================================
+                    // PASSO 1: DELETAR FORMULÁRIOS OBSOLETOS (Sincronização Bidirecional)
+                    // ====================================================
+                    const candidatosExclusao = formulariosLocais.filter(formLocal => {
+                        const estaSincronizado = formLocal.sincronizado === true;
+                        const naoEstaNoServidor = !protocolosServidor.has(formLocal.protocolo);
+                        return estaSincronizado && naoEstaNoServidor;
+                    });
+                    
+                    let deletados = 0;
+                    if (candidatosExclusao.length > 0) {
+                        console.log(`🗑️ [MAPA] ${candidatosExclusao.length} formulário(s) obsoleto(s) detectado(s)`);
+                        
+                        for (const formObsoleto of candidatosExclusao) {
+                            try {
+                                const resultadoDelete = await deletarFormularioLocal(formObsoleto.id);
+                                if (resultadoDelete.success) {
+                                    deletados++;
+                                    console.log(`✅ [MAPA] Deletado: ${formObsoleto.protocolo}`);
+                                }
+                            } catch (e) {
+                                console.warn(`⚠️ [MAPA] Erro ao deletar ${formObsoleto.protocolo}:`, e);
+                            }
+                        }
+                    }
+                    
+                    // ====================================================
+                    // PASSO 2: ADICIONAR NOVOS DO SERVIDOR
+                    // ====================================================
                     let novos = 0;
                     for (const formServidor of formulariosServidor) {
                         if (!protocolosLocais.has(formServidor.protocolo)) {
@@ -1860,7 +1890,9 @@
                         }
                     }
                     
-                    if (novos > 0) console.log(`✅ [MAPA] ${novos} novos formulários`);
+                    if (novos > 0 || deletados > 0) {
+                        console.log(`✅ [MAPA] ${novos} novos, ${deletados} deletados`);
+                    }
                 }
             } catch (error) {
                 console.log('⚠️ [MAPA] Erro ao sincronizar:', error.message);
