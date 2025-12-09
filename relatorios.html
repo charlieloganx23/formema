@@ -825,13 +825,14 @@
             };
             
             todosFormularios.forEach(f => {
-                const respostasArray = f.respostas?.resultadosRelevantes;
+                const respostas = getRespostas(f);
+                const respostasArray = respostas?.resultadosRelevantes;
                 if (Array.isArray(respostasArray)) {
                     respostasArray.forEach(resultado => {
                         if (resultados[resultado]) {
                             resultados[resultado].count++;
                             // Pegar o valor de impacto correspondente
-                            const impacto = parseInt(f.respostas?.[`impacto_${resultado}`]) || 0;
+                            const impacto = parseInt(respostas?.[`impacto_${resultado}`]) || 0;
                             if (impacto > 0) {
                                 resultados[resultado].impactoTotal += impacto;
                             }
@@ -900,7 +901,10 @@
             
             Object.keys(desafios).forEach(key => {
                 const valores = todosFormularios
-                    .map(f => parseInt(f.respostas?.[key]))
+                    .map(f => {
+                        const respostas = getRespostas(f);
+                        return parseInt(respostas?.[key]);
+                    })
                     .filter(v => !isNaN(v) && v > 0);
                 medias[key] = valores.length > 0 
                     ? (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1)
@@ -1053,7 +1057,8 @@
             Object.keys(estrategiasLabels).forEach(key => estrategias[key] = 0);
             
             todosFormularios.forEach(f => {
-                const estrategiasArray = f.respostas?.estrategias;
+                const respostas = getRespostas(f);
+                const estrategiasArray = respostas?.estrategias;
                 if (Array.isArray(estrategiasArray)) {
                     estrategiasArray.forEach(est => {
                         if (estrategias.hasOwnProperty(est)) {
@@ -1110,7 +1115,8 @@
             Object.keys(parceriasLabels).forEach(key => parcerias[key] = 0);
             
             todosFormularios.forEach(f => {
-                const parceriasArray = f.respostas?.parceriasAtivas;
+                const respostas = getRespostas(f);
+                const parceriasArray = respostas?.parceriasAtivas;
                 if (Array.isArray(parceriasArray)) {
                     parceriasArray.forEach(p => {
                         if (parcerias.hasOwnProperty(p)) {
@@ -1166,15 +1172,22 @@
             Object.keys(freqDemanda).forEach(key => contagem[key] = 0);
             
             todosFormularios.forEach(f => {
-                const freq = f.respostas?.freqDemandaMercado;
+                const respostas = getRespostas(f);
+                const freq = respostas?.freqDemandaMercado;
                 if (freq && contagem.hasOwnProperty(freq)) {
                     contagem[freq]++;
                 }
             });
             
             // Capacitação em mercado
-            const comCapacitacao = todosFormularios.filter(f => f.respostas?.capacitacaoMercado === 'sim').length;
-            const semCapacitacao = todosFormularios.filter(f => f.respostas?.capacitacaoMercado === 'nao').length;
+            const comCapacitacao = todosFormularios.filter(f => {
+                const respostas = getRespostas(f);
+                return respostas?.capacitacaoMercado === 'sim';
+            }).length;
+            const semCapacitacao = todosFormularios.filter(f => {
+                const respostas = getRespostas(f);
+                return respostas?.capacitacaoMercado === 'nao';
+            }).length;
             
             const ctx = document.getElementById('chartComercializacao');
             if (!ctx) return;
@@ -1368,8 +1381,9 @@
             };
 
             todosFormularios.forEach(f => {
-                const estrategias = f.respostas?.estrategias || [];
-                const parcerias = f.respostas?.parceriasAtivas || [];
+                const respostas = getRespostas(f);
+                const estrategias = respostas?.estrategias || [];
+                const parcerias = respostas?.parceriasAtivas || [];
                 const totalAcoes = estrategias.length + parcerias.length;
                 
                 if (totalAcoes <= 3) perfis.baixa.count++;
@@ -1448,8 +1462,9 @@
             Object.keys(desafiosMap).forEach(key => intensidades[key] = []);
 
             todosFormularios.forEach(f => {
+                const respostas = getRespostas(f);
                 Object.keys(desafiosMap).forEach(desafio => {
-                    const valor = parseInt(f.respostas?.[desafio]);
+                    const valor = parseInt(respostas?.[desafio]);
                     if (!isNaN(valor) && valor >= 1 && valor <= 5) {
                         intensidades[desafio].push(valor);
                     }
@@ -1546,7 +1561,8 @@
             const praticasCount = {};
             
             todosFormularios.forEach(f => {
-                const praticas = f.respostas?.praticas_sustentaveis;
+                const respostas = getRespostas(f);
+                const praticas = respostas?.praticas_sustentaveis;
                 if (Array.isArray(praticas)) {
                     praticas.forEach(p => {
                         praticasCount[p] = (praticasCount[p] || 0) + 1;
@@ -1630,7 +1646,8 @@
             };
             
             todosFormularios.forEach(f => {
-                const org = f.respostas?.organizacao_coletiva || 'Não participa';
+                const respostas = getRespostas(f);
+                const org = respostas?.organizacao_coletiva || 'Não participa';
                 if (organizacoes.hasOwnProperty(org)) {
                     organizacoes[org]++;
                 }
@@ -1669,14 +1686,15 @@
             };
             
             todosFormularios.forEach(f => {
-                if (f.respostas?.satisfacao_atendimento) 
-                    categorias['Atendimento'].push(parseFloat(f.respostas.satisfacao_atendimento));
-                if (f.respostas?.satisfacao_orientacoes) 
-                    categorias['Orientações'].push(parseFloat(f.respostas.satisfacao_orientacoes));
-                if (f.respostas?.satisfacao_resultado) 
-                    categorias['Resultado'].push(parseFloat(f.respostas.satisfacao_resultado));
-                if (f.respostas?.satisfacao_geral) 
-                    categorias['Geral'].push(parseFloat(f.respostas.satisfacao_geral));
+                const respostas = getRespostas(f);
+                if (respostas?.satisfacao_atendimento) 
+                    categorias['Atendimento'].push(parseFloat(respostas.satisfacao_atendimento));
+                if (respostas?.satisfacao_orientacoes) 
+                    categorias['Orientações'].push(parseFloat(respostas.satisfacao_orientacoes));
+                if (respostas?.satisfacao_resultado) 
+                    categorias['Resultado'].push(parseFloat(respostas.satisfacao_resultado));
+                if (respostas?.satisfacao_geral) 
+                    categorias['Geral'].push(parseFloat(respostas.satisfacao_geral));
             });
             
             const medias = Object.keys(categorias).map(cat => {
@@ -1723,9 +1741,10 @@
             };
             
             todosFormularios.forEach(f => {
-                const prod = f.respostas?.mudanca_producao;
-                const qual = f.respostas?.mudanca_qualidade;
-                const vend = f.respostas?.mudanca_vendas;
+                const respostas = getRespostas(f);
+                const prod = respostas?.mudanca_producao;
+                const qual = respostas?.mudanca_qualidade;
+                const vend = respostas?.mudanca_vendas;
                 
                 if (prod && mudancas['Produção'][prod]) mudancas['Produção'][prod]++;
                 if (qual && mudancas['Qualidade'][qual]) mudancas['Qualidade'][qual]++;
@@ -1769,7 +1788,8 @@
             const canais = {};
             
             todosFormularios.forEach(f => {
-                const canaisForm = f.respostas?.canais_comercializacao;
+                const respostas = getRespostas(f);
+                const canaisForm = respostas?.canais_comercializacao;
                 if (Array.isArray(canaisForm)) {
                     canaisForm.forEach(c => {
                         canais[c] = (canais[c] || 0) + 1;
