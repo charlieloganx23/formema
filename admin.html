@@ -1181,7 +1181,7 @@
                 // Extrair dados usando helper
                 const municipio = respostas?.municipio || 'N/A';
                 const identificador = respostas?.identificador_iniciais || respostas?.nomeCompleto || 'N/A';
-                const unidade = respostas?.unidade_emater || respostas?.escritorioLocal || null;
+                const unidade = respostas?.escritorioLocal || respostas?.unidade_emater || null;
                 const timestampFim = form.timestampFim || form.timestamp_fim;
                 const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
                 
@@ -1683,8 +1683,9 @@
                 dados.push(['Protocolo:', form.protocolo]);
                 dados.push(['Município:', municipio]);
                 dados.push(['Produtor:', respostas?.identificador_iniciais || 'N/A']);
-                if (respostas?.unidade_emater) {
-                    dados.push(['Unidade EMATER:', respostas.unidade_emater]);
+                const unidadeEmater = respostas?.escritorioLocal || respostas?.unidade_emater;
+                if (unidadeEmater) {
+                    dados.push(['Unidade EMATER:', unidadeEmater]);
                 }
                 dados.push(['Data Início:', timestampInicio ? new Date(timestampInicio).toLocaleString('pt-BR') : 'N/A']);
                 dados.push(['Data Fim:', timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A']);

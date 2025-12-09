@@ -1684,7 +1684,7 @@
                             // Usar helper getRespostas() para garantir compatibilidade
                             const respostas = getRespostas(form);
                             const municipio = respostas?.municipio;
-                            const unidade = respostas?.unidade_emater;
+                            const unidade = respostas?.escritorioLocal || respostas?.unidade_emater;
                             const territorio = respostas?.territorio || 'Não especificado';
                             const timestamp = form.timestampFim || form.timestamp_fim || form.timestamp;
                             
