@@ -2252,6 +2252,39 @@
         }
 
         /**
+         * Sistema de notificações toast
+         */
+        function showToast(type, title, message, duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto-remover após duração
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.4s ease reverse';
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        }
+
+        /**
          * Limpeza emergencial completa do cache
          * - Pede confirmação
          * - Remove todos os caches
@@ -2459,36 +2492,6 @@
             function hideSyncModal() {
                 const modal = document.getElementById('syncModal');
                 modal.classList.remove('active');
-            }
-            
-            function showToast(type, title, message, duration = 5000) {
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                
-                const icons = {
-                    success: '✅',
-                    error: '❌',
-                    info: 'ℹ️',
-                    warning: '⚠️'
-                };
-                
-                toast.innerHTML = `
-                    <div class="toast-icon">${icons[type] || 'ℹ️'}</div>
-                    <div class="toast-content">
-                        <div class="toast-title">${title}</div>
-                        <div class="toast-message">${message}</div>
-                    </div>
-                    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-                `;
-                
-                container.appendChild(toast);
-                
-                // Auto-remover após duração
-                setTimeout(() => {
-                    toast.style.animation = 'slideInRight 0.4s ease reverse';
-                    setTimeout(() => toast.remove(), 400);
-                }, duration);
             }
 
             // Submissão do formulário
