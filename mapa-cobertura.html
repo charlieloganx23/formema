@@ -1638,6 +1638,27 @@
             resumo: {}
         };
 
+        // Helper para obter respostas parseadas (compatibilidade de estrutura)
+        function getRespostas(formulario) {
+            if (!formulario) return null;
+            
+            let respostas = formulario.respostas;
+            
+            // Se respostas for string, fazer parse
+            if (typeof respostas === 'string') {
+                try {
+                    respostas = JSON.parse(respostas);
+                } catch (e) {
+                    console.warn('⚠️ Erro ao parsear respostas:', e);
+                    return formulario; // Fallback para raiz
+                }
+            }
+            
+            // Se respostas existe (objeto), usar ela
+            // Senão, fallback para o próprio formulário (dados na raiz)
+            return respostas || formulario;
+        }
+
         // Função para buscar estatísticas de cobertura do IndexedDB
         async function buscarEstatisticasCobertura() {
             try {
@@ -1660,9 +1681,11 @@
                         const territoriosMap = new Map();
                         
                         formularios.forEach(form => {
-                            const municipio = form.respostas?.municipio || form.municipio;
-                            const unidade = form.respostas?.unidade_emater || form.unidade_emater;
-                            const territorio = form.respostas?.territorio || form.territorio || 'Não especificado';
+                            // Usar helper getRespostas() para garantir compatibilidade
+                            const respostas = getRespostas(form);
+                            const municipio = respostas?.municipio;
+                            const unidade = respostas?.unidade_emater;
+                            const territorio = respostas?.territorio || 'Não especificado';
                             const timestamp = form.timestampFim || form.timestamp_fim || form.timestamp;
                             
                             // Processar município
