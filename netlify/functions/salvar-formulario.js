@@ -106,7 +106,8 @@ exports.handler = async (event, context) => {
             comentarioEixoA = respostas.comentario_eixo_a || null;
             
             // Extrair novos campos do Eixo B
-            priorizacaoAtendimentos = respostas.priorizacao_atendimentos ? JSON.stringify(respostas.priorizacao_atendimentos) : null;
+            priorizacaoAtendimentos = respostas.priorizacao_atendimentos ? 
+                (Array.isArray(respostas.priorizacao_atendimentos) ? JSON.stringify(respostas.priorizacao_atendimentos) : respostas.priorizacao_atendimentos) : null;
             priorizacaoAtendimentosOutro = respostas.priorizacao_atendimentos_outro || null;
             nivelEquidade = respostas.nivel_equidade ? parseInt(respostas.nivel_equidade) : null;
             instrumentosFormais = respostas.instrumentos_formais || null;
@@ -114,7 +115,8 @@ exports.handler = async (event, context) => {
             comentarioEixoB = respostas.comentario_eixo_b || null;
             
             // Extrair novos campos do Eixo E
-            instrumentosAcompanhamento = respostas.instrumentos_acompanhamento ? JSON.stringify(respostas.instrumentos_acompanhamento) : null;
+            instrumentosAcompanhamento = respostas.instrumentos_acompanhamento ? 
+                (Array.isArray(respostas.instrumentos_acompanhamento) ? JSON.stringify(respostas.instrumentos_acompanhamento) : respostas.instrumentos_acompanhamento) : null;
             instrumentosAcompanhamentoOutro = respostas.instrumentos_acompanhamento_outro || null;
             freqUsoIndicadores = respostas.freq_uso_indicadores || null;
             principaisIndicadores = respostas.principais_indicadores || null;
@@ -157,7 +159,8 @@ exports.handler = async (event, context) => {
             comentarioEixoA = formulario.comentario_eixo_a || null;
             
             // Extrair novos campos do Eixo B (formato flat)
-            priorizacaoAtendimentos = formulario.priorizacao_atendimentos ? JSON.stringify(formulario.priorizacao_atendimentos) : null;
+            priorizacaoAtendimentos = formulario.priorizacao_atendimentos ? 
+                (Array.isArray(formulario.priorizacao_atendimentos) ? JSON.stringify(formulario.priorizacao_atendimentos) : formulario.priorizacao_atendimentos) : null;
             priorizacaoAtendimentosOutro = formulario.priorizacao_atendimentos_outro || null;
             nivelEquidade = formulario.nivel_equidade ? parseInt(formulario.nivel_equidade) : null;
             instrumentosFormais = formulario.instrumentos_formais || null;
@@ -165,7 +168,8 @@ exports.handler = async (event, context) => {
             comentarioEixoB = formulario.comentario_eixo_b || null;
             
             // Extrair novos campos do Eixo E (formato flat)
-            instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? JSON.stringify(formulario.instrumentos_acompanhamento) : null;
+            instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? 
+                (Array.isArray(formulario.instrumentos_acompanhamento) ? JSON.stringify(formulario.instrumentos_acompanhamento) : formulario.instrumentos_acompanhamento) : null;
             instrumentosAcompanhamentoOutro = formulario.instrumentos_acompanhamento_outro || null;
             freqUsoIndicadores = formulario.freq_uso_indicadores || null;
             principaisIndicadores = formulario.principais_indicadores || null;
