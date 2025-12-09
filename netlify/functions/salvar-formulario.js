@@ -55,8 +55,8 @@ exports.handler = async (event, context) => {
         
         // Novos campos do Eixo A - Métodos de ATER
         let metodosFrequentes, metodosFrequentesOutro, metodosMelhoresResultados, metodosMelhoresResultadosOutro;
-        let dificuldadeFaltaTempo, dificuldadeNumTecnicos, dificuldadeDistancia, dificuldadeBaixaAdesao;
-        let dificuldadeRecursos, dificuldadeDemandasAdmin, dificuldadeMetas, comentarioEixoA;
+        let dificuldadeFaltaTempo, dificuldadeFaltaRecursos, dificuldadeResistenciaProdutores, dificuldadeFaltaCapacitacao;
+        let dificuldadeMetodosInadequados, dificuldadeFaltaApoioGestao, dificuldadeComunicacaoEquipe, comentarioEixoA;
         
         // Novos campos do Eixo B - Critérios de Priorização e Equidade
         let priorizacaoAtendimentos, priorizacaoAtendimentosOutro, nivelEquidade;
@@ -94,12 +94,12 @@ exports.handler = async (event, context) => {
             metodosMelhoresResultados = respostas.metodosMelhoresResultados ? JSON.stringify(respostas.metodosMelhoresResultados) : null;
             metodosMelhoresResultadosOutro = respostas.metodosMelhoresResultadosOutro || null;
             dificuldadeFaltaTempo = respostas.dificuldade_falta_tempo ? parseInt(respostas.dificuldade_falta_tempo) : null;
-            dificuldadeNumTecnicos = respostas.dificuldade_num_tecnicos ? parseInt(respostas.dificuldade_num_tecnicos) : null;
-            dificuldadeDistancia = respostas.dificuldade_distancia ? parseInt(respostas.dificuldade_distancia) : null;
-            dificuldadeBaixaAdesao = respostas.dificuldade_baixa_adesao ? parseInt(respostas.dificuldade_baixa_adesao) : null;
-            dificuldadeRecursos = respostas.dificuldade_recursos ? parseInt(respostas.dificuldade_recursos) : null;
-            dificuldadeDemandasAdmin = respostas.dificuldade_demandas_admin ? parseInt(respostas.dificuldade_demandas_admin) : null;
-            dificuldadeMetas = respostas.dificuldade_metas ? parseInt(respostas.dificuldade_metas) : null;
+            dificuldadeFaltaRecursos = respostas.dificuldade_falta_recursos ? parseInt(respostas.dificuldade_falta_recursos) : null;
+            dificuldadeResistenciaProdutores = respostas.dificuldade_resistencia_produtores ? parseInt(respostas.dificuldade_resistencia_produtores) : null;
+            dificuldadeFaltaCapacitacao = respostas.dificuldade_falta_capacitacao ? parseInt(respostas.dificuldade_falta_capacitacao) : null;
+            dificuldadeMetodosInadequados = respostas.dificuldade_metodos_inadequados ? parseInt(respostas.dificuldade_metodos_inadequados) : null;
+            dificuldadeFaltaApoioGestao = respostas.dificuldade_falta_apoio_gestao ? parseInt(respostas.dificuldade_falta_apoio_gestao) : null;
+            dificuldadeComunicacaoEquipe = respostas.dificuldade_comunicacao_equipe ? parseInt(respostas.dificuldade_comunicacao_equipe) : null;
             comentarioEixoA = respostas.comentario_eixo_a || null;
             
             // Extrair novos campos do Eixo B
@@ -145,12 +145,12 @@ exports.handler = async (event, context) => {
             metodosMelhoresResultados = formulario.metodosMelhoresResultados ? JSON.stringify(formulario.metodosMelhoresResultados) : null;
             metodosMelhoresResultadosOutro = formulario.metodosMelhoresResultadosOutro || null;
             dificuldadeFaltaTempo = formulario.dificuldade_falta_tempo ? parseInt(formulario.dificuldade_falta_tempo) : null;
-            dificuldadeNumTecnicos = formulario.dificuldade_num_tecnicos ? parseInt(formulario.dificuldade_num_tecnicos) : null;
-            dificuldadeDistancia = formulario.dificuldade_distancia ? parseInt(formulario.dificuldade_distancia) : null;
-            dificuldadeBaixaAdesao = formulario.dificuldade_baixa_adesao ? parseInt(formulario.dificuldade_baixa_adesao) : null;
-            dificuldadeRecursos = formulario.dificuldade_recursos ? parseInt(formulario.dificuldade_recursos) : null;
-            dificuldadeDemandasAdmin = formulario.dificuldade_demandas_admin ? parseInt(formulario.dificuldade_demandas_admin) : null;
-            dificuldadeMetas = formulario.dificuldade_metas ? parseInt(formulario.dificuldade_metas) : null;
+            dificuldadeFaltaRecursos = formulario.dificuldade_falta_recursos ? parseInt(formulario.dificuldade_falta_recursos) : null;
+            dificuldadeResistenciaProdutores = formulario.dificuldade_resistencia_produtores ? parseInt(formulario.dificuldade_resistencia_produtores) : null;
+            dificuldadeFaltaCapacitacao = formulario.dificuldade_falta_capacitacao ? parseInt(formulario.dificuldade_falta_capacitacao) : null;
+            dificuldadeMetodosInadequados = formulario.dificuldade_metodos_inadequados ? parseInt(formulario.dificuldade_metodos_inadequados) : null;
+            dificuldadeFaltaApoioGestao = formulario.dificuldade_falta_apoio_gestao ? parseInt(formulario.dificuldade_falta_apoio_gestao) : null;
+            dificuldadeComunicacaoEquipe = formulario.dificuldade_comunicacao_equipe ? parseInt(formulario.dificuldade_comunicacao_equipe) : null;
             comentarioEixoA = formulario.comentario_eixo_a || null;
             
             // Extrair novos campos do Eixo B (formato flat)
@@ -170,14 +170,6 @@ exports.handler = async (event, context) => {
             comentarioEixoE = formulario.comentario_eixo_e || null;
             comentarioFinal = formulario.comentario_final || null;
         }
-            // Extrair novos campos do Eixo E (formato flat)
-            instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? JSON.stringify(formulario.instrumentos_acompanhamento) : null;
-            instrumentosAcompanhamentoOutro = formulario.instrumentos_acompanhamento_outro || null;
-            freqUsoIndicadores = formulario.freq_uso_indicadores || null;
-            principaisIndicadores = formulario.principais_indicadores || null;
-            avaliacaoAjudaIndicadores = formulario.avaliacao_ajuda_indicadores ? parseInt(formulario.avaliacao_ajuda_indicadores) : null;
-            comentarioEixoE = formulario.comentario_eixo_e || null;
-            comentarioFinal = formulario.comentario_final || null;
         }
 
         // Verificar se já existe
@@ -208,12 +200,12 @@ exports.handler = async (event, context) => {
                 .input('metodos_melhores_resultados', sql.NVarChar(sql.MAX), metodosMelhoresResultados)
                 .input('metodos_melhores_resultados_outro', sql.NVarChar(500), metodosMelhoresResultadosOutro)
                 .input('dificuldade_falta_tempo', sql.Int, dificuldadeFaltaTempo)
-                .input('dificuldade_num_tecnicos', sql.Int, dificuldadeNumTecnicos)
-                .input('dificuldade_distancia', sql.Int, dificuldadeDistancia)
-                .input('dificuldade_baixa_adesao', sql.Int, dificuldadeBaixaAdesao)
-                .input('dificuldade_recursos', sql.Int, dificuldadeRecursos)
-                .input('dificuldade_demandas_admin', sql.Int, dificuldadeDemandasAdmin)
-                .input('dificuldade_metas', sql.Int, dificuldadeMetas)
+                .input('dificuldade_falta_recursos', sql.Int, dificuldadeFaltaRecursos)
+                .input('dificuldade_resistencia_produtores', sql.Int, dificuldadeResistenciaProdutores)
+                .input('dificuldade_falta_capacitacao', sql.Int, dificuldadeFaltaCapacitacao)
+                .input('dificuldade_metodos_inadequados', sql.Int, dificuldadeMetodosInadequados)
+                .input('dificuldade_falta_apoio_gestao', sql.Int, dificuldadeFaltaApoioGestao)
+                .input('dificuldade_comunicacao_equipe', sql.Int, dificuldadeComunicacaoEquipe)
                 .input('comentario_eixo_a', sql.NVarChar(sql.MAX), comentarioEixoA)
                 .input('priorizacao_atendimentos', sql.NVarChar(sql.MAX), priorizacaoAtendimentos)
                 .input('priorizacao_atendimentos_outro', sql.NVarChar(500), priorizacaoAtendimentosOutro)
@@ -249,12 +241,12 @@ exports.handler = async (event, context) => {
                         metodos_melhores_resultados = @metodos_melhores_resultados,
                         metodos_melhores_resultados_outro = @metodos_melhores_resultados_outro,
                         dificuldade_falta_tempo = @dificuldade_falta_tempo,
-                        dificuldade_num_tecnicos = @dificuldade_num_tecnicos,
-                        dificuldade_distancia = @dificuldade_distancia,
-                        dificuldade_baixa_adesao = @dificuldade_baixa_adesao,
-                        dificuldade_recursos = @dificuldade_recursos,
-                        dificuldade_demandas_admin = @dificuldade_demandas_admin,
-                        dificuldade_metas = @dificuldade_metas,
+                        dificuldade_falta_recursos = @dificuldade_falta_recursos,
+                        dificuldade_resistencia_produtores = @dificuldade_resistencia_produtores,
+                        dificuldade_falta_capacitacao = @dificuldade_falta_capacitacao,
+                        dificuldade_metodos_inadequados = @dificuldade_metodos_inadequados,
+                        dificuldade_falta_apoio_gestao = @dificuldade_falta_apoio_gestao,
+                        dificuldade_comunicacao_equipe = @dificuldade_comunicacao_equipe,
                         comentario_eixo_a = @comentario_eixo_a,
                         priorizacao_atendimentos = @priorizacao_atendimentos,
                         priorizacao_atendimentos_outro = @priorizacao_atendimentos_outro,
@@ -295,12 +287,12 @@ exports.handler = async (event, context) => {
                 .input('metodos_melhores_resultados', sql.NVarChar(sql.MAX), metodosMelhoresResultados)
                 .input('metodos_melhores_resultados_outro', sql.NVarChar(500), metodosMelhoresResultadosOutro)
                 .input('dificuldade_falta_tempo', sql.Int, dificuldadeFaltaTempo)
-                .input('dificuldade_num_tecnicos', sql.Int, dificuldadeNumTecnicos)
-                .input('dificuldade_distancia', sql.Int, dificuldadeDistancia)
-                .input('dificuldade_baixa_adesao', sql.Int, dificuldadeBaixaAdesao)
-                .input('dificuldade_recursos', sql.Int, dificuldadeRecursos)
-                .input('dificuldade_demandas_admin', sql.Int, dificuldadeDemandasAdmin)
-                .input('dificuldade_metas', sql.Int, dificuldadeMetas)
+                .input('dificuldade_falta_recursos', sql.Int, dificuldadeFaltaRecursos)
+                .input('dificuldade_resistencia_produtores', sql.Int, dificuldadeResistenciaProdutores)
+                .input('dificuldade_falta_capacitacao', sql.Int, dificuldadeFaltaCapacitacao)
+                .input('dificuldade_metodos_inadequados', sql.Int, dificuldadeMetodosInadequados)
+                .input('dificuldade_falta_apoio_gestao', sql.Int, dificuldadeFaltaApoioGestao)
+                .input('dificuldade_comunicacao_equipe', sql.Int, dificuldadeComunicacaoEquipe)
                 .input('comentario_eixo_a', sql.NVarChar(sql.MAX), comentarioEixoA)
                 .input('priorizacao_atendimentos', sql.NVarChar(sql.MAX), priorizacaoAtendimentos)
                 .input('priorizacao_atendimentos_outro', sql.NVarChar(500), priorizacaoAtendimentosOutro)
@@ -323,10 +315,10 @@ exports.handler = async (event, context) => {
                         status, respostas, fotos,
                         metodos_frequentes, metodos_frequentes_outro,
                         metodos_melhores_resultados, metodos_melhores_resultados_outro,
-                        dificuldade_falta_tempo, dificuldade_num_tecnicos,
-                        dificuldade_distancia, dificuldade_baixa_adesao,
-                        dificuldade_recursos, dificuldade_demandas_admin,
-                        dificuldade_metas, comentario_eixo_a,
+                        dificuldade_falta_tempo, dificuldade_falta_recursos,
+                        dificuldade_resistencia_produtores, dificuldade_falta_capacitacao,
+                        dificuldade_metodos_inadequados, dificuldade_falta_apoio_gestao,
+                        dificuldade_comunicacao_equipe, comentario_eixo_a,
                         priorizacao_atendimentos, priorizacao_atendimentos_outro,
                         nivel_equidade, instrumentos_formais,
                         exemplo_instrumento_formal, comentario_eixo_b,
@@ -340,10 +332,10 @@ exports.handler = async (event, context) => {
                         @status, @respostas, @fotos,
                         @metodos_frequentes, @metodos_frequentes_outro,
                         @metodos_melhores_resultados, @metodos_melhores_resultados_outro,
-                        @dificuldade_falta_tempo, @dificuldade_num_tecnicos,
-                        @dificuldade_distancia, @dificuldade_baixa_adesao,
-                        @dificuldade_recursos, @dificuldade_demandas_admin,
-                        @dificuldade_metas, @comentario_eixo_a,
+                        @dificuldade_falta_tempo, @dificuldade_falta_recursos,
+                        @dificuldade_resistencia_produtores, @dificuldade_falta_capacitacao,
+                        @dificuldade_metodos_inadequados, @dificuldade_falta_apoio_gestao,
+                        @dificuldade_comunicacao_equipe, @comentario_eixo_a,
                         @priorizacao_atendimentos, @priorizacao_atendimentos_outro,
                         @nivel_equidade, @instrumentos_formais,
                         @exemplo_instrumento_formal, @comentario_eixo_b,
