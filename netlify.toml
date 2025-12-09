@@ -1,6 +1,15 @@
+# Netlify Configuration - Multi-branch Strategy
 [build]
   publish = "."
   functions = "netlify/functions"
+
+# Deploy automático para branch develop (homologação)
+[context.develop]
+  publish = "."
+  
+# Deploy preview para feature branches
+[context.feature/*]
+  publish = "."
 
 [[headers]]
   for = "/*"
