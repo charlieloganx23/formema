@@ -40,6 +40,7 @@ exports.handler = async (event, context) => {
     try {
         const formulario = JSON.parse(event.body);
         console.log('📝 Recebido formulário:', formulario.protocolo);
+        console.log('📊 Dados completos:', JSON.stringify(formulario, null, 2));
         
         // Conectar ao SQL Azure
         console.log('🔌 Conectando ao SQL Azure...');
@@ -372,6 +373,7 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
+        console.error('❌ ERRO CRÍTICO:', error);
         console.error('❌ Erro detalhado:', {
             message: error.message,
             stack: error.stack,
@@ -382,7 +384,8 @@ exports.handler = async (event, context) => {
             class: error.class,
             serverName: error.serverName,
             procName: error.procName,
-            lineNumber: error.lineNumber
+            lineNumber: error.lineNumber,
+            originalError: error.originalError
         });
         return {
             statusCode: 500,
@@ -390,6 +393,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 success: false,
                 error: error.message,
+                errorStack: error.stack,
                 details: error.code || error.number || 'Erro desconhecido',
                 timestamp: new Date().toISOString()
             })
