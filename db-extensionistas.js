@@ -79,17 +79,33 @@ async function salvarFormulario(dados) {
 
         const request = objectStore.add(formulario);
 
-        request.onsuccess = () => {
+        request.onsuccess = async () => {
             console.log('✅ Formulário salvo no IndexedDB:', protocolo);
-            console.log('💾 Salvo LOCALMENTE - Use o painel admin para sincronizar');
             
-            // Retornar sucesso - sincronização será manual
-            resolve({ 
+            const resultado = { 
                 success: true, 
                 protocolo: protocolo, 
                 id: request.result,
                 sincronizado: false 
-            });
+            };
+            
+            // Tentar sincronização automática em background (não bloqueia)
+            if (navigator.onLine) {
+                console.log('🔄 Tentando sincronização automática em background...');
+                tentarSincronizacaoSilenciosa(formulario).then(syncResult => {
+                    if (syncResult.success) {
+                        console.log('✅ [AUTO-SYNC] Sincronizado automaticamente:', protocolo);
+                    } else {
+                        console.log('⚠️ [AUTO-SYNC] Falha na sincronização automática. Use sincronização manual.');
+                    }
+                }).catch(err => {
+                    console.log('⚠️ [AUTO-SYNC] Erro na sincronização automática:', err.message);
+                });
+            } else {
+                console.log('📴 Offline - Sincronização manual necessária');
+            }
+            
+            resolve(resultado);
         };
 
         request.onerror = () => {
@@ -380,6 +396,83 @@ async function sincronizarComServidor(urlAPI) {
 // SINCRONIZAÇÃO COM SQL AZURE
 // ==================================================
 
+// Sincronização silenciosa em background (não lança exceção)
+async function tentarSincronizacaoSilenciosa(formulario) {
+    try {
+        // Verificar conexão
+        if (!navigator.onLine) {
+            return { success: false, error: 'Offline' };
+        }
+        
+        // Verificar config
+        if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+            return { success: false, error: 'CONFIG não disponível' };
+        }
+        
+        // Tentar sincronizar com timeout curto
+        const resultado = await sincronizarFormularioComAzure(formulario);
+        return resultado;
+    } catch (error) {
+        console.log('⚠️ [SILENT-SYNC] Falha silenciosa:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// Sincronizar todos pendentes em background (chamado ao abrir páginas)
+async function sincronizacaoAutomaticaEmBackground() {
+    try {
+        // Verificar se está online
+        if (!navigator.onLine) {
+            console.log('📴 [AUTO-SYNC] Offline - pulando sincronização automática');
+            return { success: false, error: 'Offline' };
+        }
+        
+        // Verificar config
+        if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+            console.log('⚠️ [AUTO-SYNC] CONFIG não disponível');
+            return { success: false, error: 'CONFIG indisponível' };
+        }
+        
+        // Buscar pendentes
+        const pendentes = await buscarNaoSincronizados();
+        
+        if (pendentes.length === 0) {
+            console.log('✅ [AUTO-SYNC] Nenhum formulário pendente');
+            return { success: true, sincronizados: 0 };
+        }
+        
+        console.log(`🔄 [AUTO-SYNC] ${pendentes.length} formulário(s) pendente(s), sincronizando...`);
+        
+        let sucessos = 0;
+        let erros = 0;
+        
+        // Sincronizar cada um (máximo 10 para não travar)
+        const limite = Math.min(pendentes.length, 10);
+        for (let i = 0; i < limite; i++) {
+            const resultado = await sincronizarFormularioComAzure(pendentes[i]);
+            if (resultado.success) {
+                sucessos++;
+            } else {
+                erros++;
+            }
+            await new Promise(resolve => setTimeout(resolve, 200)); // Delay entre requisições
+        }
+        
+        console.log(`✅ [AUTO-SYNC] Concluído: ${sucessos} sucesso(s), ${erros} erro(s)`);
+        
+        return { 
+            success: true, 
+            total: pendentes.length,
+            sincronizados: sucessos, 
+            erros: erros,
+            pendentes: pendentes.length - limite
+        };
+    } catch (error) {
+        console.log('⚠️ [AUTO-SYNC] Erro na sincronização automática:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 // Sincronizar um formulário específico com o servidor
 async function sincronizarFormularioComAzure(formulario) {
     try {
@@ -606,5 +699,16 @@ window.sincronizarComServidor = sincronizarComServidor;
 window.sincronizarFormularioComAzure = sincronizarFormularioComAzure;
 window.sincronizarTodosComAzure = sincronizarTodosComAzure;
 window.buscarFormulariosDoAzure = buscarFormulariosDoAzure;
+window.tentarSincronizacaoSilenciosa = tentarSincronizacaoSilenciosa;
+window.sincronizacaoAutomaticaEmBackground = sincronizacaoAutomaticaEmBackground;
 
 console.log('✅ Funções do db-extensionistas.js exportadas globalmente');
+
+// Iniciar sincronização automática em background quando a página carregar
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => sincronizacaoAutomaticaEmBackground(), 2000);
+    });
+} else {
+    setTimeout(() => sincronizacaoAutomaticaEmBackground(), 2000);
+}

@@ -657,9 +657,58 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
+        
+        /* Indicador de sincronização automática */
+        .sync-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .sync-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .sync-indicator.success {
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+        }
+        
+        .sync-indicator.error {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+        
+        .sync-indicator .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
     </style>
 </head>
 <body>
+    <!-- Indicador de Sincronização Automática -->
+    <div id="syncIndicator" class="sync-indicator">
+        <div class="spinner"></div>
+        <span id="syncText">Sincronizando...</span>
+    </div>
+    
     <div class="admin-container">
         <header class="admin-header">
             <h1>📊 Painel Administrativo</h1>
@@ -789,6 +838,64 @@
         // Variável global para armazenar formulários
         let formulariosGlobal = [];
         
+        // ==================== SINCRONIZAÇÃO AUTOMÁTICA ====================
+        
+        // Mostrar indicador de sincronização
+        function mostrarIndicadorSync(texto, tipo = 'loading') {
+            const indicator = document.getElementById('syncIndicator');
+            const textElement = document.getElementById('syncText');
+            
+            indicator.className = 'sync-indicator show';
+            if (tipo === 'success') indicator.classList.add('success');
+            if (tipo === 'error') indicator.classList.add('error');
+            
+            textElement.textContent = texto;
+        }
+        
+        // Esconder indicador de sincronização
+        function esconderIndicadorSync(delay = 3000) {
+            setTimeout(() => {
+                const indicator = document.getElementById('syncIndicator');
+                indicator.classList.remove('show');
+            }, delay);
+        }
+        
+        // Verificar e executar sincronização automática ao carregar
+        async function verificarSincronizacaoAutomatica() {
+            try {
+                // Verificar se há pendentes
+                const pendentes = await buscarNaoSincronizados();
+                
+                if (pendentes.length > 0) {
+                    console.log(`🔄 [AUTO-SYNC] ${pendentes.length} formulário(s) pendente(s) detectado(s)`);
+                    mostrarIndicadorSync(`Sincronizando ${pendentes.length} formulário(s)...`, 'loading');
+                    
+                    // Chamar função de sincronização automática em background
+                    const resultado = await sincronizacaoAutomaticaEmBackground();
+                    
+                    if (resultado.success && resultado.sincronizados > 0) {
+                        mostrarIndicadorSync(`✅ ${resultado.sincronizados} formulário(s) sincronizado(s)!`, 'success');
+                        esconderIndicadorSync(4000);
+                        
+                        // Recarregar dados após sincronização
+                        setTimeout(async () => {
+                            await carregarDadosServidor();
+                            await carregarFormulariosPendentes();
+                        }, 1000);
+                    } else if (resultado.pendentes > 0) {
+                        mostrarIndicadorSync(`⚠️ ${resultado.pendentes} ainda pendente(s)`, 'error');
+                        esconderIndicadorSync(5000);
+                    } else {
+                        esconderIndicadorSync(0);
+                    }
+                } else {
+                    console.log('✅ [AUTO-SYNC] Nenhum formulário pendente');
+                }
+            } catch (error) {
+                console.error('⚠️ Erro na verificação automática:', error);
+            }
+        }
+        
         // ==================== FUNÇÕES GLOBAIS (disponíveis para onclick) ====================
         
         // Voltar ao formulário
@@ -840,6 +947,9 @@
             // Aguardar scripts carregarem
             const scriptsOk = await aguardarScripts();
             if (!scriptsOk) return;
+            
+            // Executar sincronização automática primeiro
+            await verificarSincronizacaoAutomatica();
             
             await carregarDadosServidor();
             await carregarFormulariosPendentes();

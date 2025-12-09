@@ -2564,14 +2564,23 @@
                         debugSection.classList.add("hidden");
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                         
-                        // Informar sobre sincronização manual
+                        // Informar sobre sincronização (automática ou manual)
                         setTimeout(() => {
-                            showToast(
-                                'info',
-                                'Sincronização',
-                                'Acesse o Painel Administrativo para sincronizar seus formulários com o servidor.',
-                                6000
-                            );
+                            if (navigator.onLine) {
+                                showToast(
+                                    'info',
+                                    'Sincronização Automática',
+                                    '🔄 Tentando sincronizar automaticamente com o servidor...',
+                                    4000
+                                );
+                            } else {
+                                showToast(
+                                    'warning',
+                                    'Modo Offline',
+                                    '📴 Sem conexão. Acesse o Painel Administrativo quando estiver online para sincronizar.',
+                                    6000
+                                );
+                            }
                         }, 2000);
                     }
 
