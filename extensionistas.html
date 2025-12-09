@@ -1349,56 +1349,56 @@
                 <!-- ETAPA 3: EIXO B -->
                 <section class="form-section" id="section-3" data-step="3">
                     <div class="section-header">
-                        <h3>Eixo B – Planejamento, Critérios de Atendimento e Gestão de Recursos</h3>
-                        <p class="text-muted">Tempo estimado: 6 minutos</p>
+                        <h3>Eixo B – Critérios de Priorização e Equidade</h3>
+                        <p class="text-muted">Tempo estimado: 4 minutos</p>
                     </div>
 
-                    <!-- QUESTÃO 4: Critérios de priorização -->
+                    <!-- QUESTÃO 4: Como os atendimentos são priorizados -->
                     <fieldset class="question-group">
-                        <legend>4) Que critérios são usados para priorização? <span class="hint">(marcar todos que se aplicam)</span></legend>
+                        <legend>4) Como os atendimentos são priorizados no seu escritório?</legend>
                         <div class="checkbox-group">
-                            <label class="checkbox-label"><input type="checkbox" name="criteriosPriorizacao" value="criterios_tecnicos"> <span>Critérios técnicos (produtividade, vulnerabilidade)</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="criteriosPriorizacao" value="diretrizes_sede"> <span>Diretrizes da sede</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="criteriosPriorizacao" value="requisicao_municipal"> <span>Requisição municipal/convênio</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="criteriosPriorizacao" value="demanda_espontanea"> <span>Demanda espontânea dos produtores</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="criteriosPriorizacao" value="impacto_economico"> <span>Critério de impacto econômico (potencial de mercado)</span></label>
-                            <label class="checkbox-label"><input type="checkbox" name="criteriosPriorizacao" value="indicadores_sociais"> <span>Indicadores sociais (mulheres, jovens)</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao_atendimentos" value="demanda_espontanea"> <span>Por demanda espontânea</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao_atendimentos" value="criterios_tecnicos_emater"> <span>Por critérios técnicos definidos pela Emater</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao_atendimentos" value="criterios_tecnicos_extensionista"> <span>Por critérios técnicos definidos pelo extensionista</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao_atendimentos" value="politicas_publicas"> <span>Por políticas públicas específicas (PAA/PNAE etc.)</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao_atendimentos" value="vulnerabilidade_social"> <span>Por vulnerabilidade social (mulheres, jovens, comunidades afastadas)</span></label>
+                            <label class="checkbox-label"><input type="checkbox" name="priorizacao_atendimentos" value="ordem_chegada"> <span>Por ordem de chegada</span></label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="criteriosPriorizacao" value="outro">
-                                <span>Outro: <input type="text" name="criteriosPriorizacaoOutro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
+                                <input type="checkbox" name="priorizacao_atendimentos" value="outro">
+                                <span>Outro: <input type="text" name="priorizacao_atendimentos_outro" class="input-field" placeholder="Descreva" style="margin-top: 8px;" /></span>
                             </label>
                         </div>
                     </fieldset>
 
-                    <!-- QUESTÃO 5: Documento formal -->
+                    <!-- QUESTÃO 5: Nível de equidade -->
                     <div class="question-group">
                         <label class="question-label">
-                            5) Existe documento formal que explicite esses critérios?
+                            5) Avalie o nível de equidade no atendimento da sua unidade:
                         </label>
                         <p class="question-description">1 = muito baixa, 5 = muito alta</p>
                         <div class="likert-scale">
                             <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="1">
+                                <input type="radio" name="nivel_equidade" value="1">
                                 <span class="likert-number">1</span>
                                 <span class="likert-text">Muito baixa</span>
                             </label>
                             <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="2">
+                                <input type="radio" name="nivel_equidade" value="2">
                                 <span class="likert-number">2</span>
                                 <span class="likert-text">Baixa</span>
                             </label>
                             <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="3">
+                                <input type="radio" name="nivel_equidade" value="3">
                                 <span class="likert-number">3</span>
                                 <span class="likert-text">Média</span>
                             </label>
                             <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="4">
+                                <input type="radio" name="nivel_equidade" value="4">
                                 <span class="likert-number">4</span>
                                 <span class="likert-text">Alta</span>
                             </label>
                             <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="5">
+                                <input type="radio" name="nivel_equidade" value="5">
                                 <span class="likert-number">5</span>
                                 <span class="likert-text">Muito alta</span>
                             </label>
@@ -1409,24 +1409,36 @@
                     <fieldset class="question-group">
                         <legend>6) Existem instrumentos formais de priorização?</legend>
                         <div class="radio-group">
-                            <label class="radio-label"><input type="radio" name="instrumentosPriorizacao" value="sim"> <span>Sim</span></label>
-                            <label class="radio-label"><input type="radio" name="instrumentosPriorizacao" value="parcialmente"> <span>Parcialmente</span></label>
-                            <label class="radio-label"><input type="radio" name="instrumentosPriorizacao" value="nao"> <span>Não</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentos_formais" value="sim_oficiais"> <span>Sim, utilizamos instrumentos oficiais</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentos_formais" value="sim_parcialmente"> <span>Sim, mas usamos apenas parcialmente</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentos_formais" value="nao_existe"> <span>Não existe instrumento</span></label>
+                            <label class="radio-label"><input type="radio" name="instrumentos_formais" value="nao_sei"> <span>Não sei</span></label>
                         </div>
                     </fieldset>
 
                     <div class="question-group">
-                        <label for="exemploInstrumento">
-                            Caso “Sim”, dê um exemplo:
+                        <label for="exemplo_instrumento_formal" class="question-label">
+                            Caso Sim, dê um exemplo:
                         </label>
-                        <textarea id="exemploInstrumento" name="exemploInstrumento" rows="3" placeholder="Descreva, se houver (opcional)"></textarea>
+                        <textarea 
+                            id="exemplo_instrumento_formal" 
+                            name="exemplo_instrumento_formal" 
+                            class="input-field" 
+                            rows="3" 
+                            placeholder="Descreva o instrumento utilizado (opcional)"></textarea>
                     </div>
 
                     <div class="question-group">
-                        <label for="comentarioB" class="question-label">
-                            Gostaria de registrar algum comentário ou descrição sobre sua experiência relacionada a esse bloco?
+                        <label for="comentario_eixo_b" class="question-label">
+                            Gostaria de registrar algum comentário ou descrições sobre sua experiência relacionado a esse bloco?
                         </label>
-                        <textarea id="comentarioB" name="comentarioB" class="input-field" rows="4" placeholder="Escreva aqui (opcional)"></textarea>
+                        <textarea 
+                            id="comentario_eixo_b" 
+                            name="comentario_eixo_b" 
+                            class="input-field" 
+                            rows="4" 
+                            placeholder="Digite aqui seus comentários (opcional)"
+                            style="width: 100%; resize: vertical; font-family: inherit; padding: 0.75rem;"></textarea>
                     </div>
 
                     <div class="navigation-buttons">
@@ -1434,7 +1446,6 @@
                         <button type="button" class="btn btn-primary" onclick="nextSection()">Próximo</button>
                     </div>
                 </section>
-
                 <!-- ETAPA 4: EIXO C -->
                 <section class="form-section" id="section-4" data-step="4">
                     <div class="section-header">

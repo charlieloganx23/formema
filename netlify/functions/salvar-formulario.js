@@ -57,6 +57,11 @@ exports.handler = async (event, context) => {
         let metodosFrequentes, metodosFrequentesOutro, metodosMelhoresResultados, metodosMelhoresResultadosOutro;
         let dificuldadeFaltaTempo, dificuldadeNumTecnicos, dificuldadeDistancia, dificuldadeBaixaAdesao;
         let dificuldadeRecursos, dificuldadeDemandasAdmin, dificuldadeMetas, comentarioEixoA;
+        
+        // Novos campos do Eixo B - Critérios de Priorização e Equidade
+        let priorizacaoAtendimentos, priorizacaoAtendimentosOutro, nivelEquidade;
+        let instrumentosFormais, exemploInstrumentoFormal, comentarioEixoB;
+
 
         if (formulario.respostas) {
             // Formato estruturado
@@ -92,6 +97,14 @@ exports.handler = async (event, context) => {
             dificuldadeDemandasAdmin = respostas.dificuldade_demandas_admin ? parseInt(respostas.dificuldade_demandas_admin) : null;
             dificuldadeMetas = respostas.dificuldade_metas ? parseInt(respostas.dificuldade_metas) : null;
             comentarioEixoA = respostas.comentario_eixo_a || null;
+            
+            // Extrair novos campos do Eixo B
+            priorizacaoAtendimentos = respostas.priorizacao_atendimentos ? JSON.stringify(respostas.priorizacao_atendimentos) : null;
+            priorizacaoAtendimentosOutro = respostas.priorizacao_atendimentos_outro || null;
+            nivelEquidade = respostas.nivel_equidade ? parseInt(respostas.nivel_equidade) : null;
+            instrumentosFormais = respostas.instrumentos_formais || null;
+            exemploInstrumentoFormal = respostas.exemplo_instrumento_formal || null;
+            comentarioEixoB = respostas.comentario_eixo_b || null;
         } else {
             // Formato flat (IndexedDB antigo)
             respostas = { ...formulario }; // Usar o objeto inteiro como respostas
@@ -126,6 +139,14 @@ exports.handler = async (event, context) => {
             dificuldadeDemandasAdmin = formulario.dificuldade_demandas_admin ? parseInt(formulario.dificuldade_demandas_admin) : null;
             dificuldadeMetas = formulario.dificuldade_metas ? parseInt(formulario.dificuldade_metas) : null;
             comentarioEixoA = formulario.comentario_eixo_a || null;
+            
+            // Extrair novos campos do Eixo B (formato flat)
+            priorizacaoAtendimentos = formulario.priorizacao_atendimentos ? JSON.stringify(formulario.priorizacao_atendimentos) : null;
+            priorizacaoAtendimentosOutro = formulario.priorizacao_atendimentos_outro || null;
+            nivelEquidade = formulario.nivel_equidade ? parseInt(formulario.nivel_equidade) : null;
+            instrumentosFormais = formulario.instrumentos_formais || null;
+            exemploInstrumentoFormal = formulario.exemplo_instrumento_formal || null;
+            comentarioEixoB = formulario.comentario_eixo_b || null;
         }
 
         // Verificar se já existe
@@ -163,6 +184,12 @@ exports.handler = async (event, context) => {
                 .input('dificuldade_demandas_admin', sql.Int, dificuldadeDemandasAdmin)
                 .input('dificuldade_metas', sql.Int, dificuldadeMetas)
                 .input('comentario_eixo_a', sql.NVarChar(sql.MAX), comentarioEixoA)
+                .input('priorizacao_atendimentos', sql.NVarChar(sql.MAX), priorizacaoAtendimentos)
+                .input('priorizacao_atendimentos_outro', sql.NVarChar(500), priorizacaoAtendimentosOutro)
+                .input('nivel_equidade', sql.Int, nivelEquidade)
+                .input('instrumentos_formais', sql.NVarChar(100), instrumentosFormais)
+                .input('exemplo_instrumento_formal', sql.NVarChar(sql.MAX), exemploInstrumentoFormal)
+                .input('comentario_eixo_b', sql.NVarChar(sql.MAX), comentarioEixoB)
                 .query(`
                     UPDATE formulario_extensionista SET
                         municipio = @municipio,
@@ -191,6 +218,12 @@ exports.handler = async (event, context) => {
                         dificuldade_demandas_admin = @dificuldade_demandas_admin,
                         dificuldade_metas = @dificuldade_metas,
                         comentario_eixo_a = @comentario_eixo_a,
+                        priorizacao_atendimentos = @priorizacao_atendimentos,
+                        priorizacao_atendimentos_outro = @priorizacao_atendimentos_outro,
+                        nivel_equidade = @nivel_equidade,
+                        instrumentos_formais = @instrumentos_formais,
+                        exemplo_instrumento_formal = @exemplo_instrumento_formal,
+                        comentario_eixo_b = @comentario_eixo_b,
                         updated_at = GETUTCDATE()
                     WHERE protocolo = @protocolo
                 `);
@@ -224,6 +257,12 @@ exports.handler = async (event, context) => {
                 .input('dificuldade_demandas_admin', sql.Int, dificuldadeDemandasAdmin)
                 .input('dificuldade_metas', sql.Int, dificuldadeMetas)
                 .input('comentario_eixo_a', sql.NVarChar(sql.MAX), comentarioEixoA)
+                .input('priorizacao_atendimentos', sql.NVarChar(sql.MAX), priorizacaoAtendimentos)
+                .input('priorizacao_atendimentos_outro', sql.NVarChar(500), priorizacaoAtendimentosOutro)
+                .input('nivel_equidade', sql.Int, nivelEquidade)
+                .input('instrumentos_formais', sql.NVarChar(100), instrumentosFormais)
+                .input('exemplo_instrumento_formal', sql.NVarChar(sql.MAX), exemploInstrumentoFormal)
+                .input('comentario_eixo_b', sql.NVarChar(sql.MAX), comentarioEixoB)
                 .query(`
                     INSERT INTO formulario_extensionista (
                         protocolo, municipio, unidade_emater, territorio,
@@ -235,7 +274,10 @@ exports.handler = async (event, context) => {
                         dificuldade_falta_tempo, dificuldade_num_tecnicos,
                         dificuldade_distancia, dificuldade_baixa_adesao,
                         dificuldade_recursos, dificuldade_demandas_admin,
-                        dificuldade_metas, comentario_eixo_a
+                        dificuldade_metas, comentario_eixo_a,
+                        priorizacao_atendimentos, priorizacao_atendimentos_outro,
+                        nivel_equidade, instrumentos_formais,
+                        exemplo_instrumento_formal, comentario_eixo_b
                     ) VALUES (
                         @protocolo, @municipio, @unidade_emater, @territorio,
                         @identificador_iniciais, @timestamp_inicio, @timestamp_fim,
@@ -246,7 +288,10 @@ exports.handler = async (event, context) => {
                         @dificuldade_falta_tempo, @dificuldade_num_tecnicos,
                         @dificuldade_distancia, @dificuldade_baixa_adesao,
                         @dificuldade_recursos, @dificuldade_demandas_admin,
-                        @dificuldade_metas, @comentario_eixo_a
+                        @dificuldade_metas, @comentario_eixo_a,
+                        @priorizacao_atendimentos, @priorizacao_atendimentos_outro,
+                        @nivel_equidade, @instrumentos_formais,
+                        @exemplo_instrumento_formal, @comentario_eixo_b
                     )
                 `);
         }
