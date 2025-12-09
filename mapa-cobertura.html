@@ -2809,18 +2809,16 @@
             }
         };
         
-        // Iniciar legenda minimizada em dispositivos móveis
-        if (window.innerWidth <= 768) {
-            setTimeout(() => {
-                const content = document.getElementById('legendContent');
-                const toggle = document.getElementById('legendToggle');
-                if (content && toggle) {
-                    content.classList.add('collapsed');
-                    toggle.classList.add('collapsed');
-                    toggle.textContent = '+';
-                }
-            }, 100);
-        }
+        // Iniciar legenda minimizada SEMPRE (em todos os dispositivos)
+        setTimeout(() => {
+            const content = document.getElementById('legendContent');
+            const toggle = document.getElementById('legendToggle');
+            if (content && toggle) {
+                content.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+                toggle.textContent = '+';
+            }
+        }, 100);
 
         // Mapa auxiliar: município -> território (para pintar polígonos)
         const municipioParaTerritorio = {};
