@@ -881,6 +881,40 @@
         }
         
         // Carregar dados do IndexedDB local
+        // ==========================================
+        // HELPER PARA OBTER RESPOSTAS
+        // ==========================================
+        
+        /**
+         * Função helper para obter respostas parseadas
+         * Lida com ambas estruturas:
+         * - Dados em f.respostas (vindo do servidor)
+         * - Dados diretos no f (salvo localmente)
+         */
+        function getRespostas(formulario) {
+            if (!formulario) return null;
+            
+            let respostas = formulario.respostas;
+            
+            // Se respostas for string, fazer parse
+            if (typeof respostas === 'string') {
+                try {
+                    respostas = JSON.parse(respostas);
+                } catch (e) {
+                    console.warn('⚠️ Erro ao parsear respostas:', e);
+                    return formulario; // Fallback para raiz
+                }
+            }
+            
+            // Se respostas existe (objeto), usar ela
+            // Senão, fallback para o próprio formulário (dados na raiz)
+            return respostas || formulario;
+        }
+        
+        // ==========================================
+        // CARREGAMENTO DE DADOS
+        // ==========================================
+
         async function carregarDadosServidor() {
             try {
                 console.log('🔄 Carregando estatísticas do IndexedDB...');
@@ -915,9 +949,13 @@
                 console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
                 console.log(`✅ ${ultimoCountSincronizados} sincronizados, ${todosFormularios.length - ultimoCountSincronizados} pendentes`);
                 
-                // Calcular KPIs
+                // Calcular KPIs usando getRespostas() para garantir compatibilidade
                 const totalFormularios = todosFormularios.length;
-                const municipiosUnicos = new Set(todosFormularios.map(f => f.respostas?.municipio).filter(Boolean));
+                const municipiosUnicos = new Set(
+                    todosFormularios
+                        .map(f => getRespostas(f)?.municipio)
+                        .filter(Boolean)
+                );
                 const municipiosVisitados = municipiosUnicos.size;
                 const coberturaPercentual = Math.round((municipiosVisitados / 52) * 100);
                 
@@ -1070,9 +1108,10 @@
                         }
                     };
                     
-                    // Normalizar campos (suporta tanto snake_case do PHP quanto camelCase do JS)
+                    // Usar helper getRespostas() para obter dados corretamente
+                    const respostas = getRespostas(form);
                     const protocolo = form.protocolo;
-                    const municipio = form.municipio || form.respostas?.municipio || 'N/A';
+                    const municipio = respostas?.municipio || 'N/A';
                     const timestampFim = form.timestampFim || form.timestamp_fim;
                     const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
                     const status = form.status || 'N/A';
@@ -1133,39 +1172,21 @@
                     return;
                 }
                 
-                // Se respostas é string JSON, fazer parse
-                if (form.respostas && typeof form.respostas === 'string') {
-                    try {
-                        form.respostas = JSON.parse(form.respostas);
-                    } catch (e) {
-                        console.warn('Erro ao fazer parse de respostas:', e);
-                    }
-                }
+                // Usar helper getRespostas() para obter dados corretamente
+                const respostas = getRespostas(form);
                 
                 const modal = document.getElementById('modalDetalhes');
                 const body = document.getElementById('modalBody');
                 
-                // Extrair dados do formulário (compatível com ambos formatos)
-                const municipio = form.respostas?.municipio || form.municipio || 'N/A';
-                const identificador = form.respostas?.identificador_iniciais || form.identificador_iniciais || form.nomeCompleto || 'N/A';
-                const unidade = form.respostas?.unidade_emater || form.unidade_emater || form.escritorioLocal || null;
+                // Extrair dados usando helper
+                const municipio = respostas?.municipio || 'N/A';
+                const identificador = respostas?.identificador_iniciais || respostas?.nomeCompleto || 'N/A';
+                const unidade = respostas?.unidade_emater || respostas?.escritorioLocal || null;
                 const timestampFim = form.timestampFim || form.timestamp_fim;
                 const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
                 
-                // Se respostas estiver vazio mas tiver dados no root, usar os dados do root
-                let respostasParaMostrar = form.respostas;
-                if (!respostasParaMostrar || Object.keys(respostasParaMostrar).length === 0) {
-                    // Criar objeto respostas a partir dos campos do formulário
-                    respostasParaMostrar = { ...form };
-                    // Remover campos meta
-                    delete respostasParaMostrar.id;
-                    delete respostasParaMostrar.protocolo;
-                    delete respostasParaMostrar.timestamp_inicio;
-                    delete respostasParaMostrar.timestamp_fim;
-                    delete respostasParaMostrar.sincronizado;
-                    delete respostasParaMostrar.versao_formulario;
-                    delete respostasParaMostrar.data_sincronizacao;
-                }
+                // respostas já contém os dados corretos via getRespostas()
+                const respostasParaMostrar = respostas;
                 
                 // Preparar informações de GPS (suporta tanto objeto quanto campos diretos)
                 const geo = form.geolocalizacao || form;
@@ -1650,8 +1671,9 @@
                 // Criar dados estruturados para Excel
                 const dados = [];
                 
-                // Normalizar campos
-                const municipio = form.municipio || form.respostas?.municipio || 'N/A';
+                // Usar helper getRespostas() para acesso correto aos dados
+                const respostas = getRespostas(form);
+                const municipio = respostas?.municipio || 'N/A';
                 const timestampInicio = form.timestampInicio || form.timestamp_inicio;
                 const timestampFim = form.timestampFim || form.timestamp_fim;
                 const duracaoMinutos = form.duracaoMinutos || form.duracao_minutos || 0;
@@ -1660,9 +1682,9 @@
                 dados.push(['FORMULÁRIO DE PESQUISA - EMATER-RO']);
                 dados.push(['Protocolo:', form.protocolo]);
                 dados.push(['Município:', municipio]);
-                dados.push(['Produtor:', form.identificador_iniciais || form.respostas?.identificador_iniciais || 'N/A']);
-                if (form.unidade_emater) {
-                    dados.push(['Unidade EMATER:', form.unidade_emater]);
+                dados.push(['Produtor:', respostas?.identificador_iniciais || 'N/A']);
+                if (respostas?.unidade_emater) {
+                    dados.push(['Unidade EMATER:', respostas.unidade_emater]);
                 }
                 dados.push(['Data Início:', timestampInicio ? new Date(timestampInicio).toLocaleString('pt-BR') : 'N/A']);
                 dados.push(['Data Fim:', timestampFim ? new Date(timestampFim).toLocaleString('pt-BR') : 'N/A']);
@@ -1692,10 +1714,10 @@
                 
                 // Informações gerais do formulário
                 dados.push(['INFORMAÇÕES GERAIS']);
-                const comunidade = form.comunidade || form.respostas?.comunidade_localidade;
-                const sistemaProdutivo = form.sistema_produtivo || form.respostas?.sistema_produtivo;
-                const areaProdutiva = form.area_produtiva || form.respostas?.area_produtiva;
-                const atendimentoEmater = form.atendimento_emater || form.respostas?.atendimento_emater;
+                const comunidade = respostas?.comunidade_localidade;
+                const sistemaProdutivo = respostas?.sistema_produtivo;
+                const areaProdutiva = respostas?.area_produtiva;
+                const atendimentoEmater = respostas?.atendimento_emater;
                 
                 if (comunidade) {
                     dados.push(['Comunidade/Localidade:', comunidade]);
@@ -1816,26 +1838,29 @@
                 
                 // Adicionar dados de cada formulário
                 for (const form of formularios) {
+                    // Usar helper getRespostas() para acesso correto
+                    const respostas = getRespostas(form);
+                    
                     const linha = [
                         form.protocolo || '',
                         (form.timestampInicio || form.timestamp_inicio) ? new Date(form.timestampInicio || form.timestamp_inicio).toLocaleString('pt-BR') : '',
                         (form.timestampFim || form.timestamp_fim) ? new Date(form.timestampFim || form.timestamp_fim).toLocaleString('pt-BR') : '',
                         form.duracaoMinutos || form.duracao_minutos || '',
-                        form.respostas?.municipio || form.municipio || '',
-                        form.respostas?.comunidade_localidade || '',
-                        form.respostas?.sistema_produtivo || '',
-                        form.respostas?.area_produtiva || '',
-                        form.atendimentoEmater || '',
-                        form.consentimento || '',
+                        respostas?.municipio || '',
+                        respostas?.comunidade_localidade || '',
+                        respostas?.sistema_produtivo || '',
+                        respostas?.area_produtiva || '',
+                        respostas?.atendimento_emater || '',
+                        respostas?.consentimento || '',
                         form.geolocalizacao?.latitude?.toFixed(6) || '',
                         form.geolocalizacao?.longitude?.toFixed(6) || '',
                         form.geolocalizacao?.precisao ? `±${Math.round(form.geolocalizacao.precisao)}m` : '',
-                        Array.isArray(form.respostas?.praticas_sustentaveis) ? form.respostas.praticas_sustentaveis.join('; ') : form.respostas?.praticas_sustentaveis || '',
-                        form.respostas?.produtividade || '',
-                        form.respostas?.renda || '',
-                        form.respostas?.satisfacao_geral || '',
-                        Array.isArray(form.respostas?.publicos_prioritarios) ? form.respostas.publicos_prioritarios.join('; ') : '',
-                        Array.isArray(form.respostas?.canais_comercializacao) ? form.respostas.canais_comercializacao.join('; ') : '',
+                        Array.isArray(respostas?.praticas_sustentaveis) ? respostas.praticas_sustentaveis.join('; ') : respostas?.praticas_sustentaveis || '',
+                        respostas?.produtividade || '',
+                        respostas?.renda || '',
+                        respostas?.satisfacao_geral || '',
+                        Array.isArray(respostas?.publicos_prioritarios) ? respostas.publicos_prioritarios.join('; ') : '',
+                        Array.isArray(respostas?.canais_comercializacao) ? respostas.canais_comercializacao.join('; ') : '',
                         form.sincronizado ? 'Sim' : 'Não'
                     ];
                     dados.push(linha);
