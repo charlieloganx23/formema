@@ -2288,6 +2288,58 @@
             }
         }
         
+        // Função de debug para inspecionar formulário problemático
+        window.debugFormulario = async function(protocolo) {
+            try {
+                const db = await getDB();
+                const tx = db.transaction('formularios', 'readonly');
+                const store = tx.objectStore('formularios');
+                const formulario = await store.get(protocolo);
+                
+                if (!formulario) {
+                    console.error('❌ Formulário não encontrado:', protocolo);
+                    return;
+                }
+                
+                console.log('🐛 DEBUG - Formulário Completo:', protocolo);
+                console.log('📋 Estrutura:', JSON.stringify(formulario, null, 2));
+                console.log('🔍 Campos Eixo C:', {
+                    parcerias_ativas: formulario.parcerias_ativas,
+                    parceriasAtivas: formulario.parceriasAtivas,
+                    parcerias_ativas_outro: formulario.parcerias_ativas_outro,
+                    parceriasAtivasOutro: formulario.parceriasAtivasOutro,
+                    participa_foruns: formulario.participa_foruns,
+                    participaForuns: formulario.participaForuns,
+                    influencia_emater: formulario.influencia_emater,
+                    influenciaEmater: formulario.influenciaEmater,
+                    comentario_eixo_c: formulario.comentario_eixo_c,
+                    comentarioC: formulario.comentarioC
+                });
+                console.log('🔍 Campos Eixo D:', {
+                    freq_demanda_mercado: formulario.freq_demanda_mercado,
+                    freqDemandaMercado: formulario.freqDemandaMercado,
+                    capacitacao_mercado: formulario.capacitacao_mercado,
+                    capacitacaoMercado: formulario.capacitacaoMercado,
+                    impacto_capacitacao: formulario.impacto_capacitacao,
+                    impactoCapacitacao: formulario.impactoCapacitacao,
+                    instrumentos_producao: formulario.instrumentos_producao,
+                    instrumentosProducao: formulario.instrumentosProducao,
+                    exemplo_instrumentos_producao: formulario.exemplo_instrumentos_producao,
+                    exemploInstrumentosProducao: formulario.exemploInstrumentosProducao,
+                    freq_apoio_mercados_institucionais: formulario.freq_apoio_mercados_institucionais,
+                    freqApoioMercadosInstitucionais: formulario.freqApoioMercadosInstitucionais,
+                    conhecimento_oferta_demanda: formulario.conhecimento_oferta_demanda,
+                    conhecimentoOfertaDemanda: formulario.conhecimentoOfertaDemanda,
+                    comentario_eixo_d: formulario.comentario_eixo_d,
+                    comentarioD: formulario.comentarioD
+                });
+                
+                return formulario;
+            } catch (error) {
+                console.error('❌ Erro ao inspecionar formulário:', error);
+            }
+        };
+        
         // Fechar modal ao clicar fora
         window.onclick = function(event) {
             const modal = document.getElementById('modalDetalhes');
