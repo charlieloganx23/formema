@@ -123,24 +123,32 @@ exports.handler = async (event, context) => {
             exemploInstrumentoFormal = respostas.exemplo_instrumento_formal || null;
             comentarioEixoB = respostas.comentario_eixo_b || null;
             
-            // Extrair campos do Eixo C
-            parceriasAtivas = respostas.parcerias_ativas ? 
-                (Array.isArray(respostas.parcerias_ativas) ? JSON.stringify(respostas.parcerias_ativas) : respostas.parcerias_ativas) : null;
-            parceriasAtivasOutro = respostas.parcerias_ativas_outro || null;
-            participaForuns = respostas.participa_foruns || null;
-            influenciaEmater = respostas.influencia_emater ? parseInt(respostas.influencia_emater) : null;
-            comentarioC = respostas.comentario_eixo_c || null;
+            // Extrair campos do Eixo C (com compatibilidade retroativa camelCase → snake_case)
+            parceriasAtivas = respostas.parcerias_ativas || respostas.parceriasAtivas || null;
+            if (parceriasAtivas && !Array.isArray(parceriasAtivas) && typeof parceriasAtivas !== 'string') {
+                parceriasAtivas = null;
+            } else if (Array.isArray(parceriasAtivas)) {
+                parceriasAtivas = JSON.stringify(parceriasAtivas);
+            }
+            parceriasAtivasOutro = respostas.parcerias_ativas_outro || respostas.parceriasAtivasOutro || null;
+            participaForuns = respostas.participa_foruns || respostas.participaForuns || null;
+            influenciaEmater = respostas.influencia_emater || respostas.influenciaEmater ? parseInt(respostas.influencia_emater || respostas.influenciaEmater) : null;
+            comentarioC = respostas.comentario_eixo_c || respostas.comentarioC || null;
             
-            // Extrair campos do Eixo D
-            freqDemandaMercado = respostas.freq_demanda_mercado || null;
-            capacitacaoMercado = respostas.capacitacao_mercado || null;
-            impactoCapacitacao = respostas.impacto_capacitacao ? parseInt(respostas.impacto_capacitacao) : null;
-            instrumentosProducao = respostas.instrumentos_producao ? 
-                (Array.isArray(respostas.instrumentos_producao) ? JSON.stringify(respostas.instrumentos_producao) : respostas.instrumentos_producao) : null;
-            exemploInstrumentosProducao = respostas.exemplo_instrumentos_producao || null;
-            freqApoioMercadosInstitucionais = respostas.freq_apoio_mercados_institucionais || null;
-            conhecimentoOfertaDemanda = respostas.conhecimento_oferta_demanda || null;
-            comentarioD = respostas.comentario_eixo_d || null;
+            // Extrair campos do Eixo D (com compatibilidade retroativa camelCase → snake_case)
+            freqDemandaMercado = respostas.freq_demanda_mercado || respostas.freqDemandaMercado || null;
+            capacitacaoMercado = respostas.capacitacao_mercado || respostas.capacitacaoMercado || null;
+            impactoCapacitacao = respostas.impacto_capacitacao || respostas.impactoCapacitacao ? parseInt(respostas.impacto_capacitacao || respostas.impactoCapacitacao) : null;
+            instrumentosProducao = respostas.instrumentos_producao || respostas.instrumentosProducao || null;
+            if (instrumentosProducao && !Array.isArray(instrumentosProducao) && typeof instrumentosProducao !== 'string') {
+                instrumentosProducao = null;
+            } else if (Array.isArray(instrumentosProducao)) {
+                instrumentosProducao = JSON.stringify(instrumentosProducao);
+            }
+            exemploInstrumentosProducao = respostas.exemplo_instrumentos_producao || respostas.exemploInstrumentosProducao || null;
+            freqApoioMercadosInstitucionais = respostas.freq_apoio_mercados_institucionais || respostas.freqApoioMercadosInstitucionais || null;
+            conhecimentoOfertaDemanda = respostas.conhecimento_oferta_demanda || respostas.conhecimentoOfertaDemanda || null;
+            comentarioD = respostas.comentario_eixo_d || respostas.comentarioD || null;
             
             // Extrair novos campos do Eixo E
             instrumentosAcompanhamento = respostas.instrumentos_acompanhamento ? 
@@ -195,24 +203,32 @@ exports.handler = async (event, context) => {
             exemploInstrumentoFormal = formulario.exemplo_instrumento_formal || null;
             comentarioEixoB = formulario.comentario_eixo_b || null;
             
-            // Extrair campos do Eixo C (formato flat)
-            parceriasAtivas = formulario.parcerias_ativas ? 
-                (Array.isArray(formulario.parcerias_ativas) ? JSON.stringify(formulario.parcerias_ativas) : formulario.parcerias_ativas) : null;
-            parceriasAtivasOutro = formulario.parcerias_ativas_outro || null;
-            participaForuns = formulario.participa_foruns || null;
-            influenciaEmater = formulario.influencia_emater ? parseInt(formulario.influencia_emater) : null;
-            comentarioC = formulario.comentario_eixo_c || null;
+            // Extrair campos do Eixo C (formato flat - com compatibilidade retroativa)
+            parceriasAtivas = formulario.parcerias_ativas || formulario.parceriasAtivas || null;
+            if (parceriasAtivas && !Array.isArray(parceriasAtivas) && typeof parceriasAtivas !== 'string') {
+                parceriasAtivas = null;
+            } else if (Array.isArray(parceriasAtivas)) {
+                parceriasAtivas = JSON.stringify(parceriasAtivas);
+            }
+            parceriasAtivasOutro = formulario.parcerias_ativas_outro || formulario.parceriasAtivasOutro || null;
+            participaForuns = formulario.participa_foruns || formulario.participaForuns || null;
+            influenciaEmater = formulario.influencia_emater || formulario.influenciaEmater ? parseInt(formulario.influencia_emater || formulario.influenciaEmater) : null;
+            comentarioC = formulario.comentario_eixo_c || formulario.comentarioC || null;
             
-            // Extrair campos do Eixo D (formato flat)
-            freqDemandaMercado = formulario.freq_demanda_mercado || null;
-            capacitacaoMercado = formulario.capacitacao_mercado || null;
-            impactoCapacitacao = formulario.impacto_capacitacao ? parseInt(formulario.impacto_capacitacao) : null;
-            instrumentosProducao = formulario.instrumentos_producao ? 
-                (Array.isArray(formulario.instrumentos_producao) ? JSON.stringify(formulario.instrumentos_producao) : formulario.instrumentos_producao) : null;
-            exemploInstrumentosProducao = formulario.exemplo_instrumentos_producao || null;
-            freqApoioMercadosInstitucionais = formulario.freq_apoio_mercados_institucionais || null;
-            conhecimentoOfertaDemanda = formulario.conhecimento_oferta_demanda || null;
-            comentarioD = formulario.comentario_eixo_d || null;
+            // Extrair campos do Eixo D (formato flat - com compatibilidade retroativa)
+            freqDemandaMercado = formulario.freq_demanda_mercado || formulario.freqDemandaMercado || null;
+            capacitacaoMercado = formulario.capacitacao_mercado || formulario.capacitacaoMercado || null;
+            impactoCapacitacao = formulario.impacto_capacitacao || formulario.impactoCapacitacao ? parseInt(formulario.impacto_capacitacao || formulario.impactoCapacitacao) : null;
+            instrumentosProducao = formulario.instrumentos_producao || formulario.instrumentosProducao || null;
+            if (instrumentosProducao && !Array.isArray(instrumentosProducao) && typeof instrumentosProducao !== 'string') {
+                instrumentosProducao = null;
+            } else if (Array.isArray(instrumentosProducao)) {
+                instrumentosProducao = JSON.stringify(instrumentosProducao);
+            }
+            exemploInstrumentosProducao = formulario.exemplo_instrumentos_producao || formulario.exemploInstrumentosProducao || null;
+            freqApoioMercadosInstitucionais = formulario.freq_apoio_mercados_institucionais || formulario.freqApoioMercadosInstitucionais || null;
+            conhecimentoOfertaDemanda = formulario.conhecimento_oferta_demanda || formulario.conhecimentoOfertaDemanda || null;
+            comentarioD = formulario.comentario_eixo_d || formulario.comentarioD || null;
             
             // Extrair novos campos do Eixo E (formato flat)
             instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? 
