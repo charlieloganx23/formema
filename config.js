@@ -21,6 +21,10 @@ const CONFIG = {
         RETRY_DELAY: 5000        // Delay entre tentativas (5 segundos)
     },
     
+    // URLs do Azure SQL (via Azure Functions)
+    AZURE_FUNCTION_URL_EXTENSIONISTAS: 'https://your-azure-function-extensionistas.azurewebsites.net/api/formularios',
+    AZURE_FUNCTION_URL_GERENTES: 'https://your-azure-function-gerentes.azurewebsites.net/api/formularios',
+    
     // Timeout para requests
     TIMEOUT: 30000 // 30 segundos
 };
