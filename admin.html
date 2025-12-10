@@ -935,48 +935,89 @@
     </div>
     
     <script src="config.js"></script>
+    <script>
+        // ==================== NAMESPACE ISOLADO COM CLOSURES ====================
+        // Função auxiliar para criar um namespace isolado a partir de um DB_NAME específico
+        function criarNamespaceDB(dbName, tipo) {
+            console.log(`🔧 Criando namespace para ${tipo} (DB: ${dbName})...`);
+            
+            // Clonar a lógica de IndexedDB com o DB_NAME específico
+            const DB_VERSION = 1;
+            const STORE_NAME = 'formularios';
+            
+            function abrirDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(dbName, DB_VERSION);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'protocolo' });
+                            objectStore.createIndex('sincronizado', 'sincronizado', { unique: false });
+                            objectStore.createIndex('dataEnvio', 'dataEnvio', { unique: false });
+                        }
+                    };
+                });
+            }
+            
+            async function buscarTodos() {
+                const db = await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const request = objectStore.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+            
+            async function buscarNaoSincronizados() {
+                const db = await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const index = objectStore.index('sincronizado');
+                    const request = index.getAll(false);
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+            
+            console.log(`✅ Namespace ${tipo} criado (DB: ${dbName})`);
+            return {
+                buscarTodos,
+                buscarNaoSincronizados,
+                DB_NAME: dbName,
+                tipo: tipo
+            };
+        }
+        
+        // Criar namespaces isolados
+        const ExtensionistasDB = criarNamespaceDB('EmatechExtensionistas', 'extensionistas');
+        const GerentesDB = criarNamespaceDB('EmatechGerentes', 'gerentes');
+    </script>
+    
+    <!-- Carregar scripts originais apenas para sincronização (funções complexas) -->
     <script src="db-extensionistas.js"></script>
     <script>
-        // ==================== NAMESPACE ISOLADO ====================
-        // Salvar funções de extensionistas antes de carregar gerentes
-        console.log('🔍 Verificando funções disponíveis de extensionistas...');
-        console.log('  - buscarTodosFormularios:', typeof window.buscarTodosFormularios);
-        console.log('  - buscarNaoSincronizados:', typeof window.buscarNaoSincronizados);
-        
-        const ExtensionistasDB = {
-            buscarTodos: window.buscarTodosFormularios,
-            buscarNaoSincronizados: window.buscarNaoSincronizados,
-            buscarPorProtocolo: window.buscarPorProtocolo,
-            sincronizar: window.sincronizarFormularioComAzure,
-            sincronizarTodosPendentes: window.sincronizarTodosPendentes,
-            marcarComoSincronizado: window.marcarComoSincronizado,
-            deletar: window.deletarFormulario,
-            exportarJSON: window.exportarParaJSON,
-            DB_NAME: 'EmatechExtensionistas',
-            tipo: 'extensionistas'
-        };
-        console.log('✅ Namespace ExtensionistasDB criado');
+        // Adicionar funções de sincronização ao namespace de extensionistas
+        ExtensionistasDB.sincronizar = window.sincronizarFormularioComAzure;
+        ExtensionistasDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
+        ExtensionistasDB.marcarComoSincronizado = window.marcarComoSincronizado;
+        ExtensionistasDB.deletar = window.deletarFormulario;
+        ExtensionistasDB.buscarPorProtocolo = window.buscarPorProtocolo;
+        ExtensionistasDB.exportarJSON = window.exportarParaJSON;
     </script>
     <script src="db-gerentes.js"></script>
     <script>
-        // Salvar funções de gerentes após carregar
-        console.log('🔍 Verificando funções disponíveis de gerentes...');
-        console.log('  - buscarTodosFormularios:', typeof window.buscarTodosFormularios);
-        console.log('  - buscarNaoSincronizados:', typeof window.buscarNaoSincronizados);
-        
-        const GerentesDB = {
-            buscarTodos: window.buscarTodosFormularios,
-            buscarNaoSincronizados: window.buscarNaoSincronizados,
-            buscarPorProtocolo: window.buscarPorProtocolo,
-            sincronizar: window.sincronizarFormularioComAzure,
-            sincronizarTodosPendentes: window.sincronizarTodosPendentes,
-            marcarComoSincronizado: window.marcarComoSincronizado,
-            deletar: window.deletarFormulario,
-            exportarJSON: window.exportarParaJSON,
-            DB_NAME: 'EmatechGerentes',
-            tipo: 'gerentes'
-        };
-        console.log('✅ Namespace GerentesDB criado');
+        // Adicionar funções de sincronização ao namespace de gerentes
+        GerentesDB.sincronizar = window.sincronizarFormularioComAzure;
+        GerentesDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
+        GerentesDB.marcarComoSincronizado = window.marcarComoSincronizado;
+        GerentesDB.deletar = window.deletarFormulario;
+        GerentesDB.buscarPorProtocolo = window.buscarPorProtocolo;
+        GerentesDB.exportarJSON = window.exportarParaJSON;
         
         // Restaurar extensionistas como padrão para compatibilidade
         window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
@@ -1084,8 +1125,9 @@
                 }
                 
                 // PASSO 2: Enviar pendentes locais para o servidor
-                console.log('🔄 [AUTO-SYNC] Passo 2: Verificando pendentes locais...');
-                const pendentes = await buscarNaoSincronizados();
+                console.log(`🔄 [AUTO-SYNC] Passo 2: Verificando pendentes locais (${abaAtiva})...`);
+                const db = getDBAtivo();
+                const pendentes = await db.buscarNaoSincronizados();
                 
                 if (pendentes.length > 0) {
                     console.log(`🔄 [AUTO-SYNC] ${pendentes.length} formulário(s) pendente(s) detectado(s)`);
@@ -1252,8 +1294,9 @@
                     return { success: true, novos: 0, atualizados: 0, deletados: 0 };
                 }
                 
-                // Buscar formulários locais
-                const formulariosLocais = await buscarTodosFormularios();
+                // Buscar formulários locais da aba ativa
+                const db = getDBAtivo();
+                const formulariosLocais = await db.buscarTodos();
                 const protocolosLocais = new Set(formulariosLocais.map(f => f.protocolo));
                 const protocolosServidor = new Set(formulariosServidor.map(f => f.protocolo));
                 
@@ -1522,10 +1565,11 @@
         // Carregar formulários pendentes do IndexedDB
         async function carregarFormulariosPendentes() {
             try {
-                console.log('🔄 Verificando formulários pendentes no IndexedDB...');
+                console.log(`🔄 Verificando formulários pendentes no IndexedDB (${abaAtiva})...`);
                 
-                // Usar função do db.js
-                const pendentes = await buscarNaoSincronizados();
+                // Usar função do DB da aba ativa
+                const db = getDBAtivo();
+                const pendentes = await db.buscarNaoSincronizados();
                 
                 if (pendentes.length > 0) {
                     console.log(`⚠️ ${pendentes.length} formulário(s) pendente(s) de sincronização`);
@@ -2434,11 +2478,12 @@
                 console.log('🔄 Iniciando sincronização manual...');
                 
                 showSyncModal('Sincronizando Pendentes', 'Enviando formulários para o servidor...', 'Preparando envio...');
-                updateSyncModal('Buscando formulários pendentes...', 20);
+                updateSyncModal(`Buscando formulários pendentes (${abaAtiva})...`, 20);
                 
-                // Buscar formulários pendentes
-                const pendentes = await buscarNaoSincronizados();
-                console.log(`📤 Encontrados ${pendentes.length} formulário(s) pendente(s)`);
+                // Buscar formulários pendentes da aba ativa
+                const db = getDBAtivo();
+                const pendentes = await db.buscarNaoSincronizados();
+                console.log(`📤 Encontrados ${pendentes.length} formulário(s) pendente(s) (${abaAtiva})`);
                 
                 if (pendentes.length === 0) {
                     hideSyncModal();
