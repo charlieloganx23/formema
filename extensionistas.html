@@ -2242,41 +2242,49 @@
             
             // Eixo B: Mostrar exemplo_instrumento_formal apenas se instrumentos_formais = sim
             const instrumentosFormaisRadios = document.querySelectorAll('input[name="instrumentos_formais"]');
-            const exemploInstrumentoFormalContainer = document.querySelector('#exemplo_instrumento_formal').closest('.question-group');
+            const exemploInstrumentoFormalElement = document.querySelector('#exemplo_instrumento_formal');
             
-            function toggleExemploInstrumentoFormal() {
-                const selectedValue = document.querySelector('input[name="instrumentos_formais"]:checked')?.value;
-                if (selectedValue && (selectedValue === 'sim_oficiais' || selectedValue === 'sim_parcialmente')) {
-                    exemploInstrumentoFormalContainer.style.display = 'block';
-                } else {
-                    exemploInstrumentoFormalContainer.style.display = 'none';
-                    document.getElementById('exemplo_instrumento_formal').value = ''; // Limpar campo
+            if (exemploInstrumentoFormalElement) {
+                const exemploInstrumentoFormalContainer = exemploInstrumentoFormalElement.closest('.question-group');
+                
+                function toggleExemploInstrumentoFormal() {
+                    const selectedValue = document.querySelector('input[name="instrumentos_formais"]:checked')?.value;
+                    if (selectedValue && (selectedValue === 'sim_oficiais' || selectedValue === 'sim_parcialmente')) {
+                        exemploInstrumentoFormalContainer.style.display = 'block';
+                    } else {
+                        exemploInstrumentoFormalContainer.style.display = 'none';
+                        exemploInstrumentoFormalElement.value = ''; // Limpar campo
+                    }
                 }
+                
+                instrumentosFormaisRadios.forEach(radio => {
+                    radio.addEventListener('change', toggleExemploInstrumentoFormal);
+                });
+                toggleExemploInstrumentoFormal(); // Inicializar estado
             }
             
-            instrumentosFormaisRadios.forEach(radio => {
-                radio.addEventListener('change', toggleExemploInstrumentoFormal);
-            });
-            toggleExemploInstrumentoFormal(); // Inicializar estado
-            
-            // Eixo D: Mostrar exemploInstrumentosProducao apenas se instrumentosProducao = sim
+            // Eixo D: Mostrar exemplo_instrumentos_producao apenas se instrumentos_producao = sim
             const instrumentosProducaoRadios = document.querySelectorAll('input[name="instrumentos_producao"]');
-            const exemploInstrumentosProducaoContainer = document.querySelector('#exemplo_instrumentos_producao').closest('.question-group');
+            const exemploInstrumentosProducaoElement = document.querySelector('#exemplo_instrumentos_producao');
             
-            function toggleExemploInstrumentosProducao() {
-                const selectedValue = document.querySelector('input[name="instrumentos_producao"]:checked')?.value;
-                if (selectedValue && (selectedValue === 'sim_frequentemente' || selectedValue === 'sim_pouco')) {
-                    exemploInstrumentosProducaoContainer.style.display = 'block';
-                } else {
-                    exemploInstrumentosProducaoContainer.style.display = 'none';
-                    document.getElementById('exemplo_instrumentos_producao').value = ''; // Limpar campo
+            if (exemploInstrumentosProducaoElement) {
+                const exemploInstrumentosProducaoContainer = exemploInstrumentosProducaoElement.closest('.question-group');
+                
+                function toggleExemploInstrumentosProducao() {
+                    const selectedValue = document.querySelector('input[name="instrumentos_producao"]:checked')?.value;
+                    if (selectedValue && (selectedValue === 'sim_frequentemente' || selectedValue === 'sim_pouco')) {
+                        exemploInstrumentosProducaoContainer.style.display = 'block';
+                    } else {
+                        exemploInstrumentosProducaoContainer.style.display = 'none';
+                        exemploInstrumentosProducaoElement.value = ''; // Limpar campo
+                    }
                 }
+                
+                instrumentosProducaoRadios.forEach(radio => {
+                    radio.addEventListener('change', toggleExemploInstrumentosProducao);
+                });
+                toggleExemploInstrumentosProducao(); // Inicializar estado
             }
-            
-            instrumentosProducaoRadios.forEach(radio => {
-                radio.addEventListener('change', toggleExemploInstrumentosProducao);
-            });
-            toggleExemploInstrumentosProducao(); // Inicializar estado
 
             // ========================================
             // SISTEMA DE NOTIFICAÇÕES E MODAL
