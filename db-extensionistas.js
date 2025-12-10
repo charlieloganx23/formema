@@ -572,6 +572,12 @@ async function sincronizarFormularioComAzure(formulario) {
     } catch (error) {
         console.error(`❌ [SYNC] Erro ao sincronizar ${formulario.protocolo}:`, error.message);
         console.error('❌ [SYNC] Stack:', error.stack);
+        
+        // Mostrar modal de erro detalhado se disponível
+        if (typeof window.mostrarErroDetalhado === 'function') {
+            window.mostrarErroDetalhado(error, formulario.protocolo);
+        }
+        
         return { success: false, protocolo: formulario.protocolo, error: error.message };
     }
 }

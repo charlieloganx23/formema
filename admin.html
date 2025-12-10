@@ -2356,6 +2356,222 @@
                 fecharModal();
             }
         }
+
+        // ==================================================
+        // MODAL DE ERRO DETALHADO
+        // ==================================================
+        
+        function mostrarErroDetalhado(error, protocolo = 'N/A') {
+            const codigo = 'ERR-' + Date.now().toString().slice(-8);
+            const timestamp = new Date().toLocaleString('pt-BR');
+            const errorMsg = error.message || String(error);
+            
+            // Salvar no LocalStorage
+            try {
+                localStorage.setItem('ultimo_erro_sync', JSON.stringify({
+                    codigo,
+                    protocolo,
+                    erro: errorMsg,
+                    timestamp
+                }));
+            } catch (e) {
+                console.error('Erro ao salvar no LocalStorage:', e);
+            }
+            
+            // Criar modal
+            const modalHTML = `
+                <div id="modalErroSync" style="
+                    display: flex;
+                    position: fixed;
+                    z-index: 10000;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.6);
+                    align-items: center;
+                    justify-content: center;
+                    animation: fadeIn 0.3s ease;
+                ">
+                    <div style="
+                        background: white;
+                        border-radius: 16px;
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 90vh;
+                        overflow-y: auto;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                        animation: slideDown 0.3s ease;
+                    ">
+                        <!-- Cabeçalho -->
+                        <div style="
+                            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+                            color: white;
+                            padding: 24px;
+                            border-radius: 16px 16px 0 0;
+                        ">
+                            <div style="font-size: 48px; text-align: center; margin-bottom: 12px;">⚠️</div>
+                            <h2 style="margin: 0; text-align: center; font-size: 1.5rem;">Erro na Sincronização</h2>
+                        </div>
+                        
+                        <!-- Código do Erro -->
+                        <div style="padding: 24px; background: #fff3e0; border-left: 4px solid #f57c00;">
+                            <div style="color: #e65100; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
+                                CÓDIGO DO ERRO
+                            </div>
+                            <div id="codigoErro" style="
+                                font-family: 'Courier New', monospace;
+                                font-size: 1.5rem;
+                                font-weight: bold;
+                                color: #d84315;
+                                letter-spacing: 1px;
+                                user-select: all;
+                            ">${codigo}</div>
+                        </div>
+                        
+                        <!-- Detalhes -->
+                        <div style="padding: 24px;">
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Protocolo:</div>
+                                <div style="font-weight: 600; color: #333;">${protocolo}</div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Tipo de Erro:</div>
+                                <div style="font-weight: 600; color: #333;">${errorMsg}</div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Data/Hora:</div>
+                                <div style="font-weight: 600; color: #333;">${timestamp}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Instruções -->
+                        <div style="
+                            margin: 0 24px 24px;
+                            padding: 20px;
+                            background: #e3f2fd;
+                            border-radius: 12px;
+                            border-left: 4px solid #1976d2;
+                        ">
+                            <div style="font-weight: 600; color: #0d47a1; margin-bottom: 12px; font-size: 1rem;">
+                                📋 O que fazer agora?
+                            </div>
+                            <ol style="margin: 0; padding-left: 20px; color: #1565c0; line-height: 1.8;">
+                                <li>Clique no botão <strong>"Copiar Código"</strong> abaixo</li>
+                                <li>Envie o código copiado por <strong>WhatsApp</strong> para o suporte</li>
+                                <li>Aguarde orientação da equipe técnica</li>
+                                <li>Seus dados estão <strong>salvos localmente e seguros</strong></li>
+                            </ol>
+                        </div>
+                        
+                        <!-- Botões -->
+                        <div style="padding: 0 24px 24px; display: flex; gap: 12px;">
+                            <button onclick="copiarCodigoErro()" style="
+                                flex: 1;
+                                background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+                                color: white;
+                                border: none;
+                                padding: 14px 24px;
+                                border-radius: 8px;
+                                font-size: 1rem;
+                                font-weight: 600;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(46, 125, 50, 0.4)';"
+                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(46, 125, 50, 0.3)';">
+                                📋 Copiar Código
+                            </button>
+                            <button onclick="fecharModalErro()" style="
+                                flex: 1;
+                                background: #757575;
+                                color: white;
+                                border: none;
+                                padding: 14px 24px;
+                                border-radius: 8px;
+                                font-size: 1rem;
+                                font-weight: 600;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.background='#616161';"
+                               onmouseout="this.style.background='#757575';">
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    @keyframes slideDown {
+                        from { transform: translateY(-50px); opacity: 0; }
+                        to { transform: translateY(0); opacity: 1; }
+                    }
+                </style>
+            `;
+            
+            // Inserir no DOM
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHTML;
+            document.body.appendChild(modalContainer);
+        }
+        
+        function copiarCodigoErro() {
+            const ultimoErro = JSON.parse(localStorage.getItem('ultimo_erro_sync') || '{}');
+            const texto = `🚨 ERRO DE SINCRONIZAÇÃO EMATECH
+
+📌 Código: ${ultimoErro.codigo}
+📋 Protocolo: ${ultimoErro.protocolo}
+❌ Erro: ${ultimoErro.erro}
+🕐 Data/Hora: ${ultimoErro.timestamp}
+
+Por favor, me ajude a resolver este problema.`;
+            
+            navigator.clipboard.writeText(texto).then(() => {
+                // Toast de sucesso
+                const toast = document.createElement('div');
+                toast.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        bottom: 24px;
+                        right: 24px;
+                        background: #4caf50;
+                        color: white;
+                        padding: 16px 24px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        z-index: 10001;
+                        font-weight: 600;
+                        animation: slideUp 0.3s ease;
+                    ">
+                        ✅ Código copiado! Cole no WhatsApp.
+                    </div>
+                    <style>
+                        @keyframes slideUp {
+                            from { transform: translateY(100px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                    </style>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }).catch(() => {
+                alert('Erro ao copiar. Código: ' + ultimoErro.codigo);
+            });
+        }
+        
+        function fecharModalErro() {
+            const modal = document.getElementById('modalErroSync');
+            if (modal) modal.parentElement.remove();
+        }
+        
+        // Expor globalmente
+        window.mostrarErroDetalhado = mostrarErroDetalhado;
     </script>
 </body>
 </html>
