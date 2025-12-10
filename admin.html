@@ -1056,16 +1056,19 @@
                 });
             }
             
-            // Sincronizar com Azure
+            // Sincronizar com servidor (via Netlify Functions)
             async function sincronizar(formulario) {
-                const endpoint = tipo === 'extensionistas' 
-                    ? CONFIG.AZURE_FUNCTION_URL_EXTENSIONISTAS 
-                    : CONFIG.AZURE_FUNCTION_URL_GERENTES;
+                if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+                    throw new Error('Configuração da API não encontrada');
+                }
                 
-                const response = await fetch(endpoint, {
+                const url = CONFIG.API_URL + CONFIG.ENDPOINTS.SAVE;
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formulario)
+                    body: JSON.stringify(formulario),
+                    signal: AbortSignal.timeout(CONFIG.TIMEOUT || 30000)
                 });
                 
                 if (!response.ok) {
