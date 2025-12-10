@@ -168,7 +168,13 @@ exports.handler = async (event, context) => {
             municipio = formulario.municipio || null;
             unidade_emater = formulario.unidade_emater || formulario.escritorioLocal || null;
             territorio = formulario.territorio || null;
-            identificador_iniciais = formulario.identificador_iniciais || formulario.nomeCompleto || null;
+            identificador_iniciais = formulario.identificador_iniciais || formulario.nomeCompleto || '';
+            
+            console.log('🐛 DEBUG identificador_iniciais:', {
+                identificador_iniciais: formulario.identificador_iniciais,
+                nomeCompleto: formulario.nomeCompleto,
+                final: identificador_iniciais
+            });
             
             latitude = formulario.latitude || null;
             longitude = formulario.longitude || null;
@@ -272,10 +278,10 @@ exports.handler = async (event, context) => {
             // Atualizar
             await pool.request()
                 .input('protocolo', sql.NVarChar(50), protocolo)
-                .input('municipio', sql.NVarChar(100), municipio)
-                .input('unidade_emater', sql.NVarChar(100), unidade_emater)
-                .input('territorio', sql.NVarChar(100), territorio)
-                .input('identificador_iniciais', sql.NVarChar(10), identificador_iniciais)
+                .input('municipio', sql.NVarChar(100), municipio || '')
+                .input('unidade_emater', sql.NVarChar(100), unidade_emater || '')
+                .input('territorio', sql.NVarChar(100), territorio || '')
+                .input('identificador_iniciais', sql.NVarChar(10), identificador_iniciais || 'N/A')
                 .input('timestamp_inicio', sql.DateTime2, timestampInicio)
                 .input('timestamp_fim', sql.DateTime2, timestampFim)
                 .input('duracao_minutos', sql.Int, duracaoMinutos)
@@ -387,10 +393,10 @@ exports.handler = async (event, context) => {
             // Inserir
             await pool.request()
                 .input('protocolo', sql.NVarChar(50), protocolo)
-                .input('municipio', sql.NVarChar(100), municipio)
-                .input('unidade_emater', sql.NVarChar(100), unidade_emater)
-                .input('territorio', sql.NVarChar(100), territorio)
-                .input('identificador_iniciais', sql.NVarChar(10), identificador_iniciais)
+                .input('municipio', sql.NVarChar(100), municipio || '')
+                .input('unidade_emater', sql.NVarChar(100), unidade_emater || '')
+                .input('territorio', sql.NVarChar(100), territorio || '')
+                .input('identificador_iniciais', sql.NVarChar(10), identificador_iniciais || 'N/A')
                 .input('timestamp_inicio', sql.DateTime2, timestampInicio)
                 .input('timestamp_fim', sql.DateTime2, timestampFim)
                 .input('duracao_minutos', sql.Int, duracaoMinutos)
