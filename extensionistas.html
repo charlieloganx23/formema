@@ -1613,7 +1613,7 @@
                     </div>
 
                     <div class="question-group">
-                        <label for="freqApoioMercadosInstitucionais">
+                        <label for="freqApoioMercadosInstitucionais" class="question-label">
                             Com que frequência você apoia agricultores no acesso a mercados institucionais (como PAA/PNAE)?
                         </label>
                         <select id="freqApoioMercadosInstitucionais" name="freqApoioMercadosInstitucionais">
@@ -2235,6 +2235,48 @@
                     });
                 });
             });
+
+            // ========================================
+            // CAMPOS CONDICIONAIS (MOSTRAR APENAS SE SIM)
+            // ========================================
+            
+            // Eixo B: Mostrar exemplo_instrumento_formal apenas se instrumentos_formais = sim
+            const instrumentosFormaisRadios = document.querySelectorAll('input[name="instrumentos_formais"]');
+            const exemploInstrumentoFormalContainer = document.querySelector('#exemplo_instrumento_formal').closest('.question-group');
+            
+            function toggleExemploInstrumentoFormal() {
+                const selectedValue = document.querySelector('input[name="instrumentos_formais"]:checked')?.value;
+                if (selectedValue && (selectedValue === 'sim_oficiais' || selectedValue === 'sim_parcialmente')) {
+                    exemploInstrumentoFormalContainer.style.display = 'block';
+                } else {
+                    exemploInstrumentoFormalContainer.style.display = 'none';
+                    document.getElementById('exemplo_instrumento_formal').value = ''; // Limpar campo
+                }
+            }
+            
+            instrumentosFormaisRadios.forEach(radio => {
+                radio.addEventListener('change', toggleExemploInstrumentoFormal);
+            });
+            toggleExemploInstrumentoFormal(); // Inicializar estado
+            
+            // Eixo D: Mostrar exemploInstrumentosProducao apenas se instrumentosProducao = sim
+            const instrumentosProducaoRadios = document.querySelectorAll('input[name="instrumentosProducao"]');
+            const exemploInstrumentosProducaoContainer = document.querySelector('#exemploInstrumentosProducao').closest('.question-group');
+            
+            function toggleExemploInstrumentosProducao() {
+                const selectedValue = document.querySelector('input[name="instrumentosProducao"]:checked')?.value;
+                if (selectedValue && (selectedValue === 'sim_frequentemente' || selectedValue === 'sim_pouco')) {
+                    exemploInstrumentosProducaoContainer.style.display = 'block';
+                } else {
+                    exemploInstrumentosProducaoContainer.style.display = 'none';
+                    document.getElementById('exemploInstrumentosProducao').value = ''; // Limpar campo
+                }
+            }
+            
+            instrumentosProducaoRadios.forEach(radio => {
+                radio.addEventListener('change', toggleExemploInstrumentosProducao);
+            });
+            toggleExemploInstrumentosProducao(); // Inicializar estado
 
             // ========================================
             // SISTEMA DE NOTIFICAÇÕES E MODAL
