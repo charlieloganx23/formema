@@ -2291,10 +2291,19 @@
         // Função de debug para inspecionar formulário problemático
         window.debugFormulario = async function(protocolo) {
             try {
-                const db = await getDB();
+                // Garantir que o DB está inicializado
+                if (!db) {
+                    await initDB();
+                }
+                
                 const tx = db.transaction('formularios', 'readonly');
                 const store = tx.objectStore('formularios');
-                const formulario = await store.get(protocolo);
+                const index = store.index('protocolo');
+                const formulario = await new Promise((resolve, reject) => {
+                    const request = index.get(protocolo);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
                 
                 if (!formulario) {
                     console.error('❌ Formulário não encontrado:', protocolo);
