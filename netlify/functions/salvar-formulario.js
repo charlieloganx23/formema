@@ -89,7 +89,10 @@ exports.handler = async (event, context) => {
             municipio = respostas.municipio || null;
             unidade_emater = respostas.unidade_emater || null;
             territorio = respostas.territorio || null;
-            identificador_iniciais = respostas.identificador_iniciais || null;
+            
+            // Garantir que identificador_iniciais não exceda 10 caracteres
+            let identificador_temp_estruturado = respostas.identificador_iniciais || 'N/A';
+            identificador_iniciais = identificador_temp_estruturado.toString().substring(0, 10);
             
             latitude = geolocalizacao.latitude || null;
             longitude = geolocalizacao.longitude || null;
@@ -168,12 +171,17 @@ exports.handler = async (event, context) => {
             municipio = formulario.municipio || null;
             unidade_emater = formulario.unidade_emater || formulario.escritorioLocal || null;
             territorio = formulario.territorio || null;
-            identificador_iniciais = formulario.identificador_iniciais || formulario.nomeCompleto || '';
+            
+            // Garantir que identificador_iniciais não exceda 10 caracteres
+            let identificador_temp = formulario.identificador_iniciais || formulario.nomeCompleto || 'N/A';
+            identificador_iniciais = identificador_temp.toString().substring(0, 10);
             
             console.log('🐛 DEBUG identificador_iniciais:', {
                 identificador_iniciais: formulario.identificador_iniciais,
                 nomeCompleto: formulario.nomeCompleto,
-                final: identificador_iniciais
+                temp: identificador_temp,
+                final: identificador_iniciais,
+                comprimento: identificador_iniciais.length
             });
             
             latitude = formulario.latitude || null;
