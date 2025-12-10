@@ -243,6 +243,25 @@ exports.handler = async (event, context) => {
 
         console.log('🔍 Verificando se formulário já existe:', protocolo);
         
+        // Log detalhado dos campos Eixo C e D para debug
+        console.log('🐛 DEBUG - Campos Eixo C:', {
+            parceriasAtivas,
+            parceriasAtivasOutro,
+            participaForuns,
+            influenciaEmater,
+            comentarioC
+        });
+        console.log('🐛 DEBUG - Campos Eixo D:', {
+            freqDemandaMercado,
+            capacitacaoMercado,
+            impactoCapacitacao,
+            instrumentosProducao,
+            exemploInstrumentosProducao,
+            freqApoioMercadosInstitucionais,
+            conhecimentoOfertaDemanda,
+            comentarioD
+        });
+        
         // Verificar se já existe
         const checkResult = await pool.request()
             .input('protocolo', sql.NVarChar, protocolo)
