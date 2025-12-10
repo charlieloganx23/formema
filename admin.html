@@ -1119,6 +1119,78 @@
         window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
         window.buscarNaoSincronizados = ExtensionistasDB.buscarNaoSincronizados;
         window.sincronizarFormularioComAzure = ExtensionistasDB.sincronizar;
+        
+        // ==================== FUNÇÕES DE API DO SERVIDOR ====================
+        
+        // Buscar formulários do servidor Azure (via Netlify Functions)
+        async function buscarFormulariosDoAzure(filtros = {}) {
+            try {
+                if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
+                    throw new Error('Configuração da API não encontrada');
+                }
+
+                // Construir query string
+                const params = new URLSearchParams();
+                if (filtros.protocolo) params.append('protocolo', filtros.protocolo);
+                if (filtros.municipio) params.append('municipio', filtros.municipio);
+                if (filtros.limite) params.append('limite', filtros.limite);
+                if (filtros.offset) params.append('offset', filtros.offset);
+
+                const url = CONFIG.API_URL + CONFIG.ENDPOINTS.GET_ALL + '?' + params.toString();
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: AbortSignal.timeout(CONFIG.TIMEOUT || 30000)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`✅ ${result.total} formulários carregados do Azure`);
+                    return result;
+                } else {
+                    throw new Error(result.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao buscar do Azure:', error.message);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Sincronização automática em background (sem bloquear UI)
+        async function sincronizacaoAutomaticaEmBackground(pendentes) {
+            console.log(`🔄 [BACKGROUND] Iniciando sincronização de ${pendentes.length} formulário(s)...`);
+            
+            const db = getDBAtivo();
+            let sucessos = 0;
+            let erros = 0;
+            
+            for (const formulario of pendentes) {
+                try {
+                    await db.sincronizar(formulario);
+                    await db.marcarComoSincronizado(formulario.protocolo);
+                    sucessos++;
+                    console.log(`✅ [BACKGROUND] Sincronizado: ${formulario.protocolo}`);
+                } catch (error) {
+                    erros++;
+                    console.error(`❌ [BACKGROUND] Erro ao sincronizar ${formulario.protocolo}:`, error.message);
+                }
+            }
+            
+            console.log(`✅ [BACKGROUND] Concluído: ${sucessos} sucesso(s), ${erros} erro(s)`);
+            
+            // Atualizar badges após sincronização
+            if (sucessos > 0) {
+                await atualizarBadgesAbas();
+            }
+            
+            return { sucessos, erros };
+        }
     </script>
     
     <script>
