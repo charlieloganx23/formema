@@ -35,7 +35,7 @@
         .admin-header {
             background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
             color: white;
-            padding: 40px;
+            padding: 40px 40px 0;
             text-align: center;
         }
         
@@ -50,6 +50,66 @@
             font-size: 1.1rem;
             opacity: 0.95;
             font-weight: 400;
+            margin-bottom: 20px;
+        }
+        
+        /* Tabs System */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 30px;
+        }
+        
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tab-btn:first-child {
+            border-top-left-radius: 12px;
+        }
+        
+        .tab-btn:last-child {
+            border-top-right-radius: 12px;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #2e7d32;
+            border-bottom-color: #4caf50;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-badge {
+            background: #f44336;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .tab-btn.active .tab-badge {
+            background: #ff5722;
         }
         
         .admin-content {
@@ -713,6 +773,18 @@
         <header class="admin-header">
             <h1>📊 Painel Administrativo</h1>
             <p>Gerenciamento Completo de Dados - EMATECH v2.0</p>
+            
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="extensionistas" onclick="trocarAba('extensionistas')">
+                    📝 Extensionistas
+                    <span class="tab-badge" id="badge-extensionistas">0</span>
+                </button>
+                <button class="tab-btn" data-tab="gerentes" onclick="trocarAba('gerentes')">
+                    👔 Gerentes
+                    <span class="tab-badge" id="badge-gerentes">0</span>
+                </button>
+            </div>
         </header>
         
         <div class="admin-content">
@@ -835,6 +907,82 @@
     <script src="config.js"></script>
     <script src="db-extensionistas.js"></script>
     <script>
+        // ==================== NAMESPACE ISOLADO ====================
+        // Salvar funções de extensionistas antes de carregar gerentes
+        const ExtensionistasDB = {
+            buscarTodos: window.buscarTodosFormularios,
+            buscarNaoSincronizados: window.buscarNaoSincronizados,
+            buscarPorProtocolo: window.buscarPorProtocolo,
+            sincronizar: window.sincronizarFormularioComAzure,
+            sincronizarTodosPendentes: window.sincronizarTodosPendentes,
+            marcarComoSincronizado: window.marcarComoSincronizado,
+            deletar: window.deletarFormulario,
+            exportarJSON: window.exportarParaJSON,
+            DB_NAME: 'EmatechExtensionistas',
+            tipo: 'extensionistas'
+        };
+        console.log('✅ Namespace ExtensionistasDB criado');
+    </script>
+    <script src="db-gerentes.js"></script>
+    <script>
+        // Salvar funções de gerentes após carregar
+        const GerentesDB = {
+            buscarTodos: window.buscarTodosFormularios,
+            buscarNaoSincronizados: window.buscarNaoSincronizados,
+            buscarPorProtocolo: window.buscarPorProtocolo,
+            sincronizar: window.sincronizarFormularioComAzure,
+            sincronizarTodosPendentes: window.sincronizarTodosPendentes,
+            marcarComoSincronizado: window.marcarComoSincronizado,
+            deletar: window.deletarFormulario,
+            exportarJSON: window.exportarParaJSON,
+            DB_NAME: 'EmatechGerentes',
+            tipo: 'gerentes'
+        };
+        console.log('✅ Namespace GerentesDB criado');
+        
+        // Restaurar extensionistas como padrão para compatibilidade
+        window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
+        window.sincronizarFormularioComAzure = ExtensionistasDB.sincronizar;
+        
+        // ==================== SISTEMA DE ABAS ====================
+        let abaAtiva = 'extensionistas'; // default
+        
+        function getDBAtivo() {
+            return abaAtiva === 'extensionistas' ? ExtensionistasDB : GerentesDB;
+        }
+        
+        async function atualizarBadgesAbas() {
+            try {
+                const [formExt, formGer] = await Promise.all([
+                    ExtensionistasDB.buscarNaoSincronizados(),
+                    GerentesDB.buscarNaoSincronizados()
+                ]);
+                
+                document.getElementById('badge-extensionistas').textContent = formExt.length;
+                document.getElementById('badge-gerentes').textContent = formGer.length;
+                
+                console.log(`📊 Badges atualizados: Ext=${formExt.length}, Ger=${formGer.length}`);
+            } catch (error) {
+                console.error('⚠️ Erro ao atualizar badges:', error);
+            }
+        }
+        
+        function trocarAba(aba) {
+            abaAtiva = aba;
+            
+            // Atualizar visual das abas
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.tab-btn[data-tab="${aba}"]`).classList.add('active');
+            
+            // Recarregar dados
+            carregarDadosServidor();
+            carregarFormulariosPendentes();
+            
+            console.log(`🔄 Aba trocada para: ${aba}`);
+        }
+        
         // Variável global para armazenar formulários
         let formulariosGlobal = [];
         
@@ -969,30 +1117,34 @@
         
         // Sistema de auto-refresh para detectar mudanças
         function iniciarAutoRefresh() {
-            console.log('🔄 Auto-refresh ativado (verifica a cada 3s)');
+            console.log('🔄 Auto-refresh ativado (verifica a cada 3s - monitora ambas as fontes)');
             
             setInterval(async () => {
                 try {
-                    // Usar buscarTodosFormularios() do db.js
-                    const formularios = await buscarTodosFormularios();
+                    // Verificar a aba ativa
+                    const db = getDBAtivo();
+                    const formularios = await db.buscarTodos();
                     const totalAtual = formularios.length;
                     const sincronizados = formularios.filter(f => f.sincronizado).length;
                     
                     // Se o total mudou, recarregar
                     if (totalAtual !== ultimoCountFormularios) {
-                        console.log(`📊 Detectada mudança: ${ultimoCountFormularios} → ${totalAtual} formulários`);
+                        console.log(`📊 Detectada mudança (${abaAtiva}): ${ultimoCountFormularios} → ${totalAtual} formulários`);
                         ultimoCountFormularios = totalAtual;
                         await carregarDadosServidor();
                         await carregarFormulariosPendentes();
-                        showToast('info', 'Dados Atualizados', 'Painel administrativo atualizado automaticamente.', 3000);
+                        showToast('info', 'Dados Atualizados', `Painel ${abaAtiva} atualizado automaticamente.`, 3000);
                     } else if (sincronizados !== ultimoCountSincronizados) {
                         // Verificar se houve mudança nos sincronizados
-                        console.log(`✅ Mudança em sincronizados: ${ultimoCountSincronizados} → ${sincronizados}`);
+                        console.log(`✅ Mudança em sincronizados (${abaAtiva}): ${ultimoCountSincronizados} → ${sincronizados}`);
                         ultimoCountSincronizados = sincronizados;
                         await carregarDadosServidor();
                         await carregarFormulariosPendentes();
                         showToast('success', 'Sincronização Detectada', 'Formulários sincronizados atualizados!', 3000);
                     }
+                    
+                    // Atualizar badges sempre (monitora ambas as fontes)
+                    await atualizarBadgesAbas();
                 } catch (error) {
                     console.error('⚠️ Erro no auto-refresh:', error);
                 }
@@ -1202,10 +1354,11 @@
 
         async function carregarDadosServidor() {
             try {
-                console.log('🔄 Carregando estatísticas do IndexedDB...');
+                console.log(`🔄 Carregando estatísticas do IndexedDB (${abaAtiva})...`);
                 
-                // Buscar todos os formulários do IndexedDB usando função do db.js
-                const todosFormularios = await buscarTodosFormularios();
+                // Buscar formulários da aba ativa
+                const db = getDBAtivo();
+                const todosFormularios = await db.buscarTodos();
                 
                 // Parse de campos JSON (quando vem do servidor)
                 todosFormularios.forEach(form => {
@@ -1231,8 +1384,11 @@
                 ultimoCountFormularios = todosFormularios.length;
                 ultimoCountSincronizados = todosFormularios.filter(f => f.sincronizado).length;
                         
-                console.log(`✅ ${todosFormularios.length} formulários carregados do IndexedDB`);
+                console.log(`✅ ${todosFormularios.length} formulários carregados (${abaAtiva})`);
                 console.log(`✅ ${ultimoCountSincronizados} sincronizados, ${todosFormularios.length - ultimoCountSincronizados} pendentes`);
+                
+                // Atualizar badges das abas
+                await atualizarBadgesAbas();
                 
                 // Calcular KPIs usando getRespostas() para garantir compatibilidade
                 const totalFormularios = todosFormularios.length;
