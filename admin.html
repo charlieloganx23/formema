@@ -1397,16 +1397,12 @@
                 if (candidatosExclusao.length > 0) {
                     console.log(`🗑️ [SYNC] ${candidatosExclusao.length} formulário(s) obsoleto(s) detectado(s)`);
                     
+                    const dbAtivo = getDBAtivo();
                     for (const formObsoleto of candidatosExclusao) {
                         try {
-                            const resultadoDelete = await deletarFormularioLocal(formObsoleto.id);
-                            
-                            if (resultadoDelete.success) {
-                                deletados++;
-                                console.log(`✅ [SYNC] Deletado: ${formObsoleto.protocolo} (ID: ${formObsoleto.id}) - removido do servidor`);
-                            } else {
-                                console.warn(`⚠️ [SYNC] Não foi possível deletar: ${formObsoleto.protocolo} - ${resultadoDelete.error}`);
-                            }
+                            await dbAtivo.deletar(formObsoleto.protocolo);
+                            deletados++;
+                            console.log(`✅ [SYNC] Deletado: ${formObsoleto.protocolo} - removido do servidor`);
                         } catch (error) {
                             console.error(`❌ [SYNC] Erro ao deletar ${formObsoleto.protocolo}:`, error);
                         }
@@ -1421,9 +1417,18 @@
                 // PASSO 2: ADICIONAR/ATUALIZAR FORMULÁRIOS DO SERVIDOR
                 // ====================================================
                 
-                // Abrir transação para inserir/atualizar
-                const db = await initDB();
-                const transaction = db.transaction(['formularios'], 'readwrite');
+                console.log(`📝 [SYNC] Processando ${formulariosServidor.length} formulários do servidor...`);
+                
+                // NOTA: Usar funções diretas do namespace não funciona para insert/update
+                // Precisamos acessar o IndexedDB diretamente com o DB_NAME correto
+                const dbAtivo = getDBAtivo();
+                const database = await new Promise((resolve, reject) => {
+                    const request = indexedDB.open(dbAtivo.DB_NAME, 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => resolve(request.result);
+                });
+                
+                const transaction = database.transaction(['formularios'], 'readwrite');
                 const store = transaction.objectStore('formularios');
                 
                 // Processar cada formulário do servidor
@@ -2629,19 +2634,9 @@
         // Função de debug para inspecionar formulário problemático
         window.debugFormulario = async function(protocolo) {
             try {
-                // Garantir que o DB está inicializado
-                if (!db) {
-                    await initDB();
-                }
-                
-                const tx = db.transaction('formularios', 'readonly');
-                const store = tx.objectStore('formularios');
-                const index = store.index('protocolo');
-                const formulario = await new Promise((resolve, reject) => {
-                    const request = index.get(protocolo);
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
-                });
+                // Usar namespace ativo
+                const dbAtivo = getDBAtivo();
+                const formulario = await dbAtivo.buscarPorProtocolo(protocolo);
                 
                 if (!formulario) {
                     console.error('❌ Formulário não encontrado:', protocolo);
