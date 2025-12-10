@@ -998,30 +998,46 @@
         const GerentesDB = criarNamespaceDB('EmatechGerentes', 'gerentes');
     </script>
     
-    <!-- Carregar scripts originais apenas para sincronização (funções complexas) -->
-    <script src="db-extensionistas.js"></script>
+    <!-- Carregar scripts originais isolados em IIFEs para evitar conflito de variáveis -->
     <script>
-        // Adicionar funções de sincronização ao namespace de extensionistas
-        ExtensionistasDB.sincronizar = window.sincronizarFormularioComAzure;
-        ExtensionistasDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
-        ExtensionistasDB.marcarComoSincronizado = window.marcarComoSincronizado;
-        ExtensionistasDB.deletar = window.deletarFormulario;
-        ExtensionistasDB.buscarPorProtocolo = window.buscarPorProtocolo;
-        ExtensionistasDB.exportarJSON = window.exportarParaJSON;
-    </script>
-    <script src="db-gerentes.js"></script>
-    <script>
-        // Adicionar funções de sincronização ao namespace de gerentes
-        GerentesDB.sincronizar = window.sincronizarFormularioComAzure;
-        GerentesDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
-        GerentesDB.marcarComoSincronizado = window.marcarComoSincronizado;
-        GerentesDB.deletar = window.deletarFormulario;
-        GerentesDB.buscarPorProtocolo = window.buscarPorProtocolo;
-        GerentesDB.exportarJSON = window.exportarParaJSON;
-        
-        // Restaurar extensionistas como padrão para compatibilidade
-        window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
-        window.sincronizarFormularioComAzure = ExtensionistasDB.sincronizar;
+        (function() {
+            // IIFE para isolar db-extensionistas.js
+            const script = document.createElement('script');
+            script.src = 'db-extensionistas.js';
+            script.onload = function() {
+                // Capturar funções após carregamento
+                ExtensionistasDB.sincronizar = window.sincronizarFormularioComAzure;
+                ExtensionistasDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
+                ExtensionistasDB.marcarComoSincronizado = window.marcarComoSincronizado;
+                ExtensionistasDB.deletar = window.deletarFormulario;
+                ExtensionistasDB.buscarPorProtocolo = window.buscarPorProtocolo;
+                ExtensionistasDB.exportarJSON = window.exportarParaJSON;
+                console.log('✅ Funções de extensionistas carregadas');
+                
+                // Carregar db-gerentes.js após extensionistas
+                const scriptGerentes = document.createElement('script');
+                scriptGerentes.src = 'db-gerentes.js';
+                scriptGerentes.onload = function() {
+                    // Capturar funções de gerentes
+                    GerentesDB.sincronizar = window.sincronizarFormularioComAzure;
+                    GerentesDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
+                    GerentesDB.marcarComoSincronizado = window.marcarComoSincronizado;
+                    GerentesDB.deletar = window.deletarFormulario;
+                    GerentesDB.buscarPorProtocolo = window.buscarPorProtocolo;
+                    GerentesDB.exportarJSON = window.exportarParaJSON;
+                    console.log('✅ Funções de gerentes carregadas');
+                    
+                    // Restaurar extensionistas como padrão
+                    window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
+                    window.sincronizarFormularioComAzure = ExtensionistasDB.sincronizar;
+                    
+                    // Inicializar interface
+                    inicializarAdmin();
+                };
+                document.head.appendChild(scriptGerentes);
+            };
+            document.head.appendChild(script);
+        })();
         
         // ==================== SISTEMA DE ABAS ====================
         let abaAtiva = 'extensionistas'; // default
@@ -1205,9 +1221,11 @@
             return true;
         }
         
-        // Inicializar painel quando DOM estiver pronto
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Aguardar scripts carregarem
+        // Função de inicialização do painel (chamada após carregar os scripts)
+        async function inicializarAdmin() {
+            console.log('🚀 Inicializando painel admin...');
+            
+            // Aguardar scripts carregarem (caso ainda não estejam)
             const scriptsOk = await aguardarScripts();
             if (!scriptsOk) return;
             
@@ -1219,6 +1237,20 @@
             
             // Iniciar auto-refresh a cada 3 segundos
             iniciarAutoRefresh();
+            
+            console.log('✅ Painel admin inicializado');
+        }
+        
+        // Se os scripts já estiverem carregados (carregamento normal), inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se os scripts foram carregados dinamicamente
+            if (typeof ExtensionistasDB.sincronizar === 'undefined') {
+                console.log('⏳ Aguardando carregamento dinâmico dos scripts...');
+                // Será inicializado pelo callback do carregamento dinâmico
+            } else {
+                // Scripts já carregados, inicializar normalmente
+                inicializarAdmin();
+            }
         });
         
         // Sistema de auto-refresh para detectar mudanças
