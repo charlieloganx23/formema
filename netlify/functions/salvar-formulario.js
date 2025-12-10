@@ -78,6 +78,12 @@ exports.handler = async (event, context) => {
         let instrumentosAcompanhamento, instrumentosAcompanhamentoOutro, freqUsoIndicadores;
         let principaisIndicadores, avaliacaoAjudaIndicadores, comentarioEixoE, comentarioFinal;
 
+        // Função auxiliar para truncar strings e garantir limite de caracteres
+        const truncate = (value, maxLength) => {
+            if (!value) return value;
+            const str = value.toString();
+            return str.length > maxLength ? str.substring(0, maxLength) : str;
+        };
 
         if (formulario.respostas) {
             // Formato estruturado
@@ -86,13 +92,10 @@ exports.handler = async (event, context) => {
             geolocalizacao = formulario.geolocalizacao || {};
             status = formulario.status || 'completo';
             
-            municipio = respostas.municipio || null;
-            unidade_emater = respostas.unidade_emater || null;
-            territorio = respostas.territorio || null;
-            
-            // Garantir que identificador_iniciais não exceda 10 caracteres
-            let identificador_temp_estruturado = respostas.identificador_iniciais || 'N/A';
-            identificador_iniciais = identificador_temp_estruturado.toString().substring(0, 10);
+            municipio = truncate(respostas.municipio, 100);
+            unidade_emater = truncate(respostas.unidade_emater, 100);
+            territorio = truncate(respostas.territorio, 100);
+            identificador_iniciais = truncate(respostas.identificador_iniciais || 'N/A', 10);
             
             latitude = geolocalizacao.latitude || null;
             longitude = geolocalizacao.longitude || null;
@@ -105,9 +108,9 @@ exports.handler = async (event, context) => {
             
             // Extrair novos campos do Eixo A
             metodosFrequentes = respostas.metodosFrequentes ? JSON.stringify(respostas.metodosFrequentes) : null;
-            metodosFrequentesOutro = respostas.metodosFrequentesOutro || null;
+            metodosFrequentesOutro = truncate(respostas.metodosFrequentesOutro, 500);
             metodosMelhoresResultados = respostas.metodosMelhoresResultados ? JSON.stringify(respostas.metodosMelhoresResultados) : null;
-            metodosMelhoresResultadosOutro = respostas.metodosMelhoresResultadosOutro || null;
+            metodosMelhoresResultadosOutro = truncate(respostas.metodosMelhoresResultadosOutro, 500);
             dificuldadeFaltaTempo = respostas.dificuldade_falta_tempo ? parseInt(respostas.dificuldade_falta_tempo) : null;
             dificuldadeNumTecnicos = respostas.dificuldade_num_tecnicos ? parseInt(respostas.dificuldade_num_tecnicos) : null;
             dificuldadeDistancia = respostas.dificuldade_distancia ? parseInt(respostas.dificuldade_distancia) : null;
@@ -120,9 +123,9 @@ exports.handler = async (event, context) => {
             // Extrair novos campos do Eixo B
             priorizacaoAtendimentos = respostas.priorizacao_atendimentos ? 
                 (Array.isArray(respostas.priorizacao_atendimentos) ? JSON.stringify(respostas.priorizacao_atendimentos) : respostas.priorizacao_atendimentos) : null;
-            priorizacaoAtendimentosOutro = respostas.priorizacao_atendimentos_outro || null;
+            priorizacaoAtendimentosOutro = truncate(respostas.priorizacao_atendimentos_outro, 500);
             nivelEquidade = respostas.nivel_equidade ? parseInt(respostas.nivel_equidade) : null;
-            instrumentosFormais = respostas.instrumentos_formais || null;
+            instrumentosFormais = truncate(respostas.instrumentos_formais, 100);
             exemploInstrumentoFormal = respostas.exemplo_instrumento_formal || null;
             comentarioEixoB = respostas.comentario_eixo_b || null;
             
@@ -133,14 +136,14 @@ exports.handler = async (event, context) => {
             } else if (Array.isArray(parceriasAtivas)) {
                 parceriasAtivas = JSON.stringify(parceriasAtivas);
             }
-            parceriasAtivasOutro = respostas.parcerias_ativas_outro || respostas.parceriasAtivasOutro || null;
-            participaForuns = respostas.participa_foruns || respostas.participaForuns || null;
+            parceriasAtivasOutro = truncate(respostas.parcerias_ativas_outro || respostas.parceriasAtivasOutro, 500);
+            participaForuns = truncate(respostas.participa_foruns || respostas.participaForuns, 100);
             influenciaEmater = respostas.influencia_emater || respostas.influenciaEmater ? parseInt(respostas.influencia_emater || respostas.influenciaEmater) : null;
             comentarioC = respostas.comentario_eixo_c || respostas.comentarioC || null;
             
             // Extrair campos do Eixo D (com compatibilidade retroativa camelCase → snake_case)
-            freqDemandaMercado = respostas.freq_demanda_mercado || respostas.freqDemandaMercado || null;
-            capacitacaoMercado = respostas.capacitacao_mercado || respostas.capacitacaoMercado || null;
+            freqDemandaMercado = truncate(respostas.freq_demanda_mercado || respostas.freqDemandaMercado, 50);
+            capacitacaoMercado = truncate(respostas.capacitacao_mercado || respostas.capacitacaoMercado, 100);
             impactoCapacitacao = respostas.impacto_capacitacao || respostas.impactoCapacitacao ? parseInt(respostas.impacto_capacitacao || respostas.impactoCapacitacao) : null;
             instrumentosProducao = respostas.instrumentos_producao || respostas.instrumentosProducao || null;
             if (instrumentosProducao && !Array.isArray(instrumentosProducao) && typeof instrumentosProducao !== 'string') {
@@ -149,15 +152,15 @@ exports.handler = async (event, context) => {
                 instrumentosProducao = JSON.stringify(instrumentosProducao);
             }
             exemploInstrumentosProducao = respostas.exemplo_instrumentos_producao || respostas.exemploInstrumentosProducao || null;
-            freqApoioMercadosInstitucionais = respostas.freq_apoio_mercados_institucionais || respostas.freqApoioMercadosInstitucionais || null;
-            conhecimentoOfertaDemanda = respostas.conhecimento_oferta_demanda || respostas.conhecimentoOfertaDemanda || null;
+            freqApoioMercadosInstitucionais = truncate(respostas.freq_apoio_mercados_institucionais || respostas.freqApoioMercadosInstitucionais, 50);
+            conhecimentoOfertaDemanda = truncate(respostas.conhecimento_oferta_demanda || respostas.conhecimentoOfertaDemanda, 100);
             comentarioD = respostas.comentario_eixo_d || respostas.comentarioD || null;
             
             // Extrair novos campos do Eixo E
             instrumentosAcompanhamento = respostas.instrumentos_acompanhamento ? 
                 (Array.isArray(respostas.instrumentos_acompanhamento) ? JSON.stringify(respostas.instrumentos_acompanhamento) : respostas.instrumentos_acompanhamento) : null;
-            instrumentosAcompanhamentoOutro = respostas.instrumentos_acompanhamento_outro || null;
-            freqUsoIndicadores = respostas.freq_uso_indicadores || null;
+            instrumentosAcompanhamentoOutro = truncate(respostas.instrumentos_acompanhamento_outro, 500);
+            freqUsoIndicadores = truncate(respostas.freq_uso_indicadores, 50);
             principaisIndicadores = respostas.principais_indicadores || null;
             avaliacaoAjudaIndicadores = respostas.avaliacao_ajuda_indicadores ? parseInt(respostas.avaliacao_ajuda_indicadores) : null;
             comentarioEixoE = respostas.comentario_eixo_e || null;
@@ -168,21 +171,10 @@ exports.handler = async (event, context) => {
             fotos = [];
             geolocalizacao = {};
             
-            municipio = formulario.municipio || null;
-            unidade_emater = formulario.unidade_emater || formulario.escritorioLocal || null;
-            territorio = formulario.territorio || null;
-            
-            // Garantir que identificador_iniciais não exceda 10 caracteres
-            let identificador_temp = formulario.identificador_iniciais || formulario.nomeCompleto || 'N/A';
-            identificador_iniciais = identificador_temp.toString().substring(0, 10);
-            
-            console.log('🐛 DEBUG identificador_iniciais:', {
-                identificador_iniciais: formulario.identificador_iniciais,
-                nomeCompleto: formulario.nomeCompleto,
-                temp: identificador_temp,
-                final: identificador_iniciais,
-                comprimento: identificador_iniciais.length
-            });
+            municipio = truncate(formulario.municipio, 100);
+            unidade_emater = truncate(formulario.unidade_emater || formulario.escritorioLocal, 100);
+            territorio = truncate(formulario.territorio, 100);
+            identificador_iniciais = truncate(formulario.identificador_iniciais || formulario.nomeCompleto || 'N/A', 10);
             
             latitude = formulario.latitude || null;
             longitude = formulario.longitude || null;
@@ -196,9 +188,9 @@ exports.handler = async (event, context) => {
             
             // Extrair novos campos do Eixo A (formato flat)
             metodosFrequentes = formulario.metodosFrequentes ? JSON.stringify(formulario.metodosFrequentes) : null;
-            metodosFrequentesOutro = formulario.metodosFrequentesOutro || null;
+            metodosFrequentesOutro = truncate(formulario.metodosFrequentesOutro, 500);
             metodosMelhoresResultados = formulario.metodosMelhoresResultados ? JSON.stringify(formulario.metodosMelhoresResultados) : null;
-            metodosMelhoresResultadosOutro = formulario.metodosMelhoresResultadosOutro || null;
+            metodosMelhoresResultadosOutro = truncate(formulario.metodosMelhoresResultadosOutro, 500);
             dificuldadeFaltaTempo = formulario.dificuldade_falta_tempo ? parseInt(formulario.dificuldade_falta_tempo) : null;
             dificuldadeNumTecnicos = formulario.dificuldade_num_tecnicos ? parseInt(formulario.dificuldade_num_tecnicos) : null;
             dificuldadeDistancia = formulario.dificuldade_distancia ? parseInt(formulario.dificuldade_distancia) : null;
@@ -211,9 +203,9 @@ exports.handler = async (event, context) => {
             // Extrair novos campos do Eixo B (formato flat)
             priorizacaoAtendimentos = formulario.priorizacao_atendimentos ? 
                 (Array.isArray(formulario.priorizacao_atendimentos) ? JSON.stringify(formulario.priorizacao_atendimentos) : formulario.priorizacao_atendimentos) : null;
-            priorizacaoAtendimentosOutro = formulario.priorizacao_atendimentos_outro || null;
+            priorizacaoAtendimentosOutro = truncate(formulario.priorizacao_atendimentos_outro, 500);
             nivelEquidade = formulario.nivel_equidade ? parseInt(formulario.nivel_equidade) : null;
-            instrumentosFormais = formulario.instrumentos_formais || null;
+            instrumentosFormais = truncate(formulario.instrumentos_formais, 100);
             exemploInstrumentoFormal = formulario.exemplo_instrumento_formal || null;
             comentarioEixoB = formulario.comentario_eixo_b || null;
             
@@ -224,14 +216,14 @@ exports.handler = async (event, context) => {
             } else if (Array.isArray(parceriasAtivas)) {
                 parceriasAtivas = JSON.stringify(parceriasAtivas);
             }
-            parceriasAtivasOutro = formulario.parcerias_ativas_outro || formulario.parceriasAtivasOutro || null;
-            participaForuns = formulario.participa_foruns || formulario.participaForuns || null;
+            parceriasAtivasOutro = truncate(formulario.parcerias_ativas_outro || formulario.parceriasAtivasOutro, 500);
+            participaForuns = truncate(formulario.participa_foruns || formulario.participaForuns, 100);
             influenciaEmater = formulario.influencia_emater || formulario.influenciaEmater ? parseInt(formulario.influencia_emater || formulario.influenciaEmater) : null;
             comentarioC = formulario.comentario_eixo_c || formulario.comentarioC || null;
             
             // Extrair campos do Eixo D (formato flat - com compatibilidade retroativa)
-            freqDemandaMercado = formulario.freq_demanda_mercado || formulario.freqDemandaMercado || null;
-            capacitacaoMercado = formulario.capacitacao_mercado || formulario.capacitacaoMercado || null;
+            freqDemandaMercado = truncate(formulario.freq_demanda_mercado || formulario.freqDemandaMercado, 50);
+            capacitacaoMercado = truncate(formulario.capacitacao_mercado || formulario.capacitacaoMercado, 100);
             impactoCapacitacao = formulario.impacto_capacitacao || formulario.impactoCapacitacao ? parseInt(formulario.impacto_capacitacao || formulario.impactoCapacitacao) : null;
             instrumentosProducao = formulario.instrumentos_producao || formulario.instrumentosProducao || null;
             if (instrumentosProducao && !Array.isArray(instrumentosProducao) && typeof instrumentosProducao !== 'string') {
@@ -240,15 +232,15 @@ exports.handler = async (event, context) => {
                 instrumentosProducao = JSON.stringify(instrumentosProducao);
             }
             exemploInstrumentosProducao = formulario.exemplo_instrumentos_producao || formulario.exemploInstrumentosProducao || null;
-            freqApoioMercadosInstitucionais = formulario.freq_apoio_mercados_institucionais || formulario.freqApoioMercadosInstitucionais || null;
-            conhecimentoOfertaDemanda = formulario.conhecimento_oferta_demanda || formulario.conhecimentoOfertaDemanda || null;
+            freqApoioMercadosInstitucionais = truncate(formulario.freq_apoio_mercados_institucionais || formulario.freqApoioMercadosInstitucionais, 50);
+            conhecimentoOfertaDemanda = truncate(formulario.conhecimento_oferta_demanda || formulario.conhecimentoOfertaDemanda, 100);
             comentarioD = formulario.comentario_eixo_d || formulario.comentarioD || null;
             
             // Extrair novos campos do Eixo E (formato flat)
             instrumentosAcompanhamento = formulario.instrumentos_acompanhamento ? 
                 (Array.isArray(formulario.instrumentos_acompanhamento) ? JSON.stringify(formulario.instrumentos_acompanhamento) : formulario.instrumentos_acompanhamento) : null;
-            instrumentosAcompanhamentoOutro = formulario.instrumentos_acompanhamento_outro || null;
-            freqUsoIndicadores = formulario.freq_uso_indicadores || null;
+            instrumentosAcompanhamentoOutro = truncate(formulario.instrumentos_acompanhamento_outro, 500);
+            freqUsoIndicadores = truncate(formulario.freq_uso_indicadores, 50);
             principaisIndicadores = formulario.principais_indicadores || null;
             avaliacaoAjudaIndicadores = formulario.avaliacao_ajuda_indicadores ? parseInt(formulario.avaliacao_ajuda_indicadores) : null;
             comentarioEixoE = formulario.comentario_eixo_e || null;
@@ -256,25 +248,6 @@ exports.handler = async (event, context) => {
         }
 
         console.log('🔍 Verificando se formulário já existe:', protocolo);
-        
-        // Log detalhado dos campos Eixo C e D para debug
-        console.log('🐛 DEBUG - Campos Eixo C:', {
-            parceriasAtivas,
-            parceriasAtivasOutro,
-            participaForuns,
-            influenciaEmater,
-            comentarioC
-        });
-        console.log('🐛 DEBUG - Campos Eixo D:', {
-            freqDemandaMercado,
-            capacitacaoMercado,
-            impactoCapacitacao,
-            instrumentosProducao,
-            exemploInstrumentosProducao,
-            freqApoioMercadosInstitucionais,
-            conhecimentoOfertaDemanda,
-            comentarioD
-        });
         
         // Verificar se já existe
         const checkResult = await pool.request()
@@ -296,8 +269,8 @@ exports.handler = async (event, context) => {
                 .input('latitude', sql.Decimal(10, 8), latitude)
                 .input('longitude', sql.Decimal(11, 8), longitude)
                 .input('precisao', sql.Decimal(10, 2), precisao)
-                .input('geo_erro', sql.NVarChar(500), geo_erro)
-                .input('status', sql.NVarChar(20), status || 'completo')
+                .input('geo_erro', sql.NVarChar(500), truncate(geo_erro, 500))
+                .input('status', sql.NVarChar(20), truncate(status || 'completo', 20))
                 .input('respostas', sql.NVarChar(sql.MAX), JSON.stringify(respostas))
                 .input('fotos', sql.NVarChar(sql.MAX), JSON.stringify(fotos || []))
                 .input('metodos_frequentes', sql.NVarChar(sql.MAX), metodosFrequentes)
@@ -411,8 +384,8 @@ exports.handler = async (event, context) => {
                 .input('latitude', sql.Decimal(10, 8), latitude)
                 .input('longitude', sql.Decimal(11, 8), longitude)
                 .input('precisao', sql.Decimal(10, 2), precisao)
-                .input('geo_erro', sql.NVarChar(500), geo_erro)
-                .input('status', sql.NVarChar(20), status || 'completo')
+                .input('geo_erro', sql.NVarChar(500), truncate(geo_erro, 500))
+                .input('status', sql.NVarChar(20), truncate(status || 'completo', 20))
                 .input('respostas', sql.NVarChar(sql.MAX), JSON.stringify(respostas))
                 .input('fotos', sql.NVarChar(sql.MAX), JSON.stringify(fotos || []))
                 .input('metodos_frequentes', sql.NVarChar(sql.MAX), metodosFrequentes)
