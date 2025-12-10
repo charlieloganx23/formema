@@ -936,35 +936,42 @@
     
     <script src="config.js"></script>
     <script>
-        // ==================== NAMESPACE ISOLADO COM CLOSURES ====================
-        // Função auxiliar para criar um namespace isolado a partir de um DB_NAME específico
+        // ==================== NAMESPACE ISOLADO COMPLETO ====================
+        // Implementação inline de todas as funções necessárias, sem carregar scripts externos
+        // que causam conflitos de variáveis globais
+        
         function criarNamespaceDB(dbName, tipo) {
             console.log(`🔧 Criando namespace para ${tipo} (DB: ${dbName})...`);
             
-            // Clonar a lógica de IndexedDB com o DB_NAME específico
             const DB_VERSION = 1;
             const STORE_NAME = 'formularios';
             
+            // Função para abrir o banco específico
             function abrirDB() {
                 return new Promise((resolve, reject) => {
                     const request = indexedDB.open(dbName, DB_VERSION);
                     request.onerror = () => reject(request.error);
                     request.onsuccess = () => resolve(request.result);
                     request.onupgradeneeded = (event) => {
-                        const db = event.target.result;
-                        if (!db.objectStoreNames.contains(STORE_NAME)) {
-                            const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'protocolo' });
+                        const database = event.target.result;
+                        if (!database.objectStoreNames.contains(STORE_NAME)) {
+                            const objectStore = database.createObjectStore(STORE_NAME, { 
+                                keyPath: 'id', 
+                                autoIncrement: true 
+                            });
+                            objectStore.createIndex('protocolo', 'protocolo', { unique: true });
                             objectStore.createIndex('sincronizado', 'sincronizado', { unique: false });
-                            objectStore.createIndex('dataEnvio', 'dataEnvio', { unique: false });
+                            objectStore.createIndex('timestamp_fim', 'timestamp_fim', { unique: false });
                         }
                     };
                 });
             }
             
+            // Buscar todos os formulários
             async function buscarTodos() {
-                const db = await abrirDB();
+                const database = await abrirDB();
                 return new Promise((resolve, reject) => {
-                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const transaction = database.transaction([STORE_NAME], 'readonly');
                     const objectStore = transaction.objectStore(STORE_NAME);
                     const request = objectStore.getAll();
                     request.onsuccess = () => resolve(request.result || []);
@@ -972,10 +979,11 @@
                 });
             }
             
+            // Buscar não sincronizados
             async function buscarNaoSincronizados() {
-                const db = await abrirDB();
+                const database = await abrirDB();
                 return new Promise((resolve, reject) => {
-                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const transaction = database.transaction([STORE_NAME], 'readonly');
                     const objectStore = transaction.objectStore(STORE_NAME);
                     const index = objectStore.index('sincronizado');
                     const request = index.getAll(false);
@@ -984,10 +992,114 @@
                 });
             }
             
+            // Buscar por protocolo
+            async function buscarPorProtocolo(protocolo) {
+                const database = await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = database.transaction([STORE_NAME], 'readonly');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const index = objectStore.index('protocolo');
+                    const request = index.get(protocolo);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+            
+            // Marcar como sincronizado
+            async function marcarComoSincronizado(protocolo) {
+                const database = await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = database.transaction([STORE_NAME], 'readwrite');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const index = objectStore.index('protocolo');
+                    const request = index.get(protocolo);
+                    
+                    request.onsuccess = () => {
+                        const formulario = request.result;
+                        if (formulario) {
+                            formulario.sincronizado = true;
+                            formulario.dataUltimaSincronizacao = new Date().toISOString();
+                            const updateRequest = objectStore.put(formulario);
+                            updateRequest.onsuccess = () => resolve(true);
+                            updateRequest.onerror = () => reject(updateRequest.error);
+                        } else {
+                            reject(new Error('Formulário não encontrado'));
+                        }
+                    };
+                    request.onerror = () => reject(request.error);
+                });
+            }
+            
+            // Deletar formulário
+            async function deletar(protocolo) {
+                const database = await abrirDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = database.transaction([STORE_NAME], 'readwrite');
+                    const objectStore = transaction.objectStore(STORE_NAME);
+                    const index = objectStore.index('protocolo');
+                    const getRequest = index.getKey(protocolo);
+                    
+                    getRequest.onsuccess = () => {
+                        const id = getRequest.result;
+                        if (id) {
+                            const deleteRequest = objectStore.delete(id);
+                            deleteRequest.onsuccess = () => resolve(true);
+                            deleteRequest.onerror = () => reject(deleteRequest.error);
+                        } else {
+                            reject(new Error('Formulário não encontrado'));
+                        }
+                    };
+                    getRequest.onerror = () => reject(getRequest.error);
+                });
+            }
+            
+            // Sincronizar com Azure
+            async function sincronizar(formulario) {
+                const endpoint = tipo === 'extensionistas' 
+                    ? CONFIG.AZURE_FUNCTION_URL_EXTENSIONISTAS 
+                    : CONFIG.AZURE_FUNCTION_URL_GERENTES;
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formulario)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro ${response.status}: ${errorText}`);
+                }
+                
+                return await response.json();
+            }
+            
+            // Sincronizar todos pendentes
+            async function sincronizarTodosPendentes() {
+                const pendentes = await buscarNaoSincronizados();
+                const resultados = [];
+                
+                for (const formulario of pendentes) {
+                    try {
+                        await sincronizar(formulario);
+                        await marcarComoSincronizado(formulario.protocolo);
+                        resultados.push({ protocolo: formulario.protocolo, sucesso: true });
+                    } catch (error) {
+                        resultados.push({ protocolo: formulario.protocolo, sucesso: false, erro: error.message });
+                    }
+                }
+                
+                return resultados;
+            }
+            
             console.log(`✅ Namespace ${tipo} criado (DB: ${dbName})`);
             return {
                 buscarTodos,
                 buscarNaoSincronizados,
+                buscarPorProtocolo,
+                marcarComoSincronizado,
+                deletar,
+                sincronizar,
+                sincronizarTodosPendentes,
                 DB_NAME: dbName,
                 tipo: tipo
             };
@@ -996,49 +1108,14 @@
         // Criar namespaces isolados
         const ExtensionistasDB = criarNamespaceDB('EmatechExtensionistas', 'extensionistas');
         const GerentesDB = criarNamespaceDB('EmatechGerentes', 'gerentes');
+        
+        // Expor funções globais para compatibilidade (usando extensionistas como padrão)
+        window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
+        window.buscarNaoSincronizados = ExtensionistasDB.buscarNaoSincronizados;
+        window.sincronizarFormularioComAzure = ExtensionistasDB.sincronizar;
     </script>
     
-    <!-- Carregar scripts originais isolados em IIFEs para evitar conflito de variáveis -->
     <script>
-        (function() {
-            // IIFE para isolar db-extensionistas.js
-            const script = document.createElement('script');
-            script.src = 'db-extensionistas.js';
-            script.onload = function() {
-                // Capturar funções após carregamento
-                ExtensionistasDB.sincronizar = window.sincronizarFormularioComAzure;
-                ExtensionistasDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
-                ExtensionistasDB.marcarComoSincronizado = window.marcarComoSincronizado;
-                ExtensionistasDB.deletar = window.deletarFormulario;
-                ExtensionistasDB.buscarPorProtocolo = window.buscarPorProtocolo;
-                ExtensionistasDB.exportarJSON = window.exportarParaJSON;
-                console.log('✅ Funções de extensionistas carregadas');
-                
-                // Carregar db-gerentes.js após extensionistas
-                const scriptGerentes = document.createElement('script');
-                scriptGerentes.src = 'db-gerentes.js';
-                scriptGerentes.onload = function() {
-                    // Capturar funções de gerentes
-                    GerentesDB.sincronizar = window.sincronizarFormularioComAzure;
-                    GerentesDB.sincronizarTodosPendentes = window.sincronizarTodosPendentes;
-                    GerentesDB.marcarComoSincronizado = window.marcarComoSincronizado;
-                    GerentesDB.deletar = window.deletarFormulario;
-                    GerentesDB.buscarPorProtocolo = window.buscarPorProtocolo;
-                    GerentesDB.exportarJSON = window.exportarParaJSON;
-                    console.log('✅ Funções de gerentes carregadas');
-                    
-                    // Restaurar extensionistas como padrão
-                    window.buscarTodosFormularios = ExtensionistasDB.buscarTodos;
-                    window.sincronizarFormularioComAzure = ExtensionistasDB.sincronizar;
-                    
-                    // Inicializar interface
-                    inicializarAdmin();
-                };
-                document.head.appendChild(scriptGerentes);
-            };
-            document.head.appendChild(script);
-        })();
-        
         // ==================== SISTEMA DE ABAS ====================
         let abaAtiva = 'extensionistas'; // default
         
@@ -1198,36 +1275,9 @@
         let ultimoCountFormularios = 0;
         let ultimoCountSincronizados = 0;
         
-        // Aguardar carregamento completo de todos os scripts
-        async function aguardarScripts() {
-            let tentativas = 0;
-            while (!window.buscarTodosFormularios && tentativas < 50) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                tentativas++;
-            }
-            
-            if (!window.buscarTodosFormularios) {
-                console.error('❌ ERRO CRÍTICO: db-extensionistas.js não carregou!');
-                document.getElementById('tableContent').innerHTML = `
-                    <p style="padding: 40px; text-align: center; color: #d32f2f; font-size: 1.2em;">
-                        ⚠️ Erro ao carregar sistema de banco de dados.<br>
-                        Por favor, recarregue a página (F5).
-                    </p>
-                `;
-                return false;
-            }
-            
-            console.log('✅ Scripts carregados com sucesso');
-            return true;
-        }
-        
-        // Função de inicialização do painel (chamada após carregar os scripts)
+        // Função de inicialização do painel
         async function inicializarAdmin() {
             console.log('🚀 Inicializando painel admin...');
-            
-            // Aguardar scripts carregarem (caso ainda não estejam)
-            const scriptsOk = await aguardarScripts();
-            if (!scriptsOk) return;
             
             // Executar sincronização automática primeiro
             await verificarSincronizacaoAutomatica();
@@ -1241,17 +1291,8 @@
             console.log('✅ Painel admin inicializado');
         }
         
-        // Se os scripts já estiverem carregados (carregamento normal), inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar se os scripts foram carregados dinamicamente
-            if (typeof ExtensionistasDB.sincronizar === 'undefined') {
-                console.log('⏳ Aguardando carregamento dinâmico dos scripts...');
-                // Será inicializado pelo callback do carregamento dinâmico
-            } else {
-                // Scripts já carregados, inicializar normalmente
-                inicializarAdmin();
-            }
-        });
+        // Inicializar quando DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', inicializarAdmin);
         
         // Sistema de auto-refresh para detectar mudanças
         function iniciarAutoRefresh() {
