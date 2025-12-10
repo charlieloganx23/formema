@@ -98,18 +98,42 @@
         }
         
         .tab-badge {
-            background: #f44336;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+            line-height: 1.3;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .tab-badge-total {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+        
+        .tab-badge-pending {
             font-size: 0.8rem;
             font-weight: 700;
-            min-width: 20px;
-            text-align: center;
+        }
+        
+        .tab-badge.has-pending {
+            background: #f44336;
         }
         
         .tab-btn.active .tab-badge {
+            background: rgba(46, 125, 50, 0.2);
+            color: #1b5e20;
+        }
+        
+        .tab-btn.active .tab-badge.has-pending {
             background: #ff5722;
+            color: white;
         }
         
         .admin-content {
@@ -778,11 +802,17 @@
             <div class="tabs-container">
                 <button class="tab-btn active" data-tab="extensionistas" onclick="trocarAba('extensionistas')">
                     📝 Extensionistas
-                    <span class="tab-badge" id="badge-extensionistas">0</span>
+                    <span class="tab-badge" id="badge-extensionistas">
+                        <div class="tab-badge-total">0 total</div>
+                        <div class="tab-badge-pending">0 pendentes</div>
+                    </span>
                 </button>
                 <button class="tab-btn" data-tab="gerentes" onclick="trocarAba('gerentes')">
                     👔 Gerentes
-                    <span class="tab-badge" id="badge-gerentes">0</span>
+                    <span class="tab-badge" id="badge-gerentes">
+                        <div class="tab-badge-total">0 total</div>
+                        <div class="tab-badge-pending">0 pendentes</div>
+                    </span>
                 </button>
             </div>
         </header>
@@ -909,6 +939,10 @@
     <script>
         // ==================== NAMESPACE ISOLADO ====================
         // Salvar funções de extensionistas antes de carregar gerentes
+        console.log('🔍 Verificando funções disponíveis de extensionistas...');
+        console.log('  - buscarTodosFormularios:', typeof window.buscarTodosFormularios);
+        console.log('  - buscarNaoSincronizados:', typeof window.buscarNaoSincronizados);
+        
         const ExtensionistasDB = {
             buscarTodos: window.buscarTodosFormularios,
             buscarNaoSincronizados: window.buscarNaoSincronizados,
@@ -926,6 +960,10 @@
     <script src="db-gerentes.js"></script>
     <script>
         // Salvar funções de gerentes após carregar
+        console.log('🔍 Verificando funções disponíveis de gerentes...');
+        console.log('  - buscarTodosFormularios:', typeof window.buscarTodosFormularios);
+        console.log('  - buscarNaoSincronizados:', typeof window.buscarNaoSincronizados);
+        
         const GerentesDB = {
             buscarTodos: window.buscarTodosFormularios,
             buscarNaoSincronizados: window.buscarNaoSincronizados,
@@ -953,17 +991,43 @@
         
         async function atualizarBadgesAbas() {
             try {
-                const [formExt, formGer] = await Promise.all([
+                const [todosExt, pendentesExt, todosGer, pendentesGer] = await Promise.all([
+                    ExtensionistasDB.buscarTodos(),
                     ExtensionistasDB.buscarNaoSincronizados(),
+                    GerentesDB.buscarTodos(),
                     GerentesDB.buscarNaoSincronizados()
                 ]);
                 
-                document.getElementById('badge-extensionistas').textContent = formExt.length;
-                document.getElementById('badge-gerentes').textContent = formGer.length;
+                // Badge extensionistas
+                const badgeExt = document.getElementById('badge-extensionistas');
+                badgeExt.innerHTML = `
+                    <div class="tab-badge-total">${todosExt.length} total</div>
+                    <div class="tab-badge-pending">${pendentesExt.length} pendente${pendentesExt.length !== 1 ? 's' : ''}</div>
+                `;
+                if (pendentesExt.length > 0) {
+                    badgeExt.classList.add('has-pending');
+                } else {
+                    badgeExt.classList.remove('has-pending');
+                }
                 
-                console.log(`📊 Badges atualizados: Ext=${formExt.length}, Ger=${formGer.length}`);
+                // Badge gerentes
+                const badgeGer = document.getElementById('badge-gerentes');
+                badgeGer.innerHTML = `
+                    <div class="tab-badge-total">${todosGer.length} total</div>
+                    <div class="tab-badge-pending">${pendentesGer.length} pendente${pendentesGer.length !== 1 ? 's' : ''}</div>
+                `;
+                if (pendentesGer.length > 0) {
+                    badgeGer.classList.add('has-pending');
+                } else {
+                    badgeGer.classList.remove('has-pending');
+                }
+                
+                console.log(`📊 Badges: Ext=${todosExt.length} total (${pendentesExt.length} pendentes), Ger=${todosGer.length} total (${pendentesGer.length} pendentes)`);
             } catch (error) {
                 console.error('⚠️ Erro ao atualizar badges:', error);
+                // Em caso de erro, mostrar 0
+                document.getElementById('badge-extensionistas').innerHTML = '<div class="tab-badge-total">0 total</div><div class="tab-badge-pending">0 pendentes</div>';
+                document.getElementById('badge-gerentes').innerHTML = '<div class="tab-badge-total">0 total</div><div class="tab-badge-pending">0 pendentes</div>';
             }
         }
         
