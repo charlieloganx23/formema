@@ -1936,6 +1936,9 @@
                             <button class="btn-action btn-primary" style="padding: 6px 12px; font-size: 0.85em; background: #1976d2;" onclick="exportarExcel('${form.protocolo}')" title="Exportar para Excel">
                                 📊 Excel
                             </button>
+                            <button class="btn-action btn-danger" style="padding: 6px 12px; font-size: 0.85em;" onclick="excluirFormulario('${form.protocolo}')" title="Excluir formulário local">
+                                🗑️ Excluir
+                            </button>
                         </div>
                     `;
                     
@@ -2697,6 +2700,38 @@
                 }
             }
         }
+        
+        // Excluir formulário do IndexedDB
+        window.excluirFormulario = async function(protocolo) {
+            if (!confirm(`🗑️ Confirmar exclusão do formulário?\n\nProtocolo: ${protocolo}\n\nEsta ação não pode ser desfeita e o formulário será removido apenas localmente.`)) {
+                return;
+            }
+            
+            try {
+                console.log(`🗑️ Tentando excluir formulário: ${protocolo}`);
+                
+                // Obter o banco de dados ativo (Extensionistas ou Gerentes)
+                const db = getDBAtivo();
+                
+                // Excluir do IndexedDB
+                await db.excluirFormularioPorProtocolo(protocolo);
+                
+                console.log(`✅ Formulário ${protocolo} excluído com sucesso`);
+                
+                // Atualizar lista de formulários
+                await carregarFormularios();
+                
+                // Atualizar badges das abas
+                await atualizarBadgesAbas();
+                
+                // Mostrar mensagem de sucesso
+                alert(`✅ Formulário ${protocolo} excluído com sucesso!`);
+                
+            } catch (error) {
+                console.error('❌ Erro ao excluir formulário:', error);
+                alert(`❌ Erro ao excluir formulário:\n\n${error.message}`);
+            }
+        };
         
         // Abrir página de relatórios
         window.abrirRelatorios = function() {
