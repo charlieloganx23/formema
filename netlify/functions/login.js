@@ -21,6 +21,14 @@ const config = {
     requestTimeout: 30000
 };
 
+// Log de configuração (sem senha)
+console.log('🔧 Configuração SQL:', {
+    server: config.server,
+    database: config.database,
+    user: config.user,
+    hasPassword: !!config.password
+});
+
 // ========== HANDLER PRINCIPAL ==========
 exports.handler = async (event, context) => {
     // Headers CORS
@@ -155,27 +163,38 @@ exports.handler = async (event, context) => {
 
     } catch (error) {
         console.error('❌ Erro no login:', error);
+        console.error('Código do erro:', error.code);
+        console.error('Mensagem:', error.message);
         
-        // Se for erro de conexão com o banco
-        if (error.code === 'ELOGIN' || error.code === 'ETIMEOUT') {
-            return {
-                statusCode: 503,
-                headers,
-                body: JSON.stringify({
-                    sucesso: false,
-                    mensagem: 'Erro ao conectar com o banco de dados.',
-                    erro: error.message
-                })
-            };
+        // Mensagens específicas por tipo de erro
+        let mensagem = 'Erro interno do servidor.';
+        let statusCode = 500;
+        
+        if (error.code === 'ELOGIN') {
+            mensagem = 'Falha na autenticação com o banco de dados. Verifique as credenciais.';
+            statusCode = 503;
+        } else if (error.code === 'ETIMEOUT') {
+            mensagem = 'Timeout ao conectar com o banco. Verifique o firewall do Azure SQL.';
+            statusCode = 503;
+        } else if (error.code === 'ESOCKET') {
+            mensagem = 'Não foi possível conectar ao servidor de banco de dados. Verifique o firewall.';
+            statusCode = 503;
+        } else if (error.message && error.message.includes('firewall')) {
+            mensagem = 'Conexão bloqueada pelo firewall do Azure SQL. Libere o acesso aos serviços do Azure.';
+            statusCode = 503;
+        } else if (!config.server || !config.database || !config.user || !config.password) {
+            mensagem = 'Variáveis de ambiente do banco não configuradas corretamente.';
+            statusCode = 500;
         }
 
         return {
-            statusCode: 500,
+            statusCode: statusCode,
             headers,
             body: JSON.stringify({
                 sucesso: false,
-                mensagem: 'Erro interno do servidor.',
-                erro: error.message
+                mensagem: mensagem,
+                detalhes: error.message,
+                codigo: error.code
             })
         };
         
