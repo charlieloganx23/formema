@@ -322,7 +322,7 @@
 
         <div class="cards-grid">
             <!-- Card Extensionistas -->
-            <a href="extensionistas.html" class="form-card">
+            <a href="login.html?tipo=extensionista" class="form-card">
                 <span class="card-icon">🌾</span>
                 <h3 class="card-title">Extensionistas</h3>
                 <p class="card-description">
@@ -340,7 +340,7 @@
             </a>
 
             <!-- Card Gerentes -->
-            <a href="gerentes.html" class="form-card">
+            <a href="login.html?tipo=gerente" class="form-card">
                 <span class="card-icon">👔</span>
                 <h3 class="card-title">Gerentes Locais</h3>
                 <p class="card-description">
@@ -369,5 +369,26 @@
     <footer class="app-footer">
         <p>© 2024 EMATER-RO | Sistema Ematech | Todos os direitos reservados</p>
     </footer>
+
+    <script>
+        // Proteger link do admin - apenas usuários logados como admin
+        document.querySelector('.admin-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            try {
+                const usuario = JSON.parse(localStorage.getItem('formema_usuario'));
+                
+                if (usuario && usuario.perfil === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('⛔ Acesso restrito a administradores.\n\nFaça login com credenciais de administrador.');
+                    window.location.href = 'login.html?tipo=admin';
+                }
+            } catch (e) {
+                alert('⛔ Você precisa  fazer login como administrador.');
+                window.location.href = 'login.html?tipo=admin';
+            }
+        });
+    </script>
 </body>
 </html>

@@ -875,6 +875,50 @@
     </style>
 </head>
 <body>
+    <!-- Script de Proteção de Acesso -->
+    <script>
+        (function() {
+            try {
+                const usuario = JSON.parse(localStorage.getItem('formema_usuario'));
+                
+                // Verificar se está logado
+                if (!usuario || !usuario.perfil || !usuario.token) {
+                    alert('⛔ Acesso negado!\n\nVocê precisa fazer login para acessar esta página.');
+                    window.location.href = 'login.html?tipo=gerente';
+                    return;
+                }
+
+                // Verificar permissão (gerente ou admin)
+                if (usuario.perfil !== 'gerente' && usuario.perfil !== 'admin') {
+                    alert('⛔ Acesso negado!\n\nVocê não tem permissão para acessar o formulário de gerentes.');
+                    localStorage.removeItem('formema_usuario');
+                    window.location.href = 'login.html?tipo=gerente';
+                    return;
+                }
+
+                // Verificar expiração (7 dias)
+                const dataLogin = new Date(usuario.dataLogin);
+                const agora = new Date();
+                const diasDesdeLogin = (agora - dataLogin) / (1000 * 60 * 60 * 24);
+                
+                if (diasDesdeLogin > 7) {
+                    alert('⏰ Sua sessão expirou!\n\nPor favor, faça login novamente.');
+                    localStorage.removeItem('formema_usuario');
+                    window.location.href = 'login.html?tipo=gerente';
+                    return;
+                }
+
+                console.log('✅ Acesso autorizado:', usuario.nome, `(${usuario.perfil})`);
+                
+            } catch (error) {
+                console.error('❌ Erro na validação de acesso:', error);
+                alert('⛔ Erro ao validar acesso. Faça login novamente.');
+                localStorage.removeItem('formema_usuario');
+                window.location.href = 'login.html?tipo=gerente';
+            }
+        })();
+    </script>
+
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
     
