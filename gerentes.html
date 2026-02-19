@@ -956,6 +956,11 @@
                 <span class="icon">🗺️</span>
                 <span>Mapa de Cobertura</span>
             </a>
+            <div style="border-top: 1px solid #e0e0e0; margin: 8px 0;"></div>
+            <a href="#" onclick="event.preventDefault(); sairDoSistema();" style="color: #d32f2f;">
+                <span class="icon">🚪</span>
+                <span>Sair do Sistema</span>
+            </a>
         </div>
     </div>
 
@@ -2437,6 +2442,14 @@
         function toggleAdminMenu() {
             const dropdown = document.getElementById('adminDropdown');
             dropdown.classList.toggle('show');
+        }
+
+        // Sair do sistema (logout)
+        function sairDoSistema() {
+            if (confirm('🚪 Deseja realmente sair do sistema?')) {
+                localStorage.removeItem('formema_usuario');
+                window.location.href = 'menu.html';
+            }
         }
 
         // Fechar menu ao clicar fora

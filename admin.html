@@ -38,6 +38,7 @@
             color: white;
             padding: 40px 40px 0;
             text-align: center;
+            position: relative;
         }
         
         .admin-header h1 {
@@ -52,6 +53,30 @@
             opacity: 0.95;
             font-weight: 400;
             margin-bottom: 20px;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
         }
         
         /* Tabs System */
@@ -840,6 +865,10 @@
     
     <div class="admin-container">
         <header class="admin-header">
+            <button class="logout-btn" onclick="sairDoSistema()">
+                <span>🚪</span>
+                <span>Sair</span>
+            </button>
             <h1>📊 Painel Administrativo</h1>
             <p>Gerenciamento Completo de Dados - EMATECH v2.0</p>
             
@@ -1302,6 +1331,14 @@
             carregarFormulariosPendentes();
             
             console.log(`🔄 Aba trocada para: ${aba}`);
+        }
+        
+        // Sair do sistema (logout)
+        function sairDoSistema() {
+            if (confirm('🚪 Deseja realmente sair do sistema?')) {
+                localStorage.removeItem('formema_usuario');
+                window.location.href = 'menu.html';
+            }
         }
         
         // Variável global para armazenar formulários
