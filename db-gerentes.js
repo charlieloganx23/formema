@@ -280,6 +280,48 @@ async function limparTodosDados() {
 }
 
 // ==================================================
+// EXCLUIR FORMULÁRIO POR PROTOCOLO
+// ==================================================
+
+async function excluirFormularioPorProtocolo(protocolo) {
+    if (!db) {
+        await initDB();
+    }
+
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const objectStore = transaction.objectStore(STORE_NAME);
+        const index = objectStore.index('protocolo');
+        const request = index.getKey(protocolo);
+
+        request.onsuccess = () => {
+            const key = request.result;
+            if (key) {
+                const deleteRequest = objectStore.delete(key);
+                
+                deleteRequest.onsuccess = () => {
+                    console.log('✅ Formulário excluído:', protocolo);
+                    resolve({ success: true, protocolo: protocolo });
+                };
+                
+                deleteRequest.onerror = () => {
+                    console.error('❌ Erro ao excluir formulário:', deleteRequest.error);
+                    reject(deleteRequest.error);
+                };
+            } else {
+                console.warn('⚠️ Formulário não encontrado:', protocolo);
+                reject(new Error('Formulário não encontrado'));
+            }
+        };
+
+        request.onerror = () => {
+            console.error('❌ Erro ao buscar formulário:', request.error);
+            reject(request.error);
+        };
+    });
+}
+
+// ==================================================
 // EXPORTAR PARA JSON
 // ==================================================
 
@@ -697,6 +739,7 @@ window.buscarNaoSincronizados = buscarNaoSincronizados;
 window.marcarComoSincronizado = marcarComoSincronizado;
 window.contarFormularios = contarFormularios;
 window.limparTodosDados = limparTodosDados;
+window.excluirFormularioPorProtocolo = excluirFormularioPorProtocolo;
 window.exportarParaJSON = exportarParaJSON;
 window.gerarProtocolo = gerarProtocolo;
 window.formatarData = formatarData;
