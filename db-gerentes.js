@@ -678,7 +678,7 @@ async function buscarFormulariosDoAzure(filtros = {}) {
 
 console.log(`
 ╔════════════════════════════════════════╗
-║  IndexedDB - Extensionistas EMATER-RO  ║
+║  IndexedDB - Gerentes Locais EMATER-RO ║
 ║  Versão 1.0 - 08/12/2025              ║
 ║  + SQL Azure Integration               ║
 ╚════════════════════════════════════════╝
@@ -708,7 +708,7 @@ window.buscarFormulariosDoAzure = buscarFormulariosDoAzure;
 window.tentarSincronizacaoSilenciosa = tentarSincronizacaoSilenciosa;
 window.sincronizacaoAutomaticaEmBackground = sincronizacaoAutomaticaEmBackground;
 
-console.log('✅ Funções do db-extensionistas.js exportadas globalmente');
+console.log('✅ Funções do db-gerentes.js exportadas globalmente');
 
 // Iniciar sincronização automática em background quando a página carregar
 if (document.readyState === 'loading') {
