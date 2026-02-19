@@ -360,7 +360,7 @@
     </main>
 
     <!-- Botão Admin -->
-    <a href="admin.html" class="admin-link" title="Painel Administrativo">
+    <a href="login.html?tipo=admin" class="admin-link" title="Painel Administrativo">
         <span>⚙️</span>
         <span>Admin</span>
     </a>
@@ -379,7 +379,7 @@
                 const usuario = JSON.parse(localStorage.getItem('formema_usuario'));
                 
                 if (usuario && usuario.perfil === 'admin') {
-                    window.location.href = 'admin.html';
+                    window.location.href = 'login.html?tipo=admin';
                 } else {
                     alert('⛔ Acesso restrito a administradores.\n\nFaça login com credenciais de administrador.');
                     window.location.href = 'login.html?tipo=admin';

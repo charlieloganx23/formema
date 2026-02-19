@@ -312,17 +312,38 @@
                 const diasDesdeLogin = (Date.now() - dataLogin.getTime()) / (1000 * 60 * 60 * 24);
                 
                 if (diasDesdeLogin <= 7) {
-                    // Redirecionar baseado no perfil
-                    showAlert('Redirecionando...', 'info');
-                    setTimeout(() => {
-                        if (user.perfil === 'admin') {
-                            window.location.href = 'admin.html';
-                        } else if (user.perfil === 'extensionista') {
-                            window.location.href = 'extensionistas.html';
-                        } else if (user.perfil === 'gerente') {
-                            window.location.href = 'gerentes.html';
-                        }
-                    }, 500);
+                    // Verificar se o perfil do usuário logado corresponde ao tipo solicitado
+                    const tipoSolicitado = new URLSearchParams(window.location.search).get('tipo');
+                    
+                    // Se admin acessa qualquer tipo, permitir
+                    if (user.perfil === 'admin') {
+                        showAlert('Redirecionando...', 'info');
+                        setTimeout(() => {
+                            if (tipoSolicitado === 'extensionista') {
+                                window.location.href = 'extensionistas.html';
+                            } else if (tipoSolicitado === 'gerente') {
+                                window.location.href = 'gerentes.html';
+                            } else {
+                                window.location.href = 'admin.html';
+                            }
+                        }, 500);
+                    } 
+                    // Se o perfil corresponde ao tipo solicitado, redirecionar
+                    else if (user.perfil === tipoSolicitado) {
+                        showAlert('Redirecionando...', 'info');
+                        setTimeout(() => {
+                            if (user.perfil === 'extensionista') {
+                                window.location.href = 'extensionistas.html';
+                            } else if (user.perfil === 'gerente') {
+                                window.location.href = 'gerentes.html';
+                            }
+                        }, 500);
+                    }
+                    // Se o perfil NÃO corresponde, limpar sessão e forçar novo login
+                    else {
+                        localStorage.removeItem('formema_usuario');
+                        showAlert('⚠️ Você precisa fazer login com as credenciais corretas para este formulário.', 'warning');
+                    }
                 } else {
                     // Sessão expirada
                     localStorage.removeItem('formema_usuario');
