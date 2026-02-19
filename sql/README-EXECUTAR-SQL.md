@@ -66,7 +66,7 @@ FROM usuarios_formema;
 
 Deve retornar 3 usuários:
 - **admin** (perfil: admin)
-- **ext.teste** (perfil: extensionista)
+- **extensionista** (perfil: extensionista)
 - **ger.teste** (perfil: gerente)
 
 ## 🔑 Credenciais de Teste
@@ -74,7 +74,7 @@ Deve retornar 3 usuários:
 | Usuário | Senha | Perfil |
 |---------|-------|--------|
 | admin | admin123 | Administrador |
-| ext.teste | senha123 | Extensionista |
+| extensionista | ext123 | Extensionista |
 | ger.teste | senha123 | Gerente |
 
 ## ⚠️ Importante

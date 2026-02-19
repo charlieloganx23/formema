@@ -56,13 +56,13 @@ VALUES (
 );
 GO
 
--- EXTENSIONISTA (usuário: ext.teste, senha: senha123)
+-- EXTENSIONISTA (usuário: extensionista, senha: ext123)
 INSERT INTO usuarios_formema (usuario, senha, nome_completo, email, perfil, municipio, escritorio_local)
 VALUES (
-    'ext.teste',
-    '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',  -- Hash SHA-256 de 'senha123'
-    'João Silva - Extensionista',
-    'joao.silva@emater.ro.gov.br',
+    'extensionista',
+    'e90f8ebece18574d492ba9c500ea0f6b260cc33bc62918efe683893a29e84d86',  -- Hash SHA-256 de 'ext123'
+    'Extensionista Teste',
+    'extensionista@emater.ro.gov.br',
     'extensionista',
     'Ministro Andreazza',
     'Escritório Local de Ministro Andreazza'
@@ -73,7 +73,7 @@ GO
 INSERT INTO usuarios_formema (usuario, senha, nome_completo, email, perfil, municipio, escritorio_local)
 VALUES (
     'ger.teste',
-    '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',  -- Hash SHA-256 de 'senha123'
+    '55a5e9e78207b4df8699d60886fa070079463547b095d1a05bc719bb4e6cd251',  -- Hash SHA-256 de 'senha123' (CORRIGIDO)
     'Maria Santos - Gerente',
     'maria.santos@emater.ro.gov.br',
     'gerente',
@@ -94,7 +94,13 @@ function gerarHashSenha(senha) {
 
 // Gerar hashes
 console.log('admin123:', gerarHashSenha('admin123'));
+console.log('ext123:', gerarHashSenha('ext123'));
 console.log('senha123:', gerarHashSenha('senha123'));
+
+// RESULTADO:
+// admin123: 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+// ext123: e90f8ebece18574d492ba9c500ea0f6b260cc33bc62918efe683893a29e84d86
+// senha123: 55a5e9e78207b4df8699d60886fa070079463547b095d1a05bc719bb4e6cd251
 */
 
 -- =========================================================
