@@ -2713,8 +2713,8 @@
                 // Obter o banco de dados ativo (Extensionistas ou Gerentes)
                 const db = getDBAtivo();
                 
-                // Excluir do IndexedDB
-                await db.excluirFormularioPorProtocolo(protocolo);
+                // Excluir do IndexedDB usando o método deletar()
+                await db.deletar(protocolo);
                 
                 console.log(`✅ Formulário ${protocolo} excluído com sucesso`);
                 
