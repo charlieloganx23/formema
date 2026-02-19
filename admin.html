@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Cache-bust: v2.1-1771514100 -->
+    <!-- Cache-bust: v2.2-1771515377 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -2665,14 +2665,14 @@
                     const progresso = 40 + ((i + 1) / pendentes.length) * 50;
                     updateSyncModal(`Sincronizando ${i + 1}/${pendentes.length}...`, progresso);
                     
-                    const resultado = await sincronizarFormularioComAzure(form);
-                    
-                    if (resultado.success) {
+                    try {
+                        await db.sincronizar(form);
+                        await db.marcarComoSincronizado(form.protocolo);
                         sucessos++;
                         console.log(`✅ Sincronizado: ${form.protocolo}`);
-                    } else {
+                    } catch (error) {
                         erros++;
-                        console.error(`❌ Falha: ${form.protocolo} - ${resultado.error}`);
+                        console.error(`❌ Falha: ${form.protocolo} - ${error.message}`);
                     }
                 }
                 
