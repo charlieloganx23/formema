@@ -69,11 +69,11 @@ VALUES (
 );
 GO
 
--- GERENTE (usuário: ger.teste, senha: senha123)
+-- GERENTE (usuário: gerentes, senha: ger123)
 INSERT INTO usuarios_formema (usuario, senha, nome_completo, email, perfil, municipio, escritorio_local)
 VALUES (
-    'ger.teste',
-    '55a5e9e78207b4df8699d60886fa070079463547b095d1a05bc719bb4e6cd251',  -- Hash SHA-256 de 'senha123' (CORRIGIDO)
+    'gerentes',
+    '64b579c165d1f10844bbe0ce9e2bfb51d298ce9e2ac46302944f9fd01d08ef16',  -- Hash SHA-256 de 'ger123'
     'Maria Santos - Gerente',
     'maria.santos@emater.ro.gov.br',
     'gerente',
