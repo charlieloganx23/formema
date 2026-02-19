@@ -910,6 +910,13 @@
 
                 console.log('✅ Acesso autorizado:', usuario.nome, `(${usuario.perfil})`);
                 
+                // Mostrar links de admin apenas para administradores
+                if (usuario.perfil === 'admin') {
+                    document.getElementById('linkPainelAdmin').style.display = 'flex';
+                    document.getElementById('linkRelatorios').style.display = 'flex';
+                    document.getElementById('linkMapa').style.display = 'flex';
+                }
+                
             } catch (error) {
                 console.error('❌ Erro na validação de acesso:', error);
                 alert('⛔ Erro ao validar acesso. Faça login novamente.');
@@ -944,15 +951,15 @@
                 <span class="icon">🏠</span>
                 <span>Voltar ao Menu Principal</span>
             </a>
-            <a href="admin.html">
+            <a href="admin.html" id="linkPainelAdmin" style="display: none;">
                 <span class="icon">📊</span>
                 <span>Painel Administrativo</span>
             </a>
-            <a href="relatorios.html">
+            <a href="relatorios.html" id="linkRelatorios" style="display: none;">
                 <span class="icon">📈</span>
                 <span>Relatórios e Análises</span>
             </a>
-            <a href="mapa-cobertura.html">
+            <a href="mapa-cobertura.html" id="linkMapa" style="display: none;">
                 <span class="icon">🗺️</span>
                 <span>Mapa de Cobertura</span>
             </a>
