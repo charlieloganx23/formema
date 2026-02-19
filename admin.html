@@ -1305,10 +1305,10 @@
                     mostrarIndicadorSync(`Sincronizando ${pendentes.length} formulário(s)...`, 'loading');
                     
                     // Chamar função de sincronização automática em background
-                    const resultado = await sincronizacaoAutomaticaEmBackground();
+                    const resultado = await sincronizacaoAutomaticaEmBackground(pendentes);
                     
-                    if (resultado.success && resultado.sincronizados > 0) {
-                        mostrarIndicadorSync(`✅ ${resultado.sincronizados} formulário(s) sincronizado(s)!`, 'success');
+                    if (resultado.sucessos > 0) {
+                        mostrarIndicadorSync(`✅ ${resultado.sucessos} formulário(s) sincronizado(s)!`, 'success');
                         esconderIndicadorSync(4000);
                         
                         // Recarregar dados após sincronização
@@ -1316,8 +1316,8 @@
                             await carregarDadosServidor();
                             await carregarFormulariosPendentes();
                         }, 1000);
-                    } else if (resultado.pendentes > 0) {
-                        mostrarIndicadorSync(`⚠️ ${resultado.pendentes} ainda pendente(s)`, 'error');
+                    } else if (resultado.erros > 0) {
+                        mostrarIndicadorSync(`⚠️ ${resultado.erros} erro(s) ao sincronizar`, 'error');
                         esconderIndicadorSync(5000);
                     } else {
                         esconderIndicadorSync(0);
