@@ -1687,42 +1687,24 @@
                     </fieldset>
 
                     <!-- QUESTÃO 5: Documento formal -->
-                    <div class="question-group">
-                        <label class="question-label">
-                            5) Existe documento formal que explicite esses critérios?
-                        </label>
-                        <p class="question-description">1 = muito baixa, 5 = muito alta</p>
-                        <div class="likert-scale">
-                            <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="1">
-                                <span class="likert-number">1</span>
-                                <span class="likert-text">Muito baixa</span>
-                            </label>
-                            <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="2">
-                                <span class="likert-number">2</span>
-                                <span class="likert-text">Baixa</span>
-                            </label>
-                            <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="3">
-                                <span class="likert-number">3</span>
-                                <span class="likert-text">Média</span>
-                            </label>
-                            <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="4">
-                                <span class="likert-number">4</span>
-                                <span class="likert-text">Alta</span>
-                            </label>
-                            <label class="likert-label">
-                                <input type="radio" name="documentoFormalCriterios" value="5">
-                                <span class="likert-number">5</span>
-                                <span class="likert-text">Muito alta</span>
-                            </label>
+                    <fieldset class="question-group">
+                        <legend>5) Existe documento formal que explicite esses critérios?</legend>
+                        <div class="radio-group">
+                            <label class="radio-label"><input type="radio" name="documentoFormalCriterios" value="sim"> <span>Sim</span></label>
+                            <label class="radio-label"><input type="radio" name="documentoFormalCriterios" value="parcialmente"> <span>Parcialmente</span></label>
+                            <label class="radio-label"><input type="radio" name="documentoFormalCriterios" value="nao"> <span>Não</span></label>
                         </div>
+                    </fieldset>
+
+                    <div class="question-group">
+                        <label for="exemploDocumento">
+                            Caso a resposta seja "Sim", dê exemplo:
+                        </label>
+                        <textarea id="exemploDocumento" name="exemploDocumento" rows="3" placeholder="Descreva, se houver (opcional)"></textarea>
                     </div>
 
-                    <!-- QUESTÃO 6: Instrumentos formais -->
-                    <fieldset class="question-group">
+                    <!-- QUESTÃO 6: Instrumentos formais [OCULTA - ajuste 23/02/2026] -->
+                    <fieldset class="question-group" style="display: none;">
                         <legend>6) Existem instrumentos formais de priorização?</legend>
                         <div class="radio-group">
                             <label class="radio-label"><input type="radio" name="instrumentosPriorizacao" value="sim"> <span>Sim</span></label>
@@ -1731,7 +1713,7 @@
                         </div>
                     </fieldset>
 
-                    <div class="question-group">
+                    <div class="question-group" style="display: none;">
                         <label for="exemploInstrumento">
                             Caso “Sim”, dê um exemplo:
                         </label>
