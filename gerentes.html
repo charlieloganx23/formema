@@ -1687,7 +1687,8 @@
                     </fieldset>
 
                     <!-- QUESTÃO 5: Documento formal -->
-                    <fieldset class="question-group">
+                    <!-- QUESTÃO 5: [OCULTA - campos HTML incorretos] -->
+                    <fieldset class="question-group" style="display: none;">
                         <legend>5) Existe documento formal que explicite esses critérios?</legend>
                         <div class="radio-group">
                             <label class="radio-label"><input type="radio" name="documentoFormalCriterios" value="sim"> <span>Sim</span></label>
@@ -1696,16 +1697,16 @@
                         </div>
                     </fieldset>
 
-                    <div class="question-group">
+                    <div class="question-group" style="display: none;">
                         <label for="exemploDocumento">
                             Caso a resposta seja "Sim", dê exemplo:
                         </label>
                         <textarea id="exemploDocumento" name="exemploDocumento" rows="3" placeholder="Descreva, se houver (opcional)"></textarea>
                     </div>
 
-                    <!-- QUESTÃO 6: Instrumentos formais [OCULTA - ajuste 23/02/2026] -->
-                    <fieldset class="question-group" style="display: none;">
-                        <legend>6) Existem instrumentos formais de priorização?</legend>
+                    <!-- QUESTÃO 5 [Renumerada da 6 - usa campos corretos do backend: instrumentosPriorizacao + exemploInstrumento] -->
+                    <fieldset class="question-group">
+                        <legend>5) Existe documento formal que explicite esses critérios?</legend>
                         <div class="radio-group">
                             <label class="radio-label"><input type="radio" name="instrumentosPriorizacao" value="sim"> <span>Sim</span></label>
                             <label class="radio-label"><input type="radio" name="instrumentosPriorizacao" value="parcialmente"> <span>Parcialmente</span></label>
@@ -1713,7 +1714,7 @@
                         </div>
                     </fieldset>
 
-                    <div class="question-group" style="display: none;">
+                    <div class="question-group">
                         <label for="exemploInstrumento">
                             Caso “Sim”, dê um exemplo:
                         </label>
