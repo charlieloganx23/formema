@@ -86,7 +86,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 success: true,
                 total: formularios.length,
-                formularios: formularios,
+                data: formularios,  // Padronizado com buscar-gerentes
                 estatisticas: estatisticas
             })
         };
