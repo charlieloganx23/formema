@@ -89,7 +89,7 @@ exports.handler = async function(event, context) {
                 SELECT *
                 FROM formulario_gerentes
                 ${where}
-                ORDER BY created_at DESC
+                ORDER BY timestamp_fim DESC
                 OFFSET @offset ROWS
                 FETCH NEXT @limite ROWS ONLY
             `;
