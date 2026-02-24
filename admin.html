@@ -1482,41 +1482,32 @@
         
         // Sistema de auto-refresh para detectar mudanças
         function iniciarAutoRefresh() {
-            console.log('🔄 Auto-refresh ativado (verifica a cada 3s - monitora ambas as fontes)');
+            console.log('🔄 Auto-refresh ativado (verifica a cada 10s - busca do Azure SQL)');
             
             setInterval(async () => {
                 try {
-                    // Verificar a aba ativa
-                    const db = getDBAtivo();
-                    const formularios = await db.buscarTodos();
-                    const totalAtual = formularios.length;
-                    const sincronizados = formularios.filter(f => f.sincronizado).length;
+                    // Buscar dados atualizados do Azure SQL
+                    const resultado = await buscarFormulariosDoAzure({ limite: 10000 }, abaAtiva);
                     
-                    // Se o total mudou, recarregar
-                    if (totalAtual !== ultimoCountFormularios) {
-                        console.log(`📊 Detectada mudança (${abaAtiva}): ${ultimoCountFormularios} → ${totalAtual} formulários`);
-                        ultimoCountFormularios = totalAtual;
-                        await carregarDadosServidor();
-                        await carregarFormulariosPendentes();
-                        showToast('info', 'Dados Atualizados', `Painel ${abaAtiva} atualizado automaticamente.`, 3000);
-                    } else if (sincronizados !== ultimoCountSincronizados) {
-                        // Verificar se houve mudança nos sincronizados
-                        console.log(`✅ Mudança em sincronizados (${abaAtiva}): ${ultimoCountSincronizados} → ${sincronizados}`);
-                        ultimoCountSincronizados = sincronizados;
-                        await carregarDadosServidor();
-                        await carregarFormulariosPendentes();
-                        showToast('success', 'Sincronização Detectada', 'Formulários sincronizados atualizados!', 3000);
+                    if (resultado.success && resultado.data) {
+                        const totalAtual = resultado.data.length;
+                        
+                        // Se o total mudou, recarregar painel
+                        if (totalAtual !== ultimoCountFormularios) {
+                            console.log(`📊 Detectada mudança (${abaAtiva}): ${ultimoCountFormularios} → ${totalAtual} formulários`);
+                            await carregarDadosServidor();
+                            await carregarFormulariosPendentes();
+                        }
                     }
                     
-                    // Atualizar badges sempre (monitora ambas as fontes)
+                    // Atualizar badges sempre
                     await atualizarBadgesAbas();
                 } catch (error) {
                     console.error('⚠️ Erro no auto-refresh:', error);
                 }
-            }, 3000); // Verifica a cada 3 segundos
+            }, 10000); // Verifica a cada 10 segundos
         }
         
-        // Carregar dados do IndexedDB local
         // ==========================================
         // SINCRONIZAÇÃO BIDIRECIONAL COM AZURE
         // ==========================================
