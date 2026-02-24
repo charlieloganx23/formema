@@ -1303,17 +1303,21 @@
         
         async function atualizarBadgesAbas() {
             try {
-                const [todosExt, pendentesExt, todosGer, pendentesGer] = await Promise.all([
-                    ExtensionistasDB.buscarTodos(),
+                // Buscar totais do Azure SQL para cada tipo
+                const [resultExt, resultGer, pendentesExt, pendentesGer] = await Promise.all([
+                    buscarFormulariosDoAzure({ limite: 1 }, 'extensionistas'),
+                    buscarFormulariosDoAzure({ limite: 1 }, 'gerentes'),
                     ExtensionistasDB.buscarNaoSincronizados(),
-                    GerentesDB.buscarTodos(),
                     GerentesDB.buscarNaoSincronizados()
                 ]);
+                
+                const totalExt = resultExt.success ? resultExt.total : 0;
+                const totalGer = resultGer.success ? resultGer.total : 0;
                 
                 // Badge extensionistas
                 const badgeExt = document.getElementById('badge-extensionistas');
                 badgeExt.innerHTML = `
-                    <div class="tab-badge-total">${todosExt.length} total</div>
+                    <div class="tab-badge-total">${totalExt} total</div>
                     <div class="tab-badge-pending">${pendentesExt.length} pendente${pendentesExt.length !== 1 ? 's' : ''}</div>
                 `;
                 if (pendentesExt.length > 0) {
@@ -1325,7 +1329,7 @@
                 // Badge gerentes
                 const badgeGer = document.getElementById('badge-gerentes');
                 badgeGer.innerHTML = `
-                    <div class="tab-badge-total">${todosGer.length} total</div>
+                    <div class="tab-badge-total">${totalGer} total</div>
                     <div class="tab-badge-pending">${pendentesGer.length} pendente${pendentesGer.length !== 1 ? 's' : ''}</div>
                 `;
                 if (pendentesGer.length > 0) {
@@ -1334,7 +1338,7 @@
                     badgeGer.classList.remove('has-pending');
                 }
                 
-                console.log(`📊 Badges: Ext=${todosExt.length} total (${pendentesExt.length} pendentes), Ger=${todosGer.length} total (${pendentesGer.length} pendentes)`);
+                console.log(`📊 Badges: Ext=${totalExt} total (${pendentesExt.length} pendentes), Ger=${totalGer} total (${pendentesGer.length} pendentes)`);
             } catch (error) {
                 console.error('⚠️ Erro ao atualizar badges:', error);
                 // Em caso de erro, mostrar 0
