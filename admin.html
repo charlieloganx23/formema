@@ -1020,6 +1020,26 @@
             const DB_VERSION = 1;
             const STORE_NAME = 'formularios';
             
+            // Definir endpoint correto baseado no tipo
+            const API_CONFIG = {
+                extensionistas: {
+                    API_URL: '/.netlify/functions',
+                    ENDPOINT_SAVE: '/salvar-formulario'
+                },
+                gerentes: {
+                    API_URL: '/.netlify/functions',
+                    ENDPOINT_SAVE: '/salvar-gerentes'
+                }
+            };
+            
+            const config = API_CONFIG[tipo];
+            if (!config) {
+                console.error(`⚠️ Tipo "${tipo}" não reconhecido, usando padrão extensionistas`);
+                config = API_CONFIG.extensionistas;
+            }
+            
+            console.log(`🔗 [${tipo}] Endpoint configurado: ${config.API_URL}${config.ENDPOINT_SAVE}`);
+            
             // Função para abrir o banco específico
             function abrirDB() {
                 return new Promise((resolve, reject) => {
@@ -1132,25 +1152,26 @@
             
             // Sincronizar com servidor (via Netlify Functions)
             async function sincronizar(formulario) {
-                if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-                    throw new Error('Configuração da API não encontrada');
-                }
+                const url = config.API_URL + config.ENDPOINT_SAVE;
                 
-                const url = CONFIG.API_URL + CONFIG.ENDPOINTS.SAVE;
+                console.log(`📤 [${tipo}] Sincronizando ${formulario.protocolo} para ${url}`);
                 
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formulario),
-                    signal: AbortSignal.timeout(CONFIG.TIMEOUT || 30000)
+                    signal: AbortSignal.timeout(30000)
                 });
                 
                 if (!response.ok) {
                     const errorText = await response.text();
+                    console.error(`❌ [${tipo}] Erro HTTP ${response.status}:`, errorText);
                     throw new Error(`Erro ${response.status}: ${errorText}`);
                 }
                 
-                return await response.json();
+                const result = await response.json();
+                console.log(`✅ [${tipo}] Sincronizado: ${formulario.protocolo}`);
+                return result;
             }
             
             // Sincronizar todos pendentes
@@ -1197,11 +1218,16 @@
         // ==================== FUNÇÕES DE API DO SERVIDOR ====================
         
         // Buscar formulários do servidor Azure (via Netlify Functions)
-        async function buscarFormulariosDoAzure(filtros = {}) {
+        async function buscarFormulariosDoAzure(filtros = {}, tipo = 'extensionistas') {
             try {
-                if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
-                    throw new Error('Configuração da API não encontrada');
-                }
+                // Definir endpoint baseado no tipo
+                const endpoints = {
+                    extensionistas: '/.netlify/functions/buscar-formularios',
+                    gerentes: '/.netlify/functions/buscar-gerentes'
+                };
+                
+                const endpoint = endpoints[tipo] || endpoints.extensionistas;
+                console.log(`🔍 Buscando formulários do Azure [${tipo}] via ${endpoint}`);
 
                 // Construir query string
                 const params = new URLSearchParams();
@@ -1210,12 +1236,12 @@
                 if (filtros.limite) params.append('limite', filtros.limite);
                 if (filtros.offset) params.append('offset', filtros.offset);
 
-                const url = CONFIG.API_URL + CONFIG.ENDPOINTS.GET_ALL + '?' + params.toString();
+                const url = endpoint + '?' + params.toString();
                 
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
-                    signal: AbortSignal.timeout(CONFIG.TIMEOUT || 30000)
+                    signal: AbortSignal.timeout(30000)
                 });
 
                 if (!response.ok) {
@@ -1225,13 +1251,13 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    console.log(`✅ ${result.total} formulários carregados do Azure`);
+                    console.log(`✅ [${tipo}] ${result.total} formulários carregados do Azure SQL`);
                     return result;
                 } else {
                     throw new Error(result.error || 'Erro desconhecido');
                 }
             } catch (error) {
-                console.error('❌ Erro ao buscar do Azure:', error.message);
+                console.error(`❌ [${tipo}] Erro ao buscar do Azure:`, error.message);
                 return { success: false, error: error.message };
             }
         }
@@ -1509,16 +1535,16 @@
                 }
                 
                 // Buscar do Azure
-                const resultado = await buscarFormulariosDoAzure({ limite: 10000 });
+                const resultado = await buscarFormulariosDoAzure({ limite: 10000 }, abaAtiva);
                 
-                if (!resultado.success || !resultado.formularios) {
+                if (!resultado.success || !resultado.data) {
                     console.error('❌ [DOWNLOAD] Falha ao buscar do Azure:', resultado.error);
                     mostrarIndicadorSync('⚠️ Erro ao baixar dados do servidor', 'error');
                     esconderIndicadorSync(4000);
                     return resultado;
                 }
                 
-                const formulariosServidor = resultado.formularios;
+                const formulariosServidor = resultado.data || [];
                 console.log(`📥 [DOWNLOAD] ${formulariosServidor.length} formulários encontrados no servidor`);
                 
                 if (formulariosServidor.length === 0) {
@@ -1699,11 +1725,16 @@
 
         async function carregarDadosServidor() {
             try {
-                console.log(`🔄 Carregando estatísticas do IndexedDB (${abaAtiva})...`);
+                console.log(`🔄 Carregando dados do Azure SQL (${abaAtiva})...`);
                 
-                // Buscar formulários da aba ativa
-                const db = getDBAtivo();
-                const todosFormularios = await db.buscarTodos();
+                // Buscar formulários do Azure SQL baseado na aba ativa
+                const resultado = await buscarFormulariosDoAzure({ limite: 10000 }, abaAtiva);
+                
+                if (!resultado.success) {
+                    throw new Error(resultado.error || 'Falha ao buscar dados do Azure');
+                }
+                
+                const todosFormularios = resultado.data || [];
                 
                 // Parse de campos JSON (quando vem do servidor)
                 todosFormularios.forEach(form => {
