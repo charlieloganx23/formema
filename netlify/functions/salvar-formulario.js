@@ -7,7 +7,10 @@ const config = {
     password: process.env.SQL_PASSWORD || 'A57458974x23*',
     options: {
         encrypt: true,
-        trustServerCertificate: false
+        trustServerCertificate: false,
+        enableArithAbort: true,
+        connectTimeout: 30000,       // Timeout de conexão (30s)
+        requestTimeout: 60000        // Timeout de requisição (60s - aumentado para campo)
     },
     pool: {
         max: 10,

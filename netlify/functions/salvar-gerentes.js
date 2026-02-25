@@ -13,8 +13,8 @@ const config = {
         encrypt: true,
         trustServerCertificate: false,
         enableArithAbort: true,
-        connectTimeout: 30000,
-        requestTimeout: 30000
+        connectTimeout: 30000,       // Timeout de conexão (30s)
+        requestTimeout: 60000        // Timeout de requisição (60s - aumentado para campo)
     },
     pool: {
         max: 10,
