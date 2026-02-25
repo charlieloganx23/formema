@@ -12,6 +12,11 @@ const STORE_NAME = 'formularios';
 let db = null;
 
 // ==================================================
+// PROTEÇÃO CONTRA RACE CONDITION (P1)
+// ==================================================
+let sincronizacaoEmAndamento = false;
+
+// ==================================================
 // INICIALIZAÇÃO DO BANCO
 // ==================================================
 
@@ -74,7 +79,12 @@ async function salvarFormulario(dados) {
             protocolo: protocolo,
             timestamp_fim: new Date().toISOString(),
             sincronizado: false,
-            versao_formulario: '1.0'
+            versao_formulario: '1.0',
+            // P4: Proteção contra fila travada
+            tentativas_sync: 0,
+            maximo_tentativas: 10,
+            ultimo_erro: null,
+            erro_permanente: false
         };
 
         const request = objectStore.add(formulario);
@@ -180,7 +190,10 @@ async function buscarNaoSincronizados() {
 
         request.onsuccess = () => {
             // Filtrar manualmente os não sincronizados
-            const naoSincronizados = request.result.filter(form => !form.sincronizado);
+            // P4: Excluir itens com erro permanente da fila
+            const naoSincronizados = request.result.filter(form => 
+                !form.sincronizado && !form.erro_permanente
+            );
             resolve(naoSincronizados);
         };
 
@@ -462,6 +475,14 @@ async function tentarSincronizacaoSilenciosa(formulario) {
 
 // Sincronizar todos pendentes em background (chamado ao abrir páginas)
 async function sincronizacaoAutomaticaEmBackground() {
+    // P1: Lock para evitar race condition
+    if (sincronizacaoEmAndamento) {
+        console.log('⏳ [AUTO-SYNC] Sincronização já em andamento, pulando...');
+        return { success: false, error: 'Já processando' };
+    }
+    
+    sincronizacaoEmAndamento = true;
+    
     try {
         // Verificar se está online
         if (!navigator.onLine) {
@@ -512,13 +533,31 @@ async function sincronizacaoAutomaticaEmBackground() {
     } catch (error) {
         console.log('⚠️ [AUTO-SYNC] Erro na sincronização automática:', error.message);
         return { success: false, error: error.message };
+    } finally {
+        // P1: Sempre liberar lock, mesmo em caso de erro
+        sincronizacaoEmAndamento = false;
     }
 }
 
 // Sincronizar um formulário específico com o servidor
 async function sincronizarFormularioComAzure(formulario) {
     try {
+        // P4: Verificar se já foi marcado como erro permanente
+        if (formulario.erro_permanente) {
+            console.warn(`⚠️ [SYNC] Pulando formulário com erro permanente: ${formulario.protocolo}`);
+            return { 
+                success: false, 
+                protocolo: formulario.protocolo, 
+                error: 'Erro permanente - requer intervenção manual',
+                erro_permanente: true
+            };
+        }
+        
         console.log('🔄 [SYNC] Iniciando sincronização:', formulario.protocolo);
+        
+        // P4: Incrementar contador de tentativas
+        formulario.tentativas_sync = (formulario.tentativas_sync || 0) + 1;
+        console.log(`📊 [SYNC] Tentativa ${formulario.tentativas_sync}/${formulario.maximo_tentativas || 10}`);
         
         // Verificar se config existe
         if (typeof CONFIG === 'undefined' || !CONFIG.API_URL) {
@@ -564,12 +603,32 @@ async function sincronizarFormularioComAzure(formulario) {
         console.error(`❌ [SYNC] Erro ao sincronizar ${formulario.protocolo}:`, error.message);
         console.error('❌ [SYNC] Stack:', error.stack);
         
+        // P4: Atualizar informações de erro no formulário
+        formulario.ultimo_erro = error.message;
+        
+        // P4: Marcar como erro permanente se excedeu tentativas
+        const maxTentativas = formulario.maximo_tentativas || 10;
+        if (formulario.tentativas_sync >= maxTentativas) {
+            formulario.erro_permanente = true;
+            console.error(`🚨 [SYNC] ERRO PERMANENTE: ${formulario.protocolo} - ${error.message}`);
+            console.error(`🚨 [SYNC] Formulário removido da fila após ${formulario.tentativas_sync} tentativas`);
+        }
+        
+        // P4: Salvar estado atualizado no IndexedDB
+        await atualizarEstadoFormulario(formulario);
+        
         // Mostrar modal de erro detalhado se disponível
         if (typeof window.mostrarErroDetalhado === 'function') {
             window.mostrarErroDetalhado(error, formulario.protocolo);
         }
         
-        return { success: false, protocolo: formulario.protocolo, error: error.message };
+        return { 
+            success: false, 
+            protocolo: formulario.protocolo, 
+            error: error.message,
+            tentativas: formulario.tentativas_sync,
+            erro_permanente: formulario.erro_permanente || false
+        };
     }
 }
 
@@ -591,6 +650,10 @@ async function marcarComoSincronizado(protocolo) {
                 console.log('📝 [MARK] Formulário encontrado, atualizando status...');
                 formulario.sincronizado = true;
                 formulario.data_sincronizacao = new Date().toISOString();
+                // P4: Resetar contador de tentativas após sucesso
+                formulario.tentativas_sync = 0;
+                formulario.ultimo_erro = null;
+                formulario.erro_permanente = false;
                 
                 const updateRequest = objectStore.put(formulario);
                 updateRequest.onsuccess = () => {
@@ -609,6 +672,46 @@ async function marcarComoSincronizado(protocolo) {
 
         request.onerror = () => {
             console.error('❌ [MARK] Erro ao buscar formulário:', request.error);
+            reject(request.error);
+        };
+    });
+}
+
+// P4: Atualizar estado do formulário (tentativas, erros)
+async function atualizarEstadoFormulario(formulario) {
+    if (!db) await initDB();
+    
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const objectStore = transaction.objectStore(STORE_NAME);
+        const index = objectStore.index('protocolo');
+        const request = index.get(formulario.protocolo);
+
+        request.onsuccess = () => {
+            const formularioExistente = request.result;
+            if (formularioExistente) {
+                // Atualizar campos de controle
+                formularioExistente.tentativas_sync = formulario.tentativas_sync;
+                formularioExistente.ultimo_erro = formulario.ultimo_erro;
+                formularioExistente.erro_permanente = formulario.erro_permanente;
+                
+                const updateRequest = objectStore.put(formularioExistente);
+                updateRequest.onsuccess = () => {
+                    console.log(`📝 [UPDATE] Estado atualizado: ${formulario.protocolo} (tentativas: ${formulario.tentativas_sync})`);
+                    resolve(true);
+                };
+                updateRequest.onerror = () => {
+                    console.error('❌ [UPDATE] Erro ao atualizar estado:', updateRequest.error);
+                    reject(updateRequest.error);
+                };
+            } else {
+                console.error('❌ [UPDATE] Formulário não encontrado:', formulario.protocolo);
+                reject(new Error('Formulário não encontrado'));
+            }
+        };
+
+        request.onerror = () => {
+            console.error('❌ [UPDATE] Erro ao buscar formulário:', request.error);
             reject(request.error);
         };
     });
