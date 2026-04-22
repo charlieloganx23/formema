@@ -165,6 +165,7 @@
     .card-faixa.laranja  { background: linear-gradient(90deg, #e65100, #ff9800); }
     .card-faixa.azul     { background: linear-gradient(90deg, #1565c0, #42a5f5); }
     .card-faixa.roxo     { background: linear-gradient(90deg, #4a148c, #ab47bc); }
+    .card-faixa.amarelo  { background: linear-gradient(90deg, #e65100, #ffc107); }
 
     .card-corpo {
       padding: 1.4rem 1.3rem 0.8rem;
@@ -197,6 +198,7 @@
     .card-titulo.laranja { color: #e65100; }
     .card-titulo.azul    { color: #1565c0; }
     .card-titulo.roxo    { color: #4a148c; }
+    .card-titulo.amarelo { color: #b45309; }
 
     .card-descricao {
       font-size: 0.88rem;
@@ -224,6 +226,7 @@
     .tag.laranja { background: #fff3e0; color: #bf360c; border-color: #ffcc80; }
     .tag.azul    { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
     .tag.roxo    { background: #f3e5f5; color: #4a148c; border-color: #ce93d8; }
+    .tag.amarelo { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
 
     .card-rodape {
       padding: 0.7rem 1.3rem 1.1rem;
@@ -249,11 +252,13 @@
     .btn-acessar.laranja { background: #e65100; }
     .btn-acessar.azul    { background: #1565c0; }
     .btn-acessar.roxo    { background: #4a148c; }
+    .btn-acessar.amarelo { background: #b45309; }
 
     .card:hover .btn-acessar          { background: var(--verde-escuro); }
     .card:hover .btn-acessar.laranja  { background: #bf360c; }
     .card:hover .btn-acessar.azul     { background: #0d47a1; }
     .card:hover .btn-acessar.roxo     { background: #38006b; }
+    .card:hover .btn-acessar.amarelo  { background: #92400e; }
 
     .card-status {
       font-size: 0.75rem;
@@ -528,6 +533,40 @@
             <span class="status-dot"></span> Online
           </div>
           <button class="btn-acessar azul" tabindex="-1">Acessar →</button>
+        </div>
+
+      </a>
+
+      <!-- 5. Insights da EMATER-RO -->
+      <a class="card"
+         href="https://ematerinsights.netlify.app"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Acessar Insights da EMATER-RO — Análise Cruzada">
+
+        <div class="card-faixa amarelo"></div>
+
+        <div class="card-corpo">
+          <div class="card-header">
+            <div class="card-icone" aria-hidden="true">🔍</div>
+            <div class="card-titulo amarelo">Insights<br>EMATER-RO</div>
+          </div>
+          <p class="card-descricao">
+            Análise cruzada dos dados coletados em campo — dashboard com indicadores de
+            monitoramento, efetividade, comercialização, equidade e recomendações estratégicas.
+          </p>
+          <div class="card-tags">
+            <span class="tag amarelo">Análise Cruzada</span>
+            <span class="tag amarelo">Dashboard</span>
+            <span class="tag amarelo">Indicadores</span>
+          </div>
+        </div>
+
+        <div class="card-rodape">
+          <div class="card-status">
+            <span class="status-dot"></span> Online
+          </div>
+          <button class="btn-acessar amarelo" tabindex="-1">Acessar →</button>
         </div>
 
       </a>
