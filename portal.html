@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal EMATECH — Ecossistema de Auditoria ATER</title>
+  <meta name="description" content="Portal central do ecossistema EMATECH — acesso unificado a todos os sistemas de auditoria operacional ATER da EMATER-RO." />
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --verde-escuro:   #1a5c2a;
+      --verde-primary:  #2e7d32;
+      --verde-medio:    #388e3c;
+      --verde-claro:    #4caf50;
+      --verde-suave:    #e8f5e9;
+      --verde-borda:    #a5d6a7;
+      --branco:         #ffffff;
+      --cinza-texto:    #37474f;
+      --cinza-sub:      #607d8b;
+      --cinza-fundo:    #f4f7f4;
+      --sombra-card:    0 4px 18px rgba(46,125,50,0.13);
+      --sombra-hover:   0 8px 30px rgba(46,125,50,0.22);
+      --radius:         14px;
+      --radius-sm:      8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--cinza-fundo);
+      color: var(--cinza-texto);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: linear-gradient(135deg, var(--verde-escuro) 0%, var(--verde-primary) 60%, var(--verde-medio) 100%);
+      color: var(--branco);
+      padding: 2.5rem 1.5rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .header-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.6rem;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.4rem;
+    }
+
+    header p.subtitulo {
+      font-size: 1rem;
+      opacity: 0.88;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .badge-tce {
+      display: inline-block;
+      margin-top: 1rem;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    /* ─── Aviso de acesso ─── */
+    .aviso-acesso {
+      background: var(--verde-suave);
+      border-left: 4px solid var(--verde-claro);
+      padding: 0.75rem 1.2rem;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--verde-escuro);
+      font-weight: 500;
+    }
+
+    /* ─── Container principal ─── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.2rem 3rem;
+    }
+
+    /* ─── Seção de título ─── */
+    .secao-titulo {
+      text-align: center;
+      margin-bottom: 2.2rem;
+    }
+
+    .secao-titulo h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--verde-primary);
+      margin-bottom: 0.4rem;
+    }
+
+    .secao-titulo p {
+      color: var(--cinza-sub);
+      font-size: 0.95rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ─── Grid de cards ─── */
+    .grid-sistemas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.4rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ─── Card ─── */
+    .card {
+      background: var(--branco);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra-card);
+      border: 1px solid #e0e7e0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--sombra-hover);
+    }
+
+    .card:focus-visible {
+      outline: 3px solid var(--verde-claro);
+      outline-offset: 2px;
+    }
+
+    .card-faixa {
+      height: 6px;
+      background: linear-gradient(90deg, var(--verde-primary), var(--verde-claro));
+    }
+
+    .card-faixa.laranja  { background: linear-gradient(90deg, #e65100, #ff9800); }
+    .card-faixa.azul     { background: linear-gradient(90deg, #1565c0, #42a5f5); }
+    .card-faixa.roxo     { background: linear-gradient(90deg, #4a148c, #ab47bc); }
+
+    .card-corpo {
+      padding: 1.4rem 1.3rem 0.8rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-icone {
+      font-size: 2rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .card-titulo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--verde-primary);
+      line-height: 1.25;
+    }
+
+    .card-titulo.laranja { color: #e65100; }
+    .card-titulo.azul    { color: #1565c0; }
+    .card-titulo.roxo    { color: #4a148c; }
+
+    .card-descricao {
+      font-size: 0.88rem;
+      color: var(--cinza-sub);
+      line-height: 1.55;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+
+    .tag {
+      background: var(--verde-suave);
+      color: var(--verde-escuro);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      border: 1px solid var(--verde-borda);
+    }
+
+    .tag.laranja { background: #fff3e0; color: #bf360c; border-color: #ffcc80; }
+    .tag.azul    { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
+    .tag.roxo    { background: #f3e5f5; color: #4a148c; border-color: #ce93d8; }
+
+    .card-rodape {
+      padding: 0.7rem 1.3rem 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-acessar {
+      background: var(--verde-primary);
+      color: var(--branco);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.5rem 1.1rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      pointer-events: none; /* o card inteiro é o link */
+      letter-spacing: 0.2px;
+      transition: background 0.18s;
+    }
+
+    .btn-acessar.laranja { background: #e65100; }
+    .btn-acessar.azul    { background: #1565c0; }
+    .btn-acessar.roxo    { background: #4a148c; }
+
+    .card:hover .btn-acessar          { background: var(--verde-escuro); }
+    .card:hover .btn-acessar.laranja  { background: #bf360c; }
+    .card:hover .btn-acessar.azul     { background: #0d47a1; }
+    .card:hover .btn-acessar.roxo     { background: #38006b; }
+
+    .card-status {
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: var(--cinza-sub);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4caf50;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(76,175,80,0.25);
+    }
+
+    /* ─── Card destaque (sistema principal) ─── */
+    .card.destaque {
+      grid-column: 1 / -1;
+      flex-direction: row;
+    }
+
+    .card.destaque .card-faixa {
+      width: 6px;
+      height: auto;
+    }
+
+    .card.destaque .card-corpo {
+      flex-direction: row;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .card.destaque .card-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .card.destaque .card-rodape {
+      padding: 1.4rem 1.3rem;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    /* ─── Divisor de seção ─── */
+    .secao-divisor {
+      border: none;
+      border-top: 1px solid #d7e8d7;
+      margin: 2rem 0 1.5rem;
+    }
+
+    /* ─── Info rodapé ─── */
+    .info-portal {
+      background: var(--branco);
+      border-radius: var(--radius);
+      border: 1px solid #e0e7e0;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .info-portal .info-icone { font-size: 1.8rem; flex-shrink: 0; }
+
+    .info-portal .info-texto h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--verde-primary);
+      margin-bottom: 0.2rem;
+    }
+
+    .info-portal .info-texto p {
+      font-size: 0.83rem;
+      color: var(--cinza-sub);
+      line-height: 1.5;
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      background: var(--verde-escuro);
+      color: rgba(255,255,255,0.75);
+      text-align: center;
+      padding: 1.4rem 1rem;
+      font-size: 0.82rem;
+    }
+
+    footer strong { color: var(--branco); }
+
+    /* ─── Responsivo ─── */
+    @media (max-width: 680px) {
+      .card.destaque {
+        flex-direction: column;
+      }
+      .card.destaque .card-faixa {
+        width: auto;
+        height: 6px;
+      }
+      .card.destaque .card-corpo {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .card.destaque .card-rodape {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0.7rem 1.3rem 1.1rem;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HEADER ─── -->
+  <header>
+    <span class="header-icon">🌿</span>
+    <h1>Portal EMATECH</h1>
+    <p class="subtitulo">Ecossistema de Auditoria Operacional ATER — acesso unificado a todos os sistemas</p>
+    <span class="badge-tce">SGCE/CECEX-9 · Tribunal de Contas do Estado de Rondônia</span>
+  </header>
+
+  <div class="aviso-acesso">
+    🔒 Acesso restrito à equipe de auditoria ATER — EMATER-RO
+  </div>
+
+  <!-- ─── MAIN ─── -->
+  <main>
+
+    <div class="secao-titulo">
+      <h2>Sistemas Disponíveis</h2>
+      <p>Selecione o sistema desejado para ser direcionado à plataforma correspondente.</p>
+    </div>
+
+    <!-- GRID DE CARDS -->
+    <div class="grid-sistemas">
+
+      <!-- 1. Sistema Principal EMATECH -->
+      <a class="card destaque"
+         href="https://ematech.up.railway.app/login.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Acessar Sistema Principal EMATECH">
+
+        <div class="card-faixa roxo"></div>
+
+        <div class="card-corpo">
+          <div class="card-icone" aria-hidden="true">🖥️</div>
+          <div class="card-info">
+            <div class="card-titulo roxo">Sistema Principal EMATECH</div>
+            <p class="card-descricao">
+              Plataforma central de gestão e consolidação dos dados coletados em campo.
+              Painel administrativo, relatórios integrados e visão gerencial de toda a operação de auditoria ATER.
+            </p>
+            <div class="card-tags">
+              <span class="tag roxo">Painel Gerencial</span>
+              <span class="tag roxo">Relatórios</span>
+              <span class="tag roxo">Administração</span>
+              <span class="tag roxo">Acesso via PIN</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-rodape">
+          <div class="card-status">
+            <span class="status-dot"></span> Online
+          </div>
+          <button class="btn-acessar roxo" tabindex="-1">Acessar →</button>
+        </div>
+
+      </a>
+
+      <!-- 2. Formulário Extensionistas -->
+      <a class="card"
+         href="https://formextensionista.netlify.app/menu.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Acessar Formulário de Extensionistas e Gerentes Locais">
+
+        <div class="card-faixa"></div>
+
+        <div class="card-corpo">
+          <div class="card-header">
+            <div class="card-icone" aria-hidden="true">🌾</div>
+            <div class="card-titulo">Formulário<br>Extensionistas</div>
+          </div>
+          <p class="card-descricao">
+            Coleta de dados de campo pelos técnicos extensionistas e gerentes locais.
+            Funciona offline com sincronização automática quando houver conexão.
+          </p>
+          <div class="card-tags">
+            <span class="tag">Extensionistas</span>
+            <span class="tag">Gerentes Locais</span>
+            <span class="tag">Offline/PWA</span>
+          </div>
+        </div>
+
+        <div class="card-rodape">
+          <div class="card-status">
+            <span class="status-dot"></span> Online
+          </div>
+          <button class="btn-acessar" tabindex="-1">Acessar →</button>
+        </div>
+
+      </a>
+
+      <!-- 3. Formulário Coordenadores -->
+      <a class="card"
+         href="https://coordform.netlify.app/login-ater.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Acessar Formulário de Coordenadores">
+
+        <div class="card-faixa laranja"></div>
+
+        <div class="card-corpo">
+          <div class="card-header">
+            <div class="card-icone" aria-hidden="true">📋</div>
+            <div class="card-titulo laranja">Formulário<br>Coordenadores</div>
+          </div>
+          <p class="card-descricao">
+            Formulário dedicado aos coordenadores regionais ATER para registro
+            de vistorias, indicadores de gestão e avaliação dos escritórios locais.
+          </p>
+          <div class="card-tags">
+            <span class="tag laranja">Coordenadores</span>
+            <span class="tag laranja">Gestão ATER</span>
+            <span class="tag laranja">Indicadores</span>
+          </div>
+        </div>
+
+        <div class="card-rodape">
+          <div class="card-status">
+            <span class="status-dot"></span> Online
+          </div>
+          <button class="btn-acessar laranja" tabindex="-1">Acessar →</button>
+        </div>
+
+      </a>
+
+      <!-- 4. Infográfico / Fluxo da Auditoria -->
+      <a class="card"
+         href="https://infograficoemater.netlify.app/infografico_auditoria.html"
+         target="_blank"
+         rel="noopener noreferrer"
+         aria-label="Acessar Infográfico do Fluxo da Auditoria Operacional EMATER-RO">
+
+        <div class="card-faixa azul"></div>
+
+        <div class="card-corpo">
+          <div class="card-header">
+            <div class="card-icone" aria-hidden="true">📊</div>
+            <div class="card-titulo azul">Fluxo da Auditoria<br>Operacional</div>
+          </div>
+          <p class="card-descricao">
+            Infográfico interativo que demonstra o processo técnico e lógico da auditoria —
+            desde a coleta de campo até a geração de achados e recomendações estratégicas.
+          </p>
+          <div class="card-tags">
+            <span class="tag azul">Infográfico</span>
+            <span class="tag azul">Fluxo ATER</span>
+            <span class="tag azul">Metodologia</span>
+          </div>
+        </div>
+
+        <div class="card-rodape">
+          <div class="card-status">
+            <span class="status-dot"></span> Online
+          </div>
+          <button class="btn-acessar azul" tabindex="-1">Acessar →</button>
+        </div>
+
+      </a>
+
+    </div>
+    <!-- /grid-sistemas -->
+
+    <hr class="secao-divisor" />
+
+    <!-- INFO CONTEXTUAL -->
+    <div class="info-portal">
+      <div class="info-icone" aria-hidden="true">ℹ️</div>
+      <div class="info-texto">
+        <h3>Sobre o Ecossistema EMATECH</h3>
+        <p>
+          O EMATECH é o conjunto integrado de sistemas digitais desenvolvido pela equipe SGCE/CECEX-9 do TCE-RO
+          para apoiar a Auditoria Operacional da EMATER-RO. Os dados coletados pelos técnicos de campo são
+          consolidados no sistema principal e transformados em evidências técnicas para o relatório de auditoria.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <strong>Portal EMATECH</strong> · Desenvolvido por <strong>SGCE/CECEX-9</strong><br>
+    Tribunal de Contas do Estado de Rondônia · Auditoria Operacional ATER
+  </footer>
+
+</body>
+</html>
