@@ -19,3 +19,10 @@
   from = "/"
   to = "/portal.html"
   status = 302
+  force = true
+
+[[redirects]]
+  from = "/index.html"
+  to = "/portal.html"
+  status = 302
+  force = true
